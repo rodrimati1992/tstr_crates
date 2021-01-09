@@ -1,0 +1,13 @@
+[package]
+name = "tstr"
+version = "0.1.0"
+authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
+edition = "2018"
+
+
+[features]
+const_generics = ["tstr_proc_macros/const_generics"]
+nightly_const_generics = ["const_generics"]
+
+[dependencies]
+tstr_proc_macros = {version = "0.1.0", path = "../tstr_proc_macros"}

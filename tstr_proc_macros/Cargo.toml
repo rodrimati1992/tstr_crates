@@ -1,0 +1,30 @@
+[package]
+name = "tstr_proc_macros"
+version = "0.1.0"
+authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
+edition = "2018"
+license = "Zlib"
+description = "Implementation detail of tstr."
+documentation = "https://docs.rs/tstr_proc_macros/"
+keywords = []
+categories = ["no-std"]
+repository = "https://github.com/rodrimati1992/tstr_crates/"
+include = [
+    "Cargo.toml", 
+    "src/**/*.rs", 
+    "../LICENSE-ZLIB.md", 
+]
+
+[lib]
+proc-macro = true
+
+[features]
+const_generics = []
+
+[dependencies]
+proc-macro2 = "1.0"
+
+[dependencies.syn]
+version = "1.0.38"
+default_features = false
+features = ["parsing"]
