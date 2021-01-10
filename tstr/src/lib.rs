@@ -61,14 +61,16 @@
 #![cfg_attr(feature = "nightly_const_generics", feature(const_generics))]
 #![cfg_attr(feature = "docsrs", feature(doc_cfg))]
 #![allow(non_camel_case_types)]
+#![cfg_attr(feature = "nightly_const_generics", allow(incomplete_features))]
 
 mod macros;
+mod to_uint;
 mod tstr;
 
 #[doc(hidden)]
 pub use tstr_proc_macros::__ts_impl;
 
-pub use crate::tstr::TStr;
+pub use crate::{to_uint::ToUint, tstr::TStr};
 
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
 #[cfg(feature = "const_generics")]

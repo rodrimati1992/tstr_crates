@@ -3,10 +3,12 @@ use core::{
     marker::PhantomData,
 };
 
+use crate::ToUint;
+
 ///
 /// A type-level string type, equivalent to a `&'static str` const parameter.
 ///
-pub struct TStr<T>(pub(crate) PhantomData<T>);
+pub struct TStr<T>(pub(crate) PhantomData<fn() -> T>);
 
 impl<T> TStr<T> {
     /// Constructs the TStr.
@@ -16,7 +18,7 @@ impl<T> TStr<T> {
 #[cfg(feature = "const_generics")]
 macro_rules! const_generics_using {
     () => {
-        /// Got getting the `&'static str` value of this `TStr`.
+        /// For getting the `&'static str` value of this `TStr`.
         ///
         /// You can use this as the bound for a generic `TStr` parameter.
         #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
@@ -26,7 +28,7 @@ macro_rules! const_generics_using {
         }
 
         #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
-        impl<const S: &'static str> StrValue for StrValue<__<S>> {
+        impl<const S: &'static str> StrValue for TStr<crate::__<S>> {
             const STR: &'static str = S;
         }
 
@@ -36,7 +38,7 @@ macro_rules! const_generics_using {
             Self: StrValue,
         {
             /// The `&'static str` value of this `TStr`.
-            pub const STR: &'static str = <Self as StrValue>::Str;
+            pub const STR: &'static str = <Self as StrValue>::STR;
         }
     };
 }

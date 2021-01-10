@@ -5,6 +5,9 @@ use std::iter::{self, FromIterator, Once};
 use proc_macro::TokenStream as TokenStream1;
 use proc_macro2::{Span, TokenStream as TokenStream2, TokenTree};
 
+#[cfg(not(feature = "const_generics"))]
+use proc_macro2::{Delimiter, Group};
+
 use syn::{
     ext::IdentExt,
     parenthesized,
@@ -35,24 +38,27 @@ pub fn __ts_impl(input_tokens: TokenStream1) -> TokenStream1 {
             out.extend(punct_token('<', span));
             #[cfg(not(feature = "const_generics"))]
             {
-                use proc_macro2::{Delimiter, Group};
-                let mut chars = TokenStream2::new();
-
-                for b in string.bytes() {
-                    chars.extend(crate_path.clone());
-                    chars.extend(colon2_token(span));
-                    chars.extend(ident_token(BYTE_NAME[b as usize], span));
-                    chars.extend(punct_token(',', span));
-                }
-
-                let tt = Group::new(Delimiter::Parenthesis, chars);
-                let tt = TokenTree::from(tt);
+                const CHUNK_SIZE: usize = 8;
+                let tt = paren(|out| {
+                    let string = string.as_bytes();
+                    if string.len() < CHUNK_SIZE {
+                        write_bytes(out, string, &crate_path, span)
+                    } else {
+                        for chunk in string.chunks(CHUNK_SIZE) {
+                            let tt = paren(|out| {
+                                write_bytes(out, chunk, &crate_path, span);
+                            });
+                            out.extend(iter::once(tt));
+                            out.extend(punct_token(',', span));
+                        }
+                    }
+                });
                 out.extend(iter::once(tt));
             }
             #[cfg(feature = "const_generics")]
             {
                 use proc_macro2::Literal;
-                let mut lit = Literal::string(&string);
+                let lit = Literal::string(&string);
                 out.extend(iter::once(TokenTree::from(lit)));
             }
             out.extend(punct_token('>', span));
@@ -80,6 +86,27 @@ fn colon2_token(span: Span) -> TokenStream2 {
     let mut token = proc_macro2::Punct::new(':', proc_macro2::Spacing::Joint);
     token.set_span(span);
     TokenStream2::from_iter(vec![TokenTree::from(token.clone()), TokenTree::from(token)])
+}
+
+#[cfg(not(feature = "const_generics"))]
+fn paren<F>(f: F) -> TokenTree
+where
+    F: FnOnce(&mut TokenStream2),
+{
+    let mut ts = TokenStream2::new();
+    f(&mut ts);
+    let tt = Group::new(Delimiter::Parenthesis, ts);
+    TokenTree::from(tt)
+}
+
+#[cfg(not(feature = "const_generics"))]
+fn write_bytes(ts: &mut TokenStream2, string: &[u8], crate_path: &TokenStream2, span: Span) {
+    for &b in string {
+        ts.extend(crate_path.clone());
+        ts.extend(colon2_token(span));
+        ts.extend(ident_token(BYTE_NAME[b as usize], span));
+        ts.extend(punct_token(',', span));
+    }
 }
 
 struct Inputs {
