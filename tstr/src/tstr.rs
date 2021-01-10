@@ -13,6 +13,36 @@ impl<T> TStr<T> {
     pub const NEW: Self = TStr(PhantomData);
 }
 
+#[cfg(feature = "const_generics")]
+macro_rules! const_generics_using {
+    () => {
+        /// Got getting the `&'static str` value of this `TStr`.
+        ///
+        /// You can use this as the bound for a generic `TStr` parameter.
+        #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
+        pub trait StrValue {
+            /// The `&'static str` value of this `TStr`.
+            const STR: &'static str;
+        }
+
+        #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
+        impl<const S: &'static str> StrValue for StrValue<__<S>> {
+            const STR: &'static str = S;
+        }
+
+        #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
+        impl<T> TStr<T>
+        where
+            Self: StrValue,
+        {
+            /// The `&'static str` value of this `TStr`.
+            pub const STR: &'static str = <Self as StrValue>::Str;
+        }
+    };
+}
+#[cfg(feature = "const_generics")]
+const_generics_using! {}
+
 impl<T> Copy for TStr<T> {}
 
 impl<T> Clone for TStr<T> {
@@ -50,15 +80,3 @@ impl<T> core::cmp::Ord for TStr<T> {
         core::cmp::Ordering::Equal
     }
 }
-
-////////////////////////////////////////////////////////////////////////////////
-
-
-
-
-
-
-
-
-////////////////////////////////////////////////////////////////////////////////
-
