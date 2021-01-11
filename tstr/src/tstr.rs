@@ -3,10 +3,91 @@ use core::{
     marker::PhantomData,
 };
 
-use crate::ToUint;
-
+/// A type-level string type, similar to a `&'static str` const parameter.
 ///
-/// A type-level string type, equivalent to a `&'static str` const parameter.
+/// # Examples
+///
+/// ### Accessing Fields
+///
+/// This example demonstrates how you can use `TStr` to implement a generic accessor trait.
+///
+/// ```rust
+/// use tstr::TStr;
+/// use tstr::{TS, ts};
+///
+/// fn main() {
+///     let mut tup = (3, 5, 8);
+///     
+///     assert_eq!(tup.get(ts!(0)), &3);
+///     assert_eq!(tup.get(ts!(1)), &5);
+///     assert_eq!(tup.get(ts!(2)), &8);
+///
+///     let old_0 = replace(&mut tup, ts!(0), 333);
+///     let old_1 = replace(&mut tup, ts!(1), 555);
+///     let old_2 = replace(&mut tup, ts!(2), 888);
+///     
+///     assert_eq!(tup.get(ts!(0)), &333);
+///     assert_eq!(tup.get(ts!(1)), &555);
+///     assert_eq!(tup.get(ts!(2)), &888);
+///
+///     assert_eq!(old_0, 3);
+///     assert_eq!(old_1, 5);
+///     assert_eq!(old_2, 8);
+///     
+/// }
+///
+/// fn replace<T, N>(this: &mut T, name: TStr<N>, replacement: T::Field) -> T::Field
+/// where
+///     T: Access<TStr<N>>,
+///     T::Field: Clone,
+/// {
+///     let ret = this.get(name).clone();
+///     this.set(name, replacement);
+///     ret
+/// }
+///
+///
+/// trait Access<N> {
+///     type Field;
+///
+///     fn get(&self, _: N) -> &Self::Field;
+///     fn set(&mut self, _: N, val: Self::Field);
+/// }
+///
+/// impl<A, B, C> Access<TS!(0)> for (A, B, C) {
+///     type Field = A;
+///
+///     fn get(&self, _: TS!(0)) -> &A {
+///         &self.0
+///     }
+///     fn set(&mut self, _: TS!(0), val: A){
+///         self.0 = val;
+///     }
+/// }
+///
+/// impl<A, B, C> Access<TS!(1)> for (A, B, C) {
+///     type Field = B;
+///
+///     fn get(&self, _: TS!(1)) -> &B {
+///         &self.1
+///     }
+///     fn set(&mut self, _: TS!(1), val: B){
+///         self.1 = val;
+///     }
+/// }
+///
+/// impl<A, B, C> Access<TS!(2)> for (A, B, C) {
+///     type Field = C;
+///
+///     fn get(&self, _: TS!(2)) -> &C {
+///         &self.2
+///     }
+///     fn set(&mut self, _: TS!(2), val: C){
+///         self.2 = val;
+///     }
+/// }
+///
+/// ```
 ///
 pub struct TStr<T>(pub(crate) PhantomData<fn() -> T>);
 
@@ -51,6 +132,13 @@ impl<T> Clone for TStr<T> {
     #[inline(always)]
     fn clone(&self) -> Self {
         *self
+    }
+}
+
+impl<T> Default for TStr<T> {
+    #[inline(always)]
+    fn default() -> Self {
+        Self::NEW
     }
 }
 

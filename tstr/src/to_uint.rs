@@ -4,7 +4,36 @@ mod sealed {
 }
 use sealed::Sealed;
 
-/// Converts a [`TStr`](./struct.TStr) to a usize.
+/// Converts a [`TStr`] to a usize.
+///
+/// This trait is sealed, so it can't be implemented outside the `tstr` crate.
+///
+/// # Example
+///
+/// ```rust
+/// use tstr::{ToUint, TS, ts};
+///
+/// type Zero = TS!(0);
+/// type N8   = TS!(8);
+/// type N13  = TS!(13);
+/// type N15  = TS!(0xF);
+/// type N16  = TS!(0b10000);
+///
+/// assert_eq!(Zero::USIZE, 0);
+/// assert_eq!(N8::USIZE, 8);
+/// assert_eq!(N13::USIZE, 13);
+/// assert_eq!(N15::USIZE, 15);
+/// assert_eq!(N16::USIZE, 16);
+///
+/// assert_eq!(ts!(0).to_u128(), 0);
+/// assert_eq!(ts!(8).to_u128(), 8);
+/// assert_eq!(ts!(13).to_u128(), 13);
+/// assert_eq!(ts!(0xF).to_u128(), 15);
+/// assert_eq!(ts!(0b10000).to_u128(), 16);
+///
+/// ```
+///
+/// [`TStr`]: ./struct.TStr.html
 pub trait ToUint: Sealed {
     /// The `usize` value of the type.
     ///
