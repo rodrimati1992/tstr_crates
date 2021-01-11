@@ -9,6 +9,8 @@
 //!
 //! fn main(){
 //!     takes_person(&Person::new("Bob".into(), "Marley".into()));
+//!
+//!     takes_person(&OtherPerson::new("Bob", "Marley"));
 //! }
 //!
 //! fn takes_person<P>(
@@ -55,6 +57,40 @@
 //!     }
 //! }
 //!
+//! use other_person::OtherPerson;
+//! mod other_person {
+//!     use std::ops::Index;
+//!
+//!     use tstr::TS;
+//!     
+//!     pub struct OtherPerson {
+//!         name: &'static str,
+//!         surname: &'static str,
+//!     }
+//!     
+//!     impl OtherPerson {
+//!         pub fn new(name: &'static str, surname: &'static str) -> Self {
+//!             Self{name, surname}
+//!         }
+//!     }
+//!     
+//!     impl Index<TS!(name)> for OtherPerson {
+//!         type Output = str;
+//!         
+//!         fn index(&self, _: TS!(name)) -> &str {
+//!             self.name
+//!         }
+//!     }
+//!    
+//!     impl Index<TS!(surname)> for OtherPerson {
+//!         type Output = str;
+//!         
+//!         fn index(&self, _: TS!(surname)) -> &str {
+//!             self.surname
+//!         }
+//!     }
+//! }
+//!
 //! ```
 //!
 #![no_std]
@@ -63,6 +99,9 @@
 #![allow(non_camel_case_types)]
 #![cfg_attr(feature = "nightly_const_generics", allow(incomplete_features))]
 
+// #[cfg(feature = "for_examples")]
+// #[cfg_attr(feature = "docsrs", doc(cfg(feature = "for_examples")))]
+// mod for_examples;
 mod macros;
 mod to_uint;
 mod tstr;

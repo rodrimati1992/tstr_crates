@@ -64,15 +64,17 @@ pub trait ToUint: Sealed {
 macro_rules! impl_for_const {
     () => {
         const fn str_to_u128(s: &str) -> u128 {
+            let s = s.as_bytes();
             let mut out = 0u128;
             let mut index = 0usize;
 
             while index < s.len() {
-                let byte = s[index];
+                let digit = s[index];
 
                 // This has the effect of panicking on non to '0' to '9' characters.
                 #[allow(clippy::no_effect)]
-                ["Expected all characters to be digits"][(b'0' <= digit && digit <= b'9') as usize];
+                ["Expected all characters to be digits"]
+                    [!(b'0' <= digit && digit <= b'9') as usize];
 
                 let digit = (digit - b'0') as u128;
                 out = out * 10 + digit;
@@ -82,15 +84,11 @@ macro_rules! impl_for_const {
             out
         }
 
-        impl<const N: usize> Sealed for TStr<crate::__<S>> {}
+        impl<const N: &'static str> Sealed for crate::TStr<crate::__<N>> {}
 
-        impl<const N: usize> ToUint for TStr<crate::__<S>> {
-            const USIZE: usize;
-
-            /// Gets the usize value of this type
-            fn to_usize(&self) -> usize {
-                Self::USIZE
-            }
+        impl<const N: &'static str> ToUint for crate::TStr<crate::__<N>> {
+            const U128: u128 = str_to_u128(N);
+            const DIGITS: u32 = N.len() as u32;
         }
     };
 }

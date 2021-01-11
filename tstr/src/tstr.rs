@@ -93,6 +93,18 @@ pub struct TStr<T>(pub(crate) PhantomData<fn() -> T>);
 
 impl<T> TStr<T> {
     /// Constructs the TStr.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use tstr::{TS, TStr};
+    ///
+    /// type FOO = TS!(foo);
+    ///
+    /// let foo_1: FOO = TStr::NEW;
+    /// let foo_2 = FOO::NEW; // The same as the previous statement
+    ///
+    /// ```
     pub const NEW: Self = TStr(PhantomData);
 }
 
@@ -102,10 +114,41 @@ macro_rules! const_generics_using {
         /// For getting the `&'static str` value of this `TStr`.
         ///
         /// You can use this as the bound for a generic `TStr` parameter.
+        ///
+        /// # Example
+        ///
+        /// ```rust
+        /// use tstr::{StrValue, ts};
+        ///
+        /// asserts(ts!(foo), ts!(bar), ts!(baz));
+        ///
+        /// fn asserts<A, B, C>(foo: A, bar: B, baz: C)
+        /// where
+        ///     A: StrValue,
+        ///     B: StrValue,
+        ///     C: StrValue,
+        /// {
+        ///     assert_eq!(A::STR, "foo");
+        ///     assert_eq!(foo.to_str(), "foo");
+        ///
+        ///     assert_eq!(B::STR, "bar");
+        ///     assert_eq!(bar.to_str(), "bar");
+        ///
+        ///     assert_eq!(C::STR, "baz");
+        ///     assert_eq!(baz.to_str(), "baz");
+        ///
+        /// }
+        ///
+        /// ```
         #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
-        pub trait StrValue {
+        pub trait StrValue: Debug + Copy + Default + 'static {
             /// The `&'static str` value of this `TStr`.
             const STR: &'static str;
+
+            /// Gets the `&'static str` value of this `TStr`.
+            fn to_str(self) -> &'static str {
+                Self::STR
+            }
         }
 
         #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
