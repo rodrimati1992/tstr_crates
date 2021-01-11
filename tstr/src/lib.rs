@@ -2,6 +2,9 @@
 //!
 //! # Example
 //!
+//! This example demonstrates how you can use type-level strings and
+//! the [`Index`] trait to access fields by name.
+//!
 //! ```
 //! use std::ops::Index;
 //!
@@ -93,15 +96,17 @@
 //!
 //! ```
 //!
+//! [`Index`]: https://doc.rust-lang.org/std/ops/trait.Index.html
+//!
 #![no_std]
 #![cfg_attr(feature = "nightly_const_generics", feature(const_generics))]
 #![cfg_attr(feature = "docsrs", feature(doc_cfg))]
 #![allow(non_camel_case_types)]
 #![cfg_attr(feature = "nightly_const_generics", allow(incomplete_features))]
 
-// #[cfg(feature = "for_examples")]
-// #[cfg_attr(feature = "docsrs", doc(cfg(feature = "for_examples")))]
-// mod for_examples;
+#[cfg(feature = "for_examples")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "for_examples")))]
+pub mod for_examples;
 mod macros;
 mod to_uint;
 mod tstr;

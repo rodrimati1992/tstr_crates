@@ -162,6 +162,19 @@ macro_rules! const_generics_using {
             Self: StrValue,
         {
             /// The `&'static str` value of this `TStr`.
+            ///
+            /// # Example
+            ///
+            /// ```rust
+            /// use tstr::TS;
+            ///
+            /// type FOO = TS!(foo);
+            /// type BAR = TS!(bar);
+            ///
+            /// assert_eq!(FOO::STR, "foo");
+            /// assert_eq!(BAR::STR, "bar");
+            ///
+            /// ```
             pub const STR: &'static str = <Self as StrValue>::STR;
         }
     };

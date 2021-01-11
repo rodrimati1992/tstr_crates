@@ -19,7 +19,8 @@ include = [
 [features]
 const_generics = ["tstr_proc_macros/const_generics"]
 nightly_const_generics = ["const_generics"]
-docsrs = []
+docsrs = ["for_examples"]
+for_examples = []
 
 [dependencies]
 tstr_proc_macros = {version = "0.1.0", path = "../tstr_proc_macros"}

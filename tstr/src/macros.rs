@@ -24,15 +24,15 @@
 ///     let foo = Enum::Foo(3, 5);
 ///     let bar = Enum::Bar("hello".to_string());
 ///     
-///     assert_eq!(foo.to_variant(VFoo::NEW), Some((3, 5)));
-///     assert_eq!(foo.to_variant(VBar::NEW), None);
+///     assert_eq!(foo.to_variant(Foo::NEW), Some((3, 5)));
+///     assert_eq!(foo.to_variant(Bar::NEW), None);
 ///     
-///     assert_eq!(bar.to_variant(VFoo::NEW), None);
-///     assert_eq!(bar.to_variant(VBar::NEW), Some("hello".to_string()));
+///     assert_eq!(bar.to_variant(Foo::NEW), None);
+///     assert_eq!(bar.to_variant(Bar::NEW), Some("hello".to_string()));
 /// }
 ///
-/// type VFoo = TS!(Foo);
-/// type VBar = TS!(Bar);
+/// type Foo = TS!(Foo);
+/// type Bar = TS!(Bar);
 ///
 /// trait ToVariant<V> {
 ///     type Output;
@@ -108,10 +108,22 @@ macro_rules! TS {
 ///
 /// # Example
 ///
+/// This uses types from the `for_examples` module,
+/// which can be seen in the docs with the "for_examples" feature.
+///
 /// ```rust
+/// use tstr::ts;
+/// use tstr::for_examples::{Foo, Bar};
 ///
+/// let this = Foo::new(3, 5, "8");
+/// assert_eq!(this[ts!(bar)], 3);
+/// assert_eq!(this[ts!(baz)], 5);
+/// assert_eq!(this[ts!(qux)], "8");
 ///
-///
+/// let other = Bar::new(13, false, Some('C'));
+/// assert_eq!(other[ts!(bar)], 13);
+/// assert_eq!(other[ts!(baz)], false);
+/// assert_eq!(other[ts!(boom)], Some('C'));
 ///
 /// ```
 ///
