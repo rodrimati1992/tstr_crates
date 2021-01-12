@@ -1,3 +1,5 @@
+//! Types used by documentation examples.
+
 use core::ops::{Index, IndexMut};
 
 use crate::TS;
@@ -40,7 +42,7 @@ macro_rules! impl_index_indexmut {
     };
 }
 
-///
+/// For examples
 #[derive(Debug)]
 pub struct Foo {
     bar: u32,
@@ -49,7 +51,7 @@ pub struct Foo {
 }
 
 impl Foo {
-    ///
+    /// A simple contructor
     pub fn new(bar: u32, baz: u64, qux: &'static str) -> Self {
         Self { bar, baz, qux }
     }
@@ -63,7 +65,7 @@ impl_index_indexmut! {
     }
 }
 
-///
+/// For examples
 #[derive(Debug)]
 pub struct Bar {
     bar: u32,
@@ -72,7 +74,7 @@ pub struct Bar {
 }
 
 impl Bar {
-    ///
+    /// A simple contructor
     pub fn new(bar: u32, baz: bool, boom: Option<char>) -> Self {
         Self { bar, baz, boom }
     }

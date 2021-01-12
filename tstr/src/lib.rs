@@ -2,8 +2,8 @@
 //!
 //! # Example
 //!
-//! This example demonstrates how you can use type-level strings and
-//! the [`Index`] trait to access fields by name.
+//! This example demonstrates how you can use type-level strings,
+//! and the [`Index`] trait, to access fields of generic types by name.
 //!
 //! ```
 //! use std::ops::Index;
@@ -16,9 +16,8 @@
 //!     takes_person(&OtherPerson::new("Bob", "Marley"));
 //! }
 //!
-//! fn takes_person<P>(
-//!     pers: &P
-//! ) where
+//! fn takes_person<P>(pers: &P)
+//! where
 //!     P: Index<TS!(name), Output = str> + Index<TS!(surname), Output = str>
 //! {
 //!     assert_eq!(&pers[ts!(name)], "Bob");

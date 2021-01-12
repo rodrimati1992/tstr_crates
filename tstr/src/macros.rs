@@ -10,9 +10,9 @@
 ///
 /// - Single identifiers (eg: `TS!(foo)`, `TS!(bar)`), stringifying the identifier.
 ///
-/// # Example
+/// # Examples
 ///
-/// # ToVariant
+/// ### ToVariant
 ///
 /// This example demonstrates how you can use type-level strings to create a
 /// `GetVariant` trait which gets the data in a variant if the enum is that variant.
@@ -32,6 +32,7 @@
 /// }
 ///
 /// type Foo = TS!(Foo);
+///
 /// type Bar = TS!(Bar);
 ///
 /// trait ToVariant<V> {
@@ -70,7 +71,7 @@
 ///
 /// ```
 ///
-/// # Equivalences
+/// ### Equivalences
 ///
 /// This example demonstrates which invocations of `TS` produce the same type.
 ///
@@ -106,7 +107,9 @@ macro_rules! TS {
 ///
 /// - Single identifiers (eg: `TS!(foo)`, `TS!(bar)`), stringifying the identifier.
 ///
-/// # Example
+/// # Examples
+///
+/// ### Indexing
 ///
 /// This uses types from the `for_examples` module,
 /// which can be seen in the docs with the "for_examples" feature.
@@ -126,6 +129,22 @@ macro_rules! TS {
 /// assert_eq!(other[ts!(boom)], Some('C'));
 ///
 /// ```
+/// ### Equivalences
+///
+/// This example demonstrates which invocations of `ts` produce the same values.
+///
+/// ```rust
+/// use tstr::ts;
+///
+/// let hello1 = ts!("hello");
+/// let hello2 = ts!(hello); // This is equivalent to `ts!("hello")`
+///
+/// let hundreda = ts!("100");
+/// let hundredb = ts!(100);   // equivalent to `ts!("100")`
+/// let hundredc = ts!(0x64);  // equivalent to `ts!("100")`
+/// let hundredd = ts!(0b1100100);  // equivalent to `ts!("100")`
+/// ```
+///
 ///
 /// [`TStr`]: ./struct.TStr.html
 #[macro_export]

@@ -50,6 +50,8 @@ pub trait ToUint: Sealed {
     const DIGITS: u32;
 
     /// Gets the usize value of this type
+    ///
+    /// By default this value is a saturated cast from `Self::U128`.
     fn to_usize(self) -> usize {
         Self::USIZE
     }

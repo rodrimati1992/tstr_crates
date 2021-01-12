@@ -50,17 +50,17 @@ use core::{
 /// trait Access<N> {
 ///     type Field;
 ///
-///     fn get(&self, _: N) -> &Self::Field;
-///     fn set(&mut self, _: N, val: Self::Field);
+///     fn get(&self, _field_name: N) -> &Self::Field;
+///     fn set(&mut self, _field_name: N, val: Self::Field);
 /// }
 ///
 /// impl<A, B, C> Access<TS!(0)> for (A, B, C) {
 ///     type Field = A;
 ///
-///     fn get(&self, _: TS!(0)) -> &A {
+///     fn get(&self, _field_name: TS!(0)) -> &A {
 ///         &self.0
 ///     }
-///     fn set(&mut self, _: TS!(0), val: A){
+///     fn set(&mut self, _field_name: TS!(0), val: A){
 ///         self.0 = val;
 ///     }
 /// }
@@ -68,10 +68,10 @@ use core::{
 /// impl<A, B, C> Access<TS!(1)> for (A, B, C) {
 ///     type Field = B;
 ///
-///     fn get(&self, _: TS!(1)) -> &B {
+///     fn get(&self, _field_name: TS!(1)) -> &B {
 ///         &self.1
 ///     }
-///     fn set(&mut self, _: TS!(1), val: B){
+///     fn set(&mut self, _field_name: TS!(1), val: B){
 ///         self.1 = val;
 ///     }
 /// }
@@ -79,10 +79,10 @@ use core::{
 /// impl<A, B, C> Access<TS!(2)> for (A, B, C) {
 ///     type Field = C;
 ///
-///     fn get(&self, _: TS!(2)) -> &C {
+///     fn get(&self, _field_name: TS!(2)) -> &C {
 ///         &self.2
 ///     }
-///     fn set(&mut self, _: TS!(2), val: C){
+///     fn set(&mut self, _field_name: TS!(2), val: C){
 ///         self.2 = val;
 ///     }
 /// }
@@ -111,9 +111,9 @@ impl<T> TStr<T> {
 #[cfg(feature = "const_generics")]
 macro_rules! const_generics_using {
     () => {
-        /// For getting the `&'static str` value of this `TStr`.
+        /// For getting the `&'static str` value of this [`TStr`].
         ///
-        /// You can use this as the bound for a generic `TStr` parameter.
+        /// You can use this as the bound for a generic [`TStr`] parameter.
         ///
         /// # Example
         ///
@@ -140,6 +140,8 @@ macro_rules! const_generics_using {
         /// }
         ///
         /// ```
+        ///
+        /// [`TStr`]: ./struct.TStr.html
         #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
         pub trait StrValue: Debug + Copy + Default + 'static {
             /// The `&'static str` value of this `TStr`.
