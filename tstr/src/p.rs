@@ -77,6 +77,13 @@ macro_rules! create_unit_struct {
             #[doc(hidden)]
             pub struct $struct_;
 
+            impl Copy for $struct_{}
+            impl Clone for $struct_{
+                fn clone(&self) -> $struct_ {
+                    $struct_
+                }
+            }
+
             $(
                 #[doc(hidden)]
                 pub type $alias=$struct_;

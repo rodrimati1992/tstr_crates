@@ -51,7 +51,7 @@ pub(crate) fn parse_inputs(ts: TokenStream) -> Result<Inputs, Error> {
         }
         None => {
             return Err(Error::new(
-                Span::mixed_site(),
+                Span::call_site(),
                 "Expected parentheses, found nothing",
             ))
         }
@@ -83,7 +83,7 @@ fn parse_from_token_tree(tt: Option<TokenTree>) -> Result<(String, Span), Error>
         }
         Some(TokenTree::Literal(lit)) => parse_literal(lit),
         Some(x) => Err(Error::new(x.span(), &format!("{}\nFound: {:?}", IN_MSG, x))),
-        None => Err(Error::new(Span::mixed_site(), IN_MSG)),
+        None => Err(Error::new(Span::call_site(), IN_MSG)),
     }
 }
 

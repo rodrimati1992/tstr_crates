@@ -1,5 +1,3 @@
-use core::fmt::Debug;
-
 mod sealed {
     #[doc(hidden)]
     pub trait Sealed: Sized {}
@@ -36,7 +34,7 @@ use sealed::Sealed;
 /// ```
 ///
 /// [`TStr`]: ./struct.TStr.html
-pub trait ToUint: Debug + Copy + Default + 'static {
+pub trait ToUint: Copy {
     /// The `usize` value of the type.
     ///
     /// By default this value is a saturated cast from `Self::U128`.

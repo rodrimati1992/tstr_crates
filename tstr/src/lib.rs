@@ -108,15 +108,18 @@
 pub mod for_examples;
 mod macros;
 mod to_uint;
-mod tstr;
+mod tstr_type;
+
+#[doc(hidden)]
+extern crate self as tstr;
 
 #[doc(hidden)]
 pub use tstr_proc_macros::__ts_impl;
 
-pub use crate::{to_uint::ToUint, tstr::TStr};
+pub use crate::{to_uint::ToUint, tstr_type::TStr};
 
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
 #[cfg(feature = "const_generics")]
-pub use crate::tstr::StrValue;
+pub use crate::tstr_type::StrValue;
 
 include! {"./p.rs"}
