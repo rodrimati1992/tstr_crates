@@ -19,11 +19,15 @@ include = [
 [features]
 const_generics = ["tstr_proc_macros/const_generics"]
 nightly_const_generics = ["const_generics"]
-docsrs = ["for_examples"]
+use_syn = ["tstr_proc_macros/syn_"]
 for_examples = []
 
-[dependencies]
-tstr_proc_macros = {version = "0.1.0", path = "../tstr_proc_macros"}
+# private features
+docsrs = ["for_examples"]
+
+[dependencies.tstr_proc_macros]
+version = "0.1.0"
+path = "../tstr_proc_macros"
 
 [package.metadata.docs.rs]
 features = ["docsrs", "nightly_const_generics"]
