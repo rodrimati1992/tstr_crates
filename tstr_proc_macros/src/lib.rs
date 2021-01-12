@@ -1,31 +1,42 @@
 extern crate proc_macro;
 
+#[cfg(not(feature = "proc_macro2_"))]
+use proc_macro as used_proc_macro;
+
+#[cfg(feature = "proc_macro2_")]
+use proc_macro2 as used_proc_macro;
+
 use std::iter::{self, FromIterator, Once};
 
-use proc_macro::TokenStream as TokenStream1;
-use proc_macro2::{Span, TokenStream as TokenStream2, TokenTree};
-
-#[cfg(not(feature = "const_generics"))]
-use proc_macro2::{Delimiter, Group};
-
-use syn::{
-    ext::IdentExt,
-    parenthesized,
-    parse::{Parse, ParseStream},
-    Ident, LitInt, LitStr,
+#[allow(unused_imports)]
+use used_proc_macro::{
+    Delimiter, Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree,
 };
+
+#[cfg(feature = "syn_")]
+mod use_syn;
+
+#[cfg(not(feature = "syn_"))]
+mod non_syn_parsing;
 
 #[doc(hidden)]
 #[proc_macro]
-pub fn __ts_impl(input_tokens: TokenStream1) -> TokenStream1 {
-    let input_tokens = TokenStream2::from(input_tokens);
-    match syn::parse2::<Inputs>(input_tokens) {
+pub fn __ts_impl(input_tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
+    let input_tokens = TokenStream::from(input_tokens);
+
+    #[cfg(feature = "syn_")]
+    let parsed = syn::parse2::<Inputs>(input_tokens);
+
+    #[cfg(not(feature = "syn_"))]
+    let parsed = non_syn_parsing::parse_inputs(input_tokens);
+
+    match parsed {
         Ok(Inputs {
             crate_path,
             string,
             span,
         }) => {
-            let mut out = TokenStream2::new();
+            let mut out = TokenStream::new();
             out.extend(crate_path.clone());
             out.extend(colon2_token(span));
             out.extend(ident_token("TStr", span));
@@ -39,13 +50,13 @@ pub fn __ts_impl(input_tokens: TokenStream1) -> TokenStream1 {
             #[cfg(not(feature = "const_generics"))]
             {
                 const CHUNK_SIZE: usize = 8;
-                let tt = paren(|out| {
+                let tt = paren(span, |out| {
                     let string = string.as_bytes();
                     if string.len() < CHUNK_SIZE {
                         write_bytes(out, string, &crate_path, span)
                     } else {
                         for chunk in string.chunks(CHUNK_SIZE) {
-                            let tt = paren(|out| {
+                            let tt = paren(span, |out| {
                                 write_bytes(out, chunk, &crate_path, span);
                             });
                             out.extend(iter::once(tt));
@@ -57,7 +68,6 @@ pub fn __ts_impl(input_tokens: TokenStream1) -> TokenStream1 {
             }
             #[cfg(feature = "const_generics")]
             {
-                use proc_macro2::Literal;
                 let lit = Literal::string(&string);
                 out.extend(iter::once(TokenTree::from(lit)));
             }
@@ -72,35 +82,36 @@ pub fn __ts_impl(input_tokens: TokenStream1) -> TokenStream1 {
 }
 
 fn ident_token(ident: &str, span: Span) -> Once<TokenTree> {
-    let ident = syn::Ident::new(ident, span);
+    let ident = Ident::new(ident, span);
     let tt = TokenTree::from(ident);
     iter::once(tt)
 }
 fn punct_token(token: char, span: Span) -> Once<TokenTree> {
-    let mut token = proc_macro2::Punct::new(token, proc_macro2::Spacing::Alone);
+    let mut token = Punct::new(token, Spacing::Alone);
     token.set_span(span);
     let tt = TokenTree::from(token);
     iter::once(tt)
 }
-fn colon2_token(span: Span) -> TokenStream2 {
-    let mut token = proc_macro2::Punct::new(':', proc_macro2::Spacing::Joint);
+fn colon2_token(span: Span) -> TokenStream {
+    let mut token = Punct::new(':', Spacing::Joint);
     token.set_span(span);
-    TokenStream2::from_iter(vec![TokenTree::from(token.clone()), TokenTree::from(token)])
+    TokenStream::from_iter(vec![TokenTree::from(token.clone()), TokenTree::from(token)])
 }
 
-#[cfg(not(feature = "const_generics"))]
-fn paren<F>(f: F) -> TokenTree
+#[cfg(any(not(feature = "const_generics"), not(feature = "syn_")))]
+fn paren<F>(span: Span, f: F) -> TokenTree
 where
-    F: FnOnce(&mut TokenStream2),
+    F: FnOnce(&mut TokenStream),
 {
-    let mut ts = TokenStream2::new();
+    let mut ts = TokenStream::new();
     f(&mut ts);
-    let tt = Group::new(Delimiter::Parenthesis, ts);
+    let mut tt = Group::new(Delimiter::Parenthesis, ts);
+    tt.set_span(span);
     TokenTree::from(tt)
 }
 
 #[cfg(not(feature = "const_generics"))]
-fn write_bytes(ts: &mut TokenStream2, string: &[u8], crate_path: &TokenStream2, span: Span) {
+fn write_bytes(ts: &mut TokenStream, string: &[u8], crate_path: &TokenStream, span: Span) {
     for &b in string {
         ts.extend(crate_path.clone());
         ts.extend(colon2_token(span));
@@ -110,38 +121,9 @@ fn write_bytes(ts: &mut TokenStream2, string: &[u8], crate_path: &TokenStream2, 
 }
 
 struct Inputs {
-    crate_path: TokenStream2,
+    crate_path: TokenStream,
     string: String,
     span: Span,
-}
-
-impl Parse for Inputs {
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
-        let content;
-        let _ = parenthesized!(content in input);
-
-        let crate_path = content.parse::<TokenStream2>()?;
-
-        let lookahead = input.lookahead1();
-        let (string, span) = if lookahead.peek(Ident::peek_any) {
-            let ident = input.parse::<Ident>()?;
-            (ident.to_string(), ident.span())
-        } else if lookahead.peek(LitStr) {
-            let lit = input.parse::<LitStr>()?;
-            (lit.value(), lit.span())
-        } else if lookahead.peek(LitInt) {
-            let lit = input.parse::<LitInt>()?;
-            (lit.base10_digits().to_string(), lit.span())
-        } else {
-            return Err(lookahead.error());
-        };
-
-        Ok(Self {
-            crate_path,
-            string,
-            span,
-        })
-    }
 }
 
 #[cfg(not(feature = "const_generics"))]
