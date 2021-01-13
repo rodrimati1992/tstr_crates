@@ -22,45 +22,44 @@ fn to_uint() {
     assert_eq!(same(ts!(513)), 513);
 }
 
+const UMAX: usize = std::usize::MAX;
+
 #[test]
 #[cfg(target_pointer_width = "128")]
 fn to_usize() {
-    assert_eq!(
-        same(ts!(0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF)),
-        usize::MAX
-    );
+    assert_eq!(same(ts!(0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF)), UMAX);
     assert_eq!(
         same(ts!(0xFFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFF_FFFE)),
-        usize::MAX - 1
+        UMAX - 1
     );
 }
 
 #[test]
 #[cfg(target_pointer_width = "64")]
 fn to_usize() {
-    assert_eq!(same(ts!(0xFFFF_FFFF_FFFF_FFFF)), usize::MAX);
-    assert_eq!(same(ts!(0xFFFF_FFFF_FFFF_FFFE)), usize::MAX - 1);
+    assert_eq!(same(ts!(0xFFFF_FFFF_FFFF_FFFF)), UMAX);
+    assert_eq!(same(ts!(0xFFFF_FFFF_FFFF_FFFE)), UMAX - 1);
 
-    assert_eq!(ts!(0x1_0000_0000_0000_0000).to_usize(), usize::MAX);
-    assert_eq!(ts!(0x1_0000_0000_0000_0001).to_usize(), usize::MAX);
+    assert_eq!(ts!(0x1_0000_0000_0000_0000).to_usize(), UMAX);
+    assert_eq!(ts!(0x1_0000_0000_0000_0001).to_usize(), UMAX);
 }
 
 #[test]
 #[cfg(target_pointer_width = "32")]
 fn to_usize() {
-    assert_eq!(same(ts!(0xFFFF_FFFF)), usize::MAX);
-    assert_eq!(same(ts!(0xFFFF_FFFE)), usize::MAX - 1);
+    assert_eq!(same(ts!(0xFFFF_FFFF)), UMAX);
+    assert_eq!(same(ts!(0xFFFF_FFFE)), UMAX - 1);
 
-    assert_eq!(ts!(0x1_0000_0000).to_usize(), usize::MAX);
-    assert_eq!(ts!(0x1_0000_0001).to_usize(), usize::MAX);
+    assert_eq!(ts!(0x1_0000_0000).to_usize(), UMAX);
+    assert_eq!(ts!(0x1_0000_0001).to_usize(), UMAX);
 }
 
 #[test]
 #[cfg(target_pointer_width = "16")]
 fn to_usize() {
-    assert_eq!(same(ts!(0xFFFF)), usize::MAX);
-    assert_eq!(same(ts!(0xFFFE)), usize::MAX - 1);
+    assert_eq!(same(ts!(0xFFFF)), UMAX);
+    assert_eq!(same(ts!(0xFFFE)), UMAX - 1);
 
-    assert_eq!(ts!(0x1_0000).to_usize(), usize::MAX);
-    assert_eq!(ts!(0x1_0001).to_usize(), usize::MAX);
+    assert_eq!(ts!(0x1_0000).to_usize(), UMAX);
+    assert_eq!(ts!(0x1_0001).to_usize(), UMAX);
 }
