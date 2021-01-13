@@ -24,7 +24,7 @@ jobs:
         cd "${{github.workspace}}/tstr_proc_macros/"
         cargo test
 
-        cd "${{github.workspace}}/const_format/"
+        cd "${{github.workspace}}/tstr/"
         cargo test --features "for_examples"
         cargo test --features "for_examples use_syn"
 
@@ -36,6 +36,6 @@ jobs:
         rustup override set ${{ matrix.rust }}
         cargo update
           
-        cd "${{github.workspace}}/const_format/"
+        cd "${{github.workspace}}/tstr/"
         cargo test --features "for_examples nightly_const_generics"
         cargo test --features "for_examples use_syn nightly_const_generics"

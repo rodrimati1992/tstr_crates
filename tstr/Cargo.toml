@@ -1,10 +1,11 @@
 [package]
 name = "tstr"
-version = "0.1.0"
+version = "0.1.1"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 edition = "2018"
 license = "Zlib"
 description = "Type-level strings"
+readme="../readme.md"
 documentation = "https://docs.rs/tstr_proc_macros/"
 keywords = []
 categories = ["no-std"]
