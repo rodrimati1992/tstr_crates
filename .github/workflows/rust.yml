@@ -1,0 +1,41 @@
+name: Rust
+
+on: [push, pull_request]
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      max-parallel: 2
+      matrix:
+        rust: [stable, beta, nightly, 1.40.0]
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: ci-all-versions
+      run: |
+        rustup override set ${{ matrix.rust }}
+        cargo update
+          
+        cd "${{github.workspace}}/tstr_proc_macros/"
+        cargo test
+
+        cd "${{github.workspace}}/const_format/"
+        cargo test --features "for_examples"
+        cargo test --features "for_examples use_syn"
+
+
+    - uses: actions/checkout@v2
+    - name: ci-nighly
+      if: ${{ matrix.rust == 'nightly' }}
+      run: |
+        rustup override set ${{ matrix.rust }}
+        cargo update
+          
+        cd "${{github.workspace}}/const_format/"
+        cargo test --features "for_examples nightly_const_generics"
+        cargo test --features "for_examples use_syn nightly_const_generics"
