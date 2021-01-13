@@ -17,7 +17,11 @@ impl Parse for Inputs {
         let lookahead = input.lookahead1();
         let (string, span) = if lookahead.peek(syn::Ident::peek_any) {
             let ident = input.parse::<syn::Ident>()?;
-            (ident.to_string(), ident.span())
+            let mut value = ident.to_string();
+            if value.starts_with("r#") {
+                value.drain(..2);
+            }
+            (value, ident.span())
         } else if lookahead.peek(LitStr) {
             let lit = input.parse::<LitStr>()?;
             (lit.value(), lit.span())
