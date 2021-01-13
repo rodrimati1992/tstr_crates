@@ -1,4 +1,4 @@
-[![Rust](https://github.com/rodrimati1992/tstr_crates/workflows/Rust/badge.svg)](https://github.com/rodrimati1992/tstr_crates/actions)
+[![Rust](https://github.com/rodrimati1992/tstr/workflows/Rust/badge.svg)](https://github.com/rodrimati1992/tstr_crates/actions)
 [![crates-io](https://img.shields.io/crates/v/tstr.svg)](https://crates.io/crates/tstr)
 [![api-docs](https://docs.rs/tstr/badge.svg)](https://docs.rs/tstr/*)
 
