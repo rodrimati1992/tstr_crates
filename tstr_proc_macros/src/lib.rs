@@ -33,52 +33,77 @@ pub fn __ts_impl(input_tokens: proc_macro::TokenStream) -> proc_macro::TokenStre
     match parsed {
         Ok(Inputs {
             crate_path,
-            string,
-            span,
+            strings,
         }) => {
             let mut out = TokenStream::new();
-            out.extend(crate_path.clone());
-            out.extend(colon2_token(span));
-            out.extend(ident_token("TStr", span));
-            out.extend(punct_token('<', span));
-
-            out.extend(crate_path.clone());
-            out.extend(colon2_token(span));
-            out.extend(ident_token("__", span));
-
-            out.extend(punct_token('<', span));
-            #[cfg(not(feature = "const_generics"))]
-            {
-                const CHUNK_SIZE: usize = 8;
-                let tt = paren(span, |out| {
-                    let string = string.as_bytes();
-                    if string.len() < CHUNK_SIZE {
-                        write_bytes(out, string, &crate_path, span)
-                    } else {
-                        for chunk in string.chunks(CHUNK_SIZE) {
-                            let tt = paren(span, |out| {
-                                write_bytes(out, chunk, &crate_path, span);
-                            });
-                            out.extend(iter::once(tt));
-                            out.extend(punct_token(',', span));
-                        }
+            if strings.len() == 1 {
+                output_tstr(&crate_path, &strings[0], &mut out);
+            } else {
+                let tt = paren(Span::call_site(), |out| {
+                    for tstr in &strings {
+                        output_tstr(&crate_path, tstr, out);
+                        out.extend(punct_token(',', tstr.span));
                     }
                 });
                 out.extend(iter::once(tt));
             }
-            #[cfg(feature = "const_generics")]
-            {
-                let lit = Literal::string(&string);
-                out.extend(iter::once(TokenTree::from(lit)));
-            }
-            out.extend(punct_token('>', span));
-            out.extend(punct_token('>', span));
-            // panic!("{}",out)
             out
         }
         Err(e) => e.into_compile_error(),
     }
     .into()
+}
+
+fn output_tstr(crate_path: &TokenStream, tstr: &TStr, out: &mut TokenStream) {
+    let span = tstr.span;
+    out.extend(crate_path.clone());
+    out.extend(colon2_token(span));
+    out.extend(ident_token("TStr", span));
+    out.extend(punct_token('<', span));
+
+    out.extend(crate_path.clone());
+    out.extend(colon2_token(span));
+    out.extend(ident_token("__", span));
+
+    out.extend(punct_token('<', span));
+
+    output_tstr_param(crate_path, tstr, out);
+
+    out.extend(punct_token('>', span));
+    out.extend(punct_token('>', span));
+}
+
+#[cfg(not(feature = "const_generics"))]
+fn output_tstr_param(crate_path: &TokenStream, tstr: &TStr, out: &mut TokenStream) {
+    let string = tstr.string.as_str();
+    let span = tstr.span;
+
+    const CHUNK_SIZE: usize = 8;
+    let tt = paren(span, |out| {
+        let string = string.as_bytes();
+        if string.len() < CHUNK_SIZE {
+            write_bytes(out, string, &crate_path, span)
+        } else {
+            for chunk in string.chunks(CHUNK_SIZE) {
+                let tt = paren(span, |out| {
+                    write_bytes(out, chunk, &crate_path, span);
+                });
+                out.extend(iter::once(tt));
+                out.extend(punct_token(',', span));
+            }
+        }
+    });
+    out.extend(iter::once(tt));
+}
+
+#[cfg(feature = "const_generics")]
+fn output_tstr_param(_crate_path: &TokenStream, tstr: &TStr, out: &mut TokenStream) {
+    let string = tstr.string.as_str();
+    let span = tstr.span;
+
+    let mut lit = Literal::string(&string);
+    lit.set_span(span);
+    out.extend(iter::once(TokenTree::from(lit)));
 }
 
 fn ident_token(ident: &str, span: Span) -> Once<TokenTree> {
@@ -98,7 +123,6 @@ fn colon2_token(span: Span) -> TokenStream {
     TokenStream::from_iter(vec![TokenTree::from(token.clone()), TokenTree::from(token)])
 }
 
-#[cfg(any(not(feature = "const_generics"), not(feature = "syn_")))]
 fn paren<F>(span: Span, f: F) -> TokenTree
 where
     F: FnOnce(&mut TokenStream),
@@ -122,6 +146,10 @@ fn write_bytes(ts: &mut TokenStream, string: &[u8], crate_path: &TokenStream, sp
 
 struct Inputs {
     crate_path: TokenStream,
+    strings: Vec<TStr>,
+}
+
+struct TStr {
     string: String,
     span: Span,
 }

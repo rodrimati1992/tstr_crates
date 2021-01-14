@@ -3,38 +3,7 @@ use std::iter::once;
 #[allow(unused_imports)]
 use proc_macro::{Delimiter, Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 
-use super::Inputs;
-
-/*
-impl Parse for Inputs {
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
-        let content;
-        let _ = parenthesized!(content in input);
-
-        let crate_path = content.parse::<proc_macro2::TokenStream>()?;
-
-        let lookahead = input.lookahead1();
-        let (string, span) = if lookahead.peek(syn::Ident::peek_any) {
-            let ident = input.parse::<syn::Ident>()?;
-            (ident.to_string(), ident.span())
-        } else if lookahead.peek(LitStr) {
-            let lit = input.parse::<LitStr>()?;
-            (lit.value(), lit.span())
-        } else if lookahead.peek(LitInt) {
-            let lit = input.parse::<LitInt>()?;
-            (lit.base10_digits().to_string(), lit.span())
-        } else {
-            return Err(lookahead.error());
-        };
-
-        Ok(Self {
-            crate_path,
-            string,
-            span,
-        })
-    }
-}
-*/
+use super::{Inputs, TStr};
 
 pub(crate) fn parse_inputs(ts: TokenStream) -> Result<Inputs, Error> {
     let mut iter = ts.into_iter();
@@ -57,41 +26,42 @@ pub(crate) fn parse_inputs(ts: TokenStream) -> Result<Inputs, Error> {
         }
     };
 
-    let (string, span) = parse_from_token_tree(iter.next())?;
-
     Ok(Inputs {
         crate_path,
-        string,
-        span,
+        strings: iter
+            .map(parse_str_from_token_tree)
+            .collect::<Result<_, _>>()?,
     })
 }
 
-fn parse_from_token_tree(tt: Option<TokenTree>) -> Result<(String, Span), Error> {
+fn parse_str_from_token_tree(tt: TokenTree) -> Result<TStr, Error> {
     const IN_MSG: &str = "Expected one of: string literal, integer literal, identifier";
     match tt {
-        Some(TokenTree::Ident(ident)) => {
+        TokenTree::Ident(ident) => {
             let mut string = ident.to_string();
             let trimmed = string.trim_start_matches("r#");
             if trimmed.len() != string.len() {
                 string = trimmed.to_string();
             }
 
-            Ok((string, ident.span()))
+            Ok(TStr {
+                string,
+                span: ident.span(),
+            })
         }
-        Some(TokenTree::Group(group)) if group.delimiter() == Delimiter::None => {
-            parse_from_token_tree(group.stream().into_iter().next())
+        TokenTree::Group(group) if group.delimiter() == Delimiter::None => {
+            parse_str_from_token_tree(group.stream().into_iter().next().unwrap())
         }
-        Some(TokenTree::Literal(lit)) => parse_literal(lit),
-        Some(x) => Err(Error::new(x.span(), &format!("{}\nFound: {:?}", IN_MSG, x))),
-        None => Err(Error::new(Span::call_site(), IN_MSG)),
+        TokenTree::Literal(lit) => parse_literal(lit),
+        x => Err(Error::new(x.span(), &format!("{}\nFound: {}", IN_MSG, x))),
     }
 }
 
-fn parse_literal(lit: Literal) -> Result<(String, Span), Error> {
+fn parse_literal(lit: Literal) -> Result<TStr, Error> {
     let span = lit.span();
     let string = lit.to_string();
 
-    let out = if string.starts_with('"') {
+    let string = if string.starts_with('"') {
         parse_string(&string, span)?
     } else if string.starts_with('r') {
         parse_raw_string(&string, span)?
@@ -99,7 +69,7 @@ fn parse_literal(lit: Literal) -> Result<(String, Span), Error> {
         parse_integer(&string, span)?
     };
 
-    Ok((out, span))
+    Ok(TStr { string, span })
 }
 
 fn parse_string<'a>(input: &'a str, span: Span) -> Result<String, Error> {

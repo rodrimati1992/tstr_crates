@@ -86,13 +86,24 @@ macro_rules! impl_for_const {
             out
         }
 
-        impl<const N: &'static str> Sealed for crate::TStr<crate::__<N>> {}
+        impl<const N: &'static str> Sealed for crate::__<N> {}
 
-        impl<const N: &'static str> ToUint for crate::TStr<crate::__<N>> {
+        impl<const N: &'static str> ToUint for crate::__<N> {
             const U128: u128 = str_to_u128(N);
             const DIGITS: u32 = N.len() as u32;
         }
     };
+}
+
+impl<T> Sealed for crate::TStr<T> where T: Sealed {}
+
+impl<T> ToUint for crate::TStr<T>
+where
+    T: ToUint,
+{
+    const USIZE: usize = T::USIZE;
+    const U128: u128 = T::U128;
+    const DIGITS: u32 = T::DIGITS;
 }
 
 #[cfg(feature = "const_generics")]

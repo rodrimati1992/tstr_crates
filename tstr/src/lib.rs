@@ -144,6 +144,7 @@
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "for_examples")))]
 pub mod for_examples;
 mod macros;
+mod make_tstr;
 mod to_uint;
 mod tstr_type;
 
@@ -153,7 +154,7 @@ extern crate self as tstr;
 #[doc(hidden)]
 pub use tstr_proc_macros::__ts_impl;
 
-pub use crate::{to_uint::ToUint, tstr_type::TStr};
+pub use crate::{make_tstr::MakeTStr, to_uint::ToUint, tstr_type::TStr};
 
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
 #[cfg(feature = "const_generics")]

@@ -1,14 +1,16 @@
-use crate::{TStr, __};
+use crate::__;
 
 use super::{Sealed, ToUint};
+
+pub trait PrivToU128 {
+    const U128: u128;
+    const DIGITS: u32;
+}
 
 macro_rules! impl_to_digit {
     ($($ty:ident = $val:tt,)*) => (
         $(
-            impl Sealed for crate::$ty {}
-
-            impl ToUint for crate::$ty {
-                const USIZE: usize = $val;
+            impl PrivToU128 for crate::$ty {
                 const U128: u128 = $val;
                 const DIGITS: u32 = 1;
             }
@@ -85,28 +87,22 @@ const fn ten_pow(power: usize) -> u128 {
     POW_TEN[power]
 }
 
-impl<T> Sealed for TStr<__<T>> where T: Sealed {}
+impl<T> Sealed for __<T> where T: PrivToU128 {}
 
-impl<T> ToUint for TStr<__<T>>
+impl<T> ToUint for __<T>
 where
-    T: ToUint,
+    T: PrivToU128,
 {
-    const USIZE: usize = T::USIZE;
     const U128: u128 = T::U128;
     const DIGITS: u32 = T::DIGITS;
 }
 
 macro_rules! tuple_impl {
     ($($ty:ident)*) => (
-        impl<$($ty,)*> Sealed for ($($ty,)*)
-        where
-            $($ty: Sealed,)*
-        {}
-
         #[doc(hidden)]
-        impl<$($ty,)*> ToUint for ($($ty,)*)
+        impl<$($ty,)*> PrivToU128 for ($($ty,)*)
         where
-            $($ty: ToUint,)*
+            $($ty: PrivToU128,)*
         {
             const U128: u128 = {
                 #[allow(unused_mut)]

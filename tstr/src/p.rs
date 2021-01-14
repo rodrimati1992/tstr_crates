@@ -7,7 +7,17 @@
 // `T:?Sized` parameter with `const STR:&'static str`.
 #[doc(hidden)]
 #[cfg(not(feature = "const_generics"))]
-pub struct __<T: ?Sized>(core::marker::PhantomData<T>);
+pub struct __<T>(core::marker::PhantomData<T>);
+
+#[cfg(not(feature = "const_generics"))]
+const _: () = {
+    impl<T> Copy for __<T> {}
+    impl<T> Clone for __<T> {
+        fn clone(&self) -> __<T> {
+            __(core::marker::PhantomData)
+        }
+    }
+};
 
 // Used inside structural in tests and impls.
 #[doc(hidden)]
@@ -27,6 +37,13 @@ macro_rules! declare_const_items {
         // `T:?Sized` parameter with `const STR:&'static str`.
         #[doc(hidden)]
         pub struct __<const S: &'static str>;
+
+        impl<const N: &'static str> Copy for __<N> {}
+        impl<const N: &'static str> Clone for __<N> {
+            fn clone(&self) -> Self {
+                __
+            }
+        }
     };
 }
 
@@ -76,13 +93,6 @@ macro_rules! create_unit_struct {
         $(
             #[doc(hidden)]
             pub struct $struct_;
-
-            impl Copy for $struct_{}
-            impl Clone for $struct_{
-                fn clone(&self) -> $struct_ {
-                    $struct_
-                }
-            }
 
             $(
                 #[doc(hidden)]

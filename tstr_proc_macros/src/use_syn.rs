@@ -5,7 +5,7 @@ use syn::{
     LitInt, LitStr,
 };
 
-use super::Inputs;
+use super::{Inputs, TStr};
 
 impl Parse for Inputs {
     fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
@@ -14,6 +14,20 @@ impl Parse for Inputs {
 
         let crate_path = content.parse::<proc_macro2::TokenStream>()?;
 
+        let mut strings = Vec::<TStr>::new();
+        while !input.is_empty() {
+            strings.push(input.parse()?);
+        }
+
+        Ok(Self {
+            crate_path,
+            strings,
+        })
+    }
+}
+
+impl Parse for TStr {
+    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
         let lookahead = input.lookahead1();
         let (string, span) = if lookahead.peek(syn::Ident::peek_any) {
             let ident = input.parse::<syn::Ident>()?;
@@ -31,11 +45,6 @@ impl Parse for Inputs {
         } else {
             return Err(lookahead.error());
         };
-
-        Ok(Self {
-            crate_path,
-            string,
-            span,
-        })
+        Ok(Self { string, span })
     }
 }
