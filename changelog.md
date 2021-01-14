@@ -1,3 +1,11 @@
+### 0.1.2
+
+Added support for passing multiple literals/identifiers in macros, outputting a tuple of TStrs.
+
+Changed `TStr<T>`s implementation of `ToUInt` to use the `T: ToUInt` bound, allowing easier use of `oUint` in generic functions that take a generic `TStr<T>` .
+
+Added `MakeTStr` trait to construct `TStr`s and tuples of them.
+
 ### 0.1.1
 
 Crated `tstr` crate, and `tstr_proc_macros` proc macro crates.

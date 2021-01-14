@@ -1,7 +1,10 @@
 use crate::TStr;
 
-/// A type that is trivially constructible
-pub trait MakeTStr {
+/// For constructing [`TStr`]s or collections of them.
+///
+/// [`TStr`]: ./struct.TStr.html
+pub trait MakeTStr: Copy {
+    /// Gets a value of this type
     const MAKE: Self;
 }
 
