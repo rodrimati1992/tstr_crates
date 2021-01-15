@@ -1,6 +1,6 @@
 [package]
 name = "tstr"
-version = "0.1.2"
+version = "0.2.0"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 edition = "2018"
 license = "Zlib"
@@ -18,8 +18,11 @@ include = [
 ]
 
 [features]
-const_generics = ["tstr_proc_macros/const_generics"]
+min_const_generics = ["tstr_proc_macros/min_const_generics"]
+
+const_generics = ["tstr_proc_macros/const_generics", "min_const_generics"]
 nightly_const_generics = ["const_generics"]
+
 use_syn = ["tstr_proc_macros/syn_"]
 for_examples = []
 
@@ -27,7 +30,7 @@ for_examples = []
 docsrs = ["for_examples"]
 
 [dependencies.tstr_proc_macros]
-version = "0.1.0"
+version = "0.2.0"
 path = "../tstr_proc_macros"
 
 [package.metadata.docs.rs]

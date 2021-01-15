@@ -160,7 +160,7 @@ fn parse_string<'a>(input: &'a str, span: Span) -> Result<String, Error> {
             b'\'' => '\'',
             b'"' => '"',
             b'\r' | b'\n' => {
-                rem = rem[2..].trim_start();
+                rem = rem.trim_start();
                 continue;
             }
             _ => return Err(make_err(rem, "invalid escape")),

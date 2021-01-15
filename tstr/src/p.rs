@@ -1,47 +1,48 @@
 // This file defines many types that are `#[doc(hidden)] pub`
 // and required not to be used by users.
 
-/// This type must not be used by name outside of `structural` macros.
-// `TStr` takes this as a type parameter so that
-// this library can start using const generics in the future by replacing the
-// `T:?Sized` parameter with `const STR:&'static str`.
-#[doc(hidden)]
-#[cfg(not(feature = "const_generics"))]
-pub struct __<T>(core::marker::PhantomData<T>);
-
-#[cfg(not(feature = "const_generics"))]
-const _: () = {
-    impl<T> Copy for __<T> {}
-    impl<T> Clone for __<T> {
-        fn clone(&self) -> __<T> {
-            __(core::marker::PhantomData)
-        }
+#[cfg(all(feature = "min_const_generics", not(feature = "const_generics")))]
+macro_rules! declare_min_const {
+    (
+        [$($chars_structs:ident [$($chars:ident),*],)*]
+    )=>{
+        $(
+            #[doc(hidden)]
+            pub struct $chars_structs<$(const $chars: char,)*>;
+        )*
     }
-};
+}
 
-// Used inside structural in tests and impls.
-#[doc(hidden)]
-#[cfg(not(feature = "const_generics"))]
-pub(crate) type __TStrPriv<T> = TStr<__<T>>;
+#[cfg(all(feature = "min_const_generics", not(feature = "const_generics")))]
+declare_min_const!{
+    [
+        __a[A],
+        __b[A,B],
+        __c[A,B,C],
+        __d[A,B,C,D],
+        __e[A,B,C,D,E],
+        __f[A,B,C,D,E,F],
+        __g[A,B,C,D,E,F,G],
+        __[A,B,C,D,E,F,G,H],
+    ]
+}
+
 
 // macros can contain arbitrary syntax,
 // which allows this to be defined in this file even if Rust stops parsing `const IDENT:Foo`
 #[cfg(feature = "const_generics")]
 macro_rules! declare_const_items {
     () => {
-        #[doc(hidden)]
-        pub(crate) type __TStrPriv<const S: &'static str> = TStr<__<S>>;
-
         // `TStr` takes this as a type parameter so that
         // this library can start using const generics in the future by replacing the
         // `T:?Sized` parameter with `const STR:&'static str`.
         #[doc(hidden)]
-        pub struct __<const S: &'static str>;
+        pub struct ___<const S: &'static str>;
 
-        impl<const N: &'static str> Copy for __<N> {}
-        impl<const N: &'static str> Clone for __<N> {
+        impl<const N: &'static str> Copy for ___<N> {}
+        impl<const N: &'static str> Clone for ___<N> {
             fn clone(&self) -> Self {
-                __
+                ___
             }
         }
     };
@@ -70,7 +71,7 @@ fn main() {
         .map(|b|{
             let c=b as char;
             if (c.is_alphanumeric() || c=='_') && b<128 {
-                format!("(__{1},__0x{0:02X}),",b,b as char)
+                format!("(___{1},__0x{0:02X}),",b,b as char)
             }else{
                 format!("(__0x{0:02X}),",b)
             }
@@ -87,7 +88,7 @@ fn main() {
 
 */
 
-#[cfg(not(feature = "const_generics"))]
+#[cfg(not(feature = "min_const_generics"))]
 macro_rules! create_unit_struct {
     ($( ($struct_:ident $(,$alias:ident)? ) ),* $(,)*) => {
         $(
@@ -102,7 +103,7 @@ macro_rules! create_unit_struct {
     }
 }
 
-#[cfg(not(feature = "const_generics"))]
+#[cfg(not(feature = "min_const_generics"))]
 create_unit_struct! {
     (__0x00),(__0x01),(__0x02),(__0x03),(__0x04),(__0x05),
     (__0x06),(__0x07),(__0x08),(__0x09),(__0x0A),(__0x0B),
@@ -119,7 +120,7 @@ create_unit_struct! {
     (__H,__0x48),(__I,__0x49),(__J,__0x4A),(__K,__0x4B),(__L,__0x4C),(__M,__0x4D),
     (__N,__0x4E),(__O,__0x4F),(__P,__0x50),(__Q,__0x51),(__R,__0x52),(__S,__0x53),
     (__T,__0x54),(__U,__0x55),(__V,__0x56),(__W,__0x57),(__X,__0x58),(__Y,__0x59),
-    (__Z,__0x5A),(__0x5B),(__0x5C),(__0x5D),(__0x5E),(___,__0x5F),
+    (__Z,__0x5A),(__0x5B),(__0x5C),(__0x5D),(__0x5E),(____,__0x5F),
     (__0x60),(__a,__0x61),(__b,__0x62),(__c,__0x63),(__d,__0x64),(__e,__0x65),
     (__f,__0x66),(__g,__0x67),(__h,__0x68),(__i,__0x69),(__j,__0x6A),(__k,__0x6B),
     (__l,__0x6C),(__m,__0x6D),(__n,__0x6E),(__o,__0x6F),(__p,__0x70),(__q,__0x71),

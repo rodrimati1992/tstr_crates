@@ -154,7 +154,7 @@ macro_rules! const_generics_using {
         }
 
         #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
-        impl<const S: &'static str> StrValue for TStr<crate::__<S>> {
+        impl<const S: &'static str> StrValue for TStr<crate::___<S>> {
             const STR: &'static str = S;
         }
 

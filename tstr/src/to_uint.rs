@@ -34,14 +34,11 @@ use sealed::Sealed;
 /// ```
 ///
 /// [`TStr`]: ./struct.TStr.html
-pub trait ToUint: Copy {
+pub trait ToUint: Sized {
     /// The `usize` value of the type.
     ///
     /// By default this value is a saturated cast from `Self::U128`.
-    const USIZE: usize = {
-        const MAXU: u128 = usize::max_value() as u128;
-        [Self::U128, MAXU][(Self::U128 > MAXU) as usize] as usize
-    };
+    const USIZE: usize = u128_as_usize(Self::U128);
 
     /// The `u128` value of the type.
     const U128: u128;
@@ -86,9 +83,9 @@ macro_rules! impl_for_const {
             out
         }
 
-        impl<const N: &'static str> Sealed for crate::__<N> {}
+        impl<const N: &'static str> Sealed for crate::___<N> {}
 
-        impl<const N: &'static str> ToUint for crate::__<N> {
+        impl<const N: &'static str> ToUint for crate::___<N> {
             const U128: u128 = str_to_u128(N);
             const DIGITS: u32 = N.len() as u32;
         }
@@ -101,7 +98,8 @@ impl<T> ToUint for crate::TStr<T>
 where
     T: ToUint,
 {
-    const USIZE: usize = T::USIZE;
+    // Intentionally not setting this.
+    // const USIZE: usize = T::USIZE;
     const U128: u128 = T::U128;
     const DIGITS: u32 = T::DIGITS;
 }
@@ -111,3 +109,8 @@ impl_for_const! {}
 
 #[cfg(not(feature = "const_generics"))]
 mod impl_no_const_generics;
+
+const fn u128_as_usize(n: u128) -> usize {
+    const MAXU: u128 = usize::max_value() as u128;
+    [Self::U128, MAXU][(Self::U128 > MAXU) as usize] as usize
+}

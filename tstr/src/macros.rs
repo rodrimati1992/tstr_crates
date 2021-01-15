@@ -160,9 +160,11 @@ macro_rules! TS {
 /// [`TStr`]: ./struct.TStr.html
 #[macro_export]
 macro_rules! ts {
-    ($($expr:expr),* $(,)* ) => {
-        <$crate::__ts_impl!(($crate) $($expr)*) as $crate::MakeTStr>::MAKE
-    };
+    ($($expr:expr),* $(,)* ) => {{
+        let __look_at_the_notes__ =
+            <$crate::__ts_impl!(($crate) $($expr)*) as $crate::MakeTStr>::MAKE;
+        __look_at_the_notes__
+    }};
 }
 
 /// Declares `const` and `type` aliases for type-level strings.
