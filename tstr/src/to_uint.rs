@@ -112,5 +112,5 @@ mod impl_no_const_generics;
 
 const fn u128_as_usize(n: u128) -> usize {
     const MAXU: u128 = usize::max_value() as u128;
-    [Self::U128, MAXU][(Self::U128 > MAXU) as usize] as usize
+    [n, MAXU][(n > MAXU) as usize] as usize
 }
