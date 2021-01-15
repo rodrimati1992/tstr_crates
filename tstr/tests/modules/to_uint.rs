@@ -1,6 +1,6 @@
 use tstr::{ts, ToUint};
 
-fn same<T: ToUint>(val: T) -> usize {
+fn same<T: ToUint + Copy>(val: T) -> usize {
     let v128 = val.to_u128();
     let vusize = val.to_usize();
     assert_eq!(vusize as u128, v128);
