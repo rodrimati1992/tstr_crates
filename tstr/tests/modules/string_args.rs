@@ -24,6 +24,15 @@ fn foo(){
 }
 */
 
+// Testing empty strings
+test_case!("", (), (), "");
+
+// Testing single char strings
+test_case!("b", (__b,), __a<'b'>, "b");
+
+// Testing two char strings
+test_case!("ab", (__a, __b), __b<'a','b'>, "ab");
+
 #[cfg(not(feature = "min_const_generics"))]
 #[allow(dead_code)]
 type AllCharLengths = (

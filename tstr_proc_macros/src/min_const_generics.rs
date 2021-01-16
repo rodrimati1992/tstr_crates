@@ -1,10 +1,23 @@
-#[cfg(all(feature = "min_const_generics", not(feature = "const_generics")))]
-fn output_tstr_param(crate_path: &TokenStream, tstr: &TStr, out: &mut TokenStream) {
+use std::iter;
+
+#[allow(unused_imports)]
+use crate::used_proc_macro::{
+    Delimiter, Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree,
+};
+
+use crate::{
+    utils::{char_token, colon2_token, ident_token, paren, punct_token},
+    TStr,
+};
+
+pub(crate) fn output_tstr_param(crate_path: &TokenStream, tstr: &TStr, out: &mut TokenStream) {
     let string = tstr.string.chars().collect::<Vec<char>>();
     let span = tstr.span;
-    
+
     const CHUNK_SIZE: usize = 8;
-    if string.len() < CHUNK_SIZE {
+    if string.len() == 0 {
+        out.extend(std::iter::once(paren(span, |_| ())));
+    } else if string.len() < CHUNK_SIZE {
         write_chars(out, &string, &crate_path, span)
     } else {
         let tt = paren(span, |out| {
@@ -17,20 +30,8 @@ fn output_tstr_param(crate_path: &TokenStream, tstr: &TStr, out: &mut TokenStrea
     }
 }
 
-
-#[cfg(all(feature = "min_const_generics", not(feature = "const_generics")))]
 fn write_chars(ts: &mut TokenStream, string: &[char], crate_path: &TokenStream, span: Span) {
-    const TY: &[&str; 9] = &[
-        "NO THIS SHOULDN'T HAPPEN",
-        "__a",
-        "__b",
-        "__c",
-        "__d",
-        "__e",
-        "__f",
-        "__g",
-        "__",
-    ];
+    const TY: &[&str; 9] = &["", "__a", "__b", "__c", "__d", "__e", "__f", "__g", "__"];
 
     ts.extend(crate_path.clone());
     ts.extend(colon2_token(span));
