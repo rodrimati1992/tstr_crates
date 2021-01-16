@@ -6,12 +6,18 @@
 ///
 /// - String literals (eg: `TS!("hello")`, `TS!(r#"world"#)`)
 ///
-/// - Integes (eg: `TS!(0)`, `TS!(100)`), stringifying the integer.
+/// - Integes (eg: `TS!(0)`, `TS!(100)`):
+/// converting the integer to decimal, then stringifying it.
 ///
-/// - Single identifiers (eg: `TS!(foo)`, `TS!(bar)`), stringifying the identifier.
+/// - Single identifiers (eg: `TS!(foo)`, `TS!(bar)`): stringifying the identifier.
 ///
-/// - A comma separated list of string/integer literals, and/or identifiers
+/// - A comma separated list of the other valid arguments to this macro
 /// (eg: `TS!(foo, "bar", 0)`), this evaluates to a tuple of `TStr`s.
+///
+/// - `concat!(...)`-like syntax: concatenates its arguments,
+/// accepting the same arguments as this macro.
+///
+/// - `stringify!(...)`-like syntax: stringifies its arguments.
 ///
 /// # Examples
 ///
@@ -91,6 +97,9 @@
 ///
 /// type Tup = TS!(foo, 1, "bar"); // equivalent to `(TS!(foo), TS!(1), TS!(bar))`
 ///
+/// // Equivalent to TS!("foo4bar200")
+/// type Conc = TS!(concat!(foo, 0b100, "bar", 200));
+///
 /// ```
 ///
 /// [`TStr`]: ./struct.TStr.html
@@ -105,16 +114,7 @@ macro_rules! TS {
 ///
 /// # Arguments
 ///
-/// You can use any of these as arguments:
-///
-/// - String literals (eg: `ts!("hello")`, `ts!(r#"world"#)`)
-///
-/// - Integes (eg: `ts!(0)`, `ts!(100)`), stringifying the integer.
-///
-/// - Single identifiers (eg: `ts!(foo)`, `ts!(bar)`), stringifying the identifier.
-///
-/// - A comma separated list of string/integer literals, and/or identifiers
-/// (eg: `ts!(foo, "bar", 0)`), this evaluates to a tuple of `TStr`s.
+/// You can use anything that the [`tstr::TS`] macro accepts
 ///
 /// # Examples
 ///
@@ -154,10 +154,15 @@ macro_rules! TS {
 /// let hundredd = ts!(0b1100100);  // equivalent to `ts!("100")`
 ///
 /// let tup = ts!(foo, 1, "bar"); // equivalent to `(ts!(foo), ts!(1), ts!(bar))`
+///
+/// // Equivalent to ts!("foo4bar200")
+/// let conc = ts!(concat!(foo, 0b100, "bar", 200));
+/// # const _: tstr::TS!("foo4bar200") = ts!(concat!(foo, 0b100, "bar", 200));
 /// ```
 ///
 ///
 /// [`TStr`]: ./struct.TStr.html
+/// [`tstr::TS`]: ./macro.TS.html#arguments
 #[macro_export]
 macro_rules! ts {
     ($($expr:expr),* $(,)* ) => {{
@@ -171,7 +176,7 @@ macro_rules! ts {
 ///
 /// # String Arguments
 ///
-/// You can alias either, one type-level string, or a tuple of type-level strings
+/// You can alias either one type-level string, or a tuple of type-level strings
 ///
 /// ```rust
 /// tstr::alias!{
