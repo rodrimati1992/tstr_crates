@@ -6,8 +6,6 @@ use sealed::Sealed;
 
 /// Converts a [`TStr`] to unsigned integers.
 ///
-/// This trait is sealed, so it can't be implemented outside the `tstr` crate.
-///
 /// # Example
 ///
 /// ```rust

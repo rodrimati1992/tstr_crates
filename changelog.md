@@ -1,6 +1,10 @@
-### 0.1.2
+### 0.2.0
 
 Added support for passing multiple literals/identifiers in macros, outputting a tuple of TStrs.
+
+Added `"min_const_generics"` feature, which changes the representation of type-level strings to use many `char` const parameters.
+
+Breaking change: removed the `Copy` supertrait of `ToUint`.
 
 Changed `TStr<T>`s implementation of `ToUInt` to use the `T: ToUInt` bound, allowing easier use of `oUint` in generic functions that take a generic `TStr<T>` .
 
