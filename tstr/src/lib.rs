@@ -108,7 +108,7 @@
 //! # Cargo features
 //!
 //! - `"use_syn"`:
-//! Changes how literal passed to the macros of this crate are parsed to use the `syn` crate.
+//! Changes how literals passed to the macros of this crate are parsed to use the `syn` crate.
 //! Use this if there is some literal that could not be
 //! parsed but is a valid str/integer literal.
 //!
@@ -166,3 +166,7 @@ pub use crate::{make_tstr::MakeTStr, to_uint::ToUint, tstr_type::TStr};
 pub use crate::tstr_type::StrValue;
 
 include! {"./p.rs"}
+
+const _: () = {
+    ts!(100000000);
+};

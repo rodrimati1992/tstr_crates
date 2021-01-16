@@ -1,10 +1,7 @@
 use std::iter;
 
-#[allow(unused_imports)]
 use crate::{
-    used_proc_macro::{
-        Delimiter, Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree,
-    },
+    used_proc_macro::{Span, TokenStream},
     utils::{colon2_token, ident_token, paren, punct_token},
     TStr,
 };
@@ -12,32 +9,26 @@ use crate::{
 pub(super) fn output_tstr_param(crate_path: &TokenStream, tstr: &TStr, out: &mut TokenStream) {
     let string = tstr.string.as_str();
     let span = tstr.span;
+    let string = string.as_bytes();
 
-    const CHUNK_SIZE: usize = 8;
-    let tt = paren(span, |out| {
-        let string = string.as_bytes();
-        if string.len() < CHUNK_SIZE {
-            write_bytes(out, string, &crate_path, span)
-        } else {
-            for chunk in string.chunks(CHUNK_SIZE) {
-                let tt = paren(span, |out| {
-                    write_bytes(out, chunk, &crate_path, span);
-                });
-                out.extend(iter::once(tt));
-                out.extend(punct_token(',', span));
-            }
-        }
-    });
-    out.extend(iter::once(tt));
+    out.extend(crate::nested_tuple_compute::compute(
+        string,
+        span,
+        &mut |string, ts| write_bytes(ts, string, crate_path, span),
+    ));
 }
 
 fn write_bytes(ts: &mut TokenStream, string: &[u8], crate_path: &TokenStream, span: Span) {
-    for &b in string {
-        ts.extend(crate_path.clone());
-        ts.extend(colon2_token(span));
-        ts.extend(ident_token(BYTE_NAME[b as usize], span));
-        ts.extend(punct_token(',', span));
-    }
+    let tt = paren(span, |ts| {
+        for &b in string {
+            ts.extend(crate_path.clone());
+            ts.extend(colon2_token(span));
+            ts.extend(ident_token(BYTE_NAME[b as usize], span));
+            ts.extend(punct_token(',', span));
+        }
+    });
+
+    ts.extend(iter::once(tt));
 }
 
 const BYTE_NAME: [&str; 256] = [

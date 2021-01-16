@@ -6,6 +6,8 @@ mod modules {
 
     mod concat_args;
 
+    mod long_strings;
+
     mod string_args;
 
     mod other_args;

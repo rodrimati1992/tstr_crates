@@ -65,3 +65,7 @@ test_case! {
     __e<'a', 's', 'y', 'n', 'c'>,
     "async",
 }
+
+// Just making sure that this module is compiled.
+#[test]
+fn testing_other_args() {}

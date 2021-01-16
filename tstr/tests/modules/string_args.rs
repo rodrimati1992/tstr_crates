@@ -1,11 +1,5 @@
 use tstr::*;
 
-macro_rules! str_test_case {
-    ($string:tt, $tuple:ty $(,)*) => {
-        test_case!($string, $tuple, $tuple, $string);
-    };
-}
-
 // Use this to generate the tuple for a particular string:
 /*
 fn foo(){
@@ -182,84 +176,86 @@ type IntermittentUnicodeEscapes = (
 #[allow(dead_code)]
 type IntermittentUnicodeEscapesRaw = (
     (
-        __0x5C,
-        __0x75,
-        __0x7B,
-        __0x32,
-        __0x44,
-        __0x7D,
-        __0x5C,
-        __0x75,
-    ),
-    (
-        __0x7B,
-        __0x36,
-        __0x31,
-        __0x7D,
-        __0x41,
-        __0x5C,
-        __0x75,
-        __0x7B,
-    ),
-    (
-        __0x33,
-        __0x43,
-        __0x7D,
-        __0x3E,
-        __0x3F,
-        __0x7B,
-        __0x5C,
-        __0x75,
-    ),
-    (
-        __0x7B,
-        __0x37,
-        __0x44,
-        __0x7D,
-        __0xC2,
-        __0xA2,
-        __0xC2,
-        __0xA4,
-    ),
-    (
-        __0xC2,
-        __0xA7,
-        __0xC2,
-        __0xA9,
-        __0xDF,
-        __0xA8,
-        __0xE0,
-        __0xA1,
-    ),
-    (
-        __0x95,
-        __0xE0,
-        __0xA7,
-        __0xB0,
-        __0x5C,
-        __0x75,
-        __0x7B,
-        __0x39,
-    ),
-    (
-        __0x46,
-        __0x30,
-        __0x7D,
-        __0xE2,
-        __0x93,
-        __0xA9,
-        __0xE8,
-        __0x93,
-    ),
-    (
-        __0xAD,
-        __0xF0,
-        __0x90,
-        __0x82,
-        __0xB6,
-        __0xF0,
-        __0xA3,
-        __0x8F,
+        (
+            __0x5C,
+            __0x75,
+            __0x7B,
+            __0x32,
+            __0x44,
+            __0x7D,
+            __0x5C,
+            __0x75,
+        ),
+        (
+            __0x7B,
+            __0x36,
+            __0x31,
+            __0x7D,
+            __0x41,
+            __0x5C,
+            __0x75,
+            __0x7B,
+        ),
+        (
+            __0x33,
+            __0x43,
+            __0x7D,
+            __0x3E,
+            __0x3F,
+            __0x7B,
+            __0x5C,
+            __0x75,
+        ),
+        (
+            __0x7B,
+            __0x37,
+            __0x44,
+            __0x7D,
+            __0xC2,
+            __0xA2,
+            __0xC2,
+            __0xA4,
+        ),
+        (
+            __0xC2,
+            __0xA7,
+            __0xC2,
+            __0xA9,
+            __0xDF,
+            __0xA8,
+            __0xE0,
+            __0xA1,
+        ),
+        (
+            __0x95,
+            __0xE0,
+            __0xA7,
+            __0xB0,
+            __0x5C,
+            __0x75,
+            __0x7B,
+            __0x39,
+        ),
+        (
+            __0x46,
+            __0x30,
+            __0x7D,
+            __0xE2,
+            __0x93,
+            __0xA9,
+            __0xE8,
+            __0x93,
+        ),
+        (
+            __0xAD,
+            __0xF0,
+            __0x90,
+            __0x82,
+            __0xB6,
+            __0xF0,
+            __0xA3,
+            __0x8F,
+        ),
     ),
     (__0xA6,),
 );
@@ -543,3 +539,7 @@ str_test_case! {r##""""##   , Quotes}
 
 str_test_case! {r##""#"##, QuoteHash}
 str_test_case! {r###""#"###, QuoteHash}
+
+// Just making sure that this module is compiled.
+#[test]
+fn testing_string_args() {}

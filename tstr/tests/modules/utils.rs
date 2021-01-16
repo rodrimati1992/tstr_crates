@@ -18,3 +18,9 @@ macro_rules! test_case {
         const _: tstr::TStr<$tytup> = ts!($input);
     };
 }
+
+macro_rules! str_test_case {
+    ($string:tt, $tuple:ty $(,)*) => {
+        test_case!($string, $tuple, $tuple, $string);
+    };
+}

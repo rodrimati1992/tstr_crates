@@ -19,6 +19,9 @@ mod use_syn;
 #[cfg(not(feature = "syn_"))]
 mod non_syn_parsing;
 
+#[cfg(not(feature = "const_generics"))]
+mod nested_tuple_compute;
+
 mod utils;
 
 #[cfg(all(feature = "min_const_generics", not(feature = "const_generics")))]
