@@ -3,41 +3,12 @@ use std::iter::once;
 #[allow(unused_imports)]
 use proc_macro::{Delimiter, Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 
-use super::Inputs;
+use proc_macro::token_stream::IntoIter as TSIterator;
 
-/*
-impl Parse for Inputs {
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
-        let content;
-        let _ = parenthesized!(content in input);
-
-        let crate_path = content.parse::<proc_macro2::TokenStream>()?;
-
-        let lookahead = input.lookahead1();
-        let (string, span) = if lookahead.peek(syn::Ident::peek_any) {
-            let ident = input.parse::<syn::Ident>()?;
-            (ident.to_string(), ident.span())
-        } else if lookahead.peek(LitStr) {
-            let lit = input.parse::<LitStr>()?;
-            (lit.value(), lit.span())
-        } else if lookahead.peek(LitInt) {
-            let lit = input.parse::<LitInt>()?;
-            (lit.base10_digits().to_string(), lit.span())
-        } else {
-            return Err(lookahead.error());
-        };
-
-        Ok(Self {
-            crate_path,
-            string,
-            span,
-        })
-    }
-}
-*/
+use super::{Inputs, TStr};
 
 pub(crate) fn parse_inputs(ts: TokenStream) -> Result<Inputs, Error> {
-    let mut iter = ts.into_iter();
+    let iter = &mut ts.into_iter();
 
     let crate_path = match iter.next() {
         Some(TokenTree::Group(group)) if group.delimiter() == Delimiter::Parenthesis => {
@@ -57,41 +28,80 @@ pub(crate) fn parse_inputs(ts: TokenStream) -> Result<Inputs, Error> {
         }
     };
 
-    let (string, span) = parse_from_token_tree(iter.next())?;
+    let mut strings = Vec::<TStr>::with_capacity(1);
+
+    while let Some(x) = parse_tstr(iter)? {
+        strings.push(x);
+    }
 
     Ok(Inputs {
         crate_path,
-        string,
-        span,
+        strings,
     })
 }
 
-fn parse_from_token_tree(tt: Option<TokenTree>) -> Result<(String, Span), Error> {
+fn parse_tstr(iter: &mut TSIterator) -> Result<Option<TStr>, Error> {
     const IN_MSG: &str = "Expected one of: string literal, integer literal, identifier";
-    match tt {
+    match iter.next() {
         Some(TokenTree::Ident(ident)) => {
             let mut string = ident.to_string();
-            let trimmed = string.trim_start_matches("r#");
-            if trimmed.len() != string.len() {
-                string = trimmed.to_string();
-            }
+            if string == "concat" {
+                let (span, ts) = parse_post_macro_name(iter)?;
 
-            Ok((string, ident.span()))
+                let mut string = String::new();
+                let iter = &mut ts.into_iter();
+
+                while let Some(tstr) = parse_tstr(iter)? {
+                    string.push_str(&tstr.string);
+
+                    if let sep @ Some(_) = iter.next() {
+                        assert_punct(sep, ',')?;
+                    }
+                }
+
+                Ok(Some(TStr { string, span }))
+            } else if string == "stringify" {
+                let (span, ts) = parse_post_macro_name(iter)?;
+
+                let string = ts.to_string();
+
+                Ok(Some(TStr { string, span }))
+            } else {
+                let trimmed = string.trim_start_matches("r#");
+                if trimmed.len() != string.len() {
+                    string = trimmed.to_string();
+                }
+
+                Ok(Some(TStr {
+                    string,
+                    span: ident.span(),
+                }))
+            }
         }
         Some(TokenTree::Group(group)) if group.delimiter() == Delimiter::None => {
-            parse_from_token_tree(group.stream().into_iter().next())
+            parse_tstr(&mut group.stream().into_iter())
         }
-        Some(TokenTree::Literal(lit)) => parse_literal(lit),
-        Some(x) => Err(Error::new(x.span(), &format!("{}\nFound: {:?}", IN_MSG, x))),
-        None => Err(Error::new(Span::call_site(), IN_MSG)),
+        Some(TokenTree::Literal(lit)) => parse_literal(lit).map(Some),
+        Some(x) => Err(Error::new(x.span(), &format!("{}\nFound: {}", IN_MSG, x))),
+        None => Ok(None),
     }
 }
 
-fn parse_literal(lit: Literal) -> Result<(String, Span), Error> {
+fn parse_post_macro_name(iter: &mut TSIterator) -> Result<(Span, TokenStream), Error> {
+    let bang_span = assert_punct(iter.next(), '!')?;
+    match iter.next() {
+        Some(TokenTree::Group(g)) if g.delimiter() == Delimiter::Parenthesis => {
+            Ok((g.span(), g.stream()))
+        }
+        _ => Err(Error::new(bang_span, "Expected `( ..... )` after `!`")),
+    }
+}
+
+fn parse_literal(lit: Literal) -> Result<TStr, Error> {
     let span = lit.span();
     let string = lit.to_string();
 
-    let out = if string.starts_with('"') {
+    let string = if string.starts_with('"') {
         parse_string(&string, span)?
     } else if string.starts_with('r') {
         parse_raw_string(&string, span)?
@@ -99,10 +109,10 @@ fn parse_literal(lit: Literal) -> Result<(String, Span), Error> {
         parse_integer(&string, span)?
     };
 
-    Ok((out, span))
+    Ok(TStr { string, span })
 }
 
-fn parse_string<'a>(input: &'a str, span: Span) -> Result<String, Error> {
+fn parse_string(input: &str, span: Span) -> Result<String, Error> {
     if !input.ends_with('"') {
         return Err(Error::new(
             span,
@@ -190,7 +200,7 @@ fn parse_string<'a>(input: &'a str, span: Span) -> Result<String, Error> {
             b'\'' => '\'',
             b'"' => '"',
             b'\r' | b'\n' => {
-                rem = rem[2..].trim_start();
+                rem = rem.trim_start();
                 continue;
             }
             _ => return Err(make_err(rem, "invalid escape")),
@@ -269,6 +279,17 @@ fn parse_integer(input: &str, span: Span) -> Result<String, Error> {
     .map(|i| i.to_string())
 }
 
+fn assert_punct(tt: Option<TokenTree>, c: char) -> Result<Span, Error> {
+    match tt {
+        Some(TokenTree::Punct(p)) if p.as_char() == c => Ok(p.span()),
+        Some(x) => Err(Error::new(
+            x.span(),
+            &format!("Expected `{}`, found `{}`", c, x),
+        )),
+        None => Err(Error::new(Span::call_site(), "Expected some token")),
+    }
+}
+
 pub(crate) struct Error {
     span: Span,
     message: String,
@@ -282,16 +303,16 @@ impl Error {
         }
     }
 
-    pub(crate) fn into_compile_error(&self) -> TokenStream {
+    pub(crate) fn to_compile_error(&self) -> TokenStream {
         let Error { ref message, span } = *self;
 
         let mut out = TokenStream::new();
 
-        out.extend(crate::ident_token("compile_error", span));
+        out.extend(crate::utils::ident_token("compile_error", span));
 
-        out.extend(crate::punct_token('!', span));
+        out.extend(crate::utils::punct_token('!', span));
 
-        let msg_paren = crate::paren(span, |ts| {
+        let msg_paren = crate::utils::paren(span, |ts| {
             let mut msg = Literal::string(message);
             msg.set_span(self.span);
             let msg = TokenTree::from(msg);

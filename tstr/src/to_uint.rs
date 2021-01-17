@@ -6,8 +6,6 @@ use sealed::Sealed;
 
 /// Converts a [`TStr`] to unsigned integers.
 ///
-/// This trait is sealed, so it can't be implemented outside the `tstr` crate.
-///
 /// # Example
 ///
 /// ```rust
@@ -34,14 +32,11 @@ use sealed::Sealed;
 /// ```
 ///
 /// [`TStr`]: ./struct.TStr.html
-pub trait ToUint: Copy {
+pub trait ToUint: Sized {
     /// The `usize` value of the type.
     ///
     /// By default this value is a saturated cast from `Self::U128`.
-    const USIZE: usize = {
-        const MAXU: u128 = usize::max_value() as u128;
-        [Self::U128, MAXU][(Self::U128 > MAXU) as usize] as usize
-    };
+    const USIZE: usize = u128_as_usize(Self::U128);
 
     /// The `u128` value of the type.
     const U128: u128;
@@ -52,12 +47,12 @@ pub trait ToUint: Copy {
     /// Gets the usize value of this type
     ///
     /// By default this value is a saturated cast from `Self::U128`.
-    fn to_usize(self) -> usize {
+    fn to_usize(&self) -> usize {
         Self::USIZE
     }
 
     /// Gets the u128 value of this type
-    fn to_u128(self) -> u128 {
+    fn to_u128(&self) -> u128 {
         Self::U128
     }
 }
@@ -86,13 +81,25 @@ macro_rules! impl_for_const {
             out
         }
 
-        impl<const N: &'static str> Sealed for crate::TStr<crate::__<N>> {}
+        impl<const N: &'static str> Sealed for crate::___<N> {}
 
-        impl<const N: &'static str> ToUint for crate::TStr<crate::__<N>> {
+        impl<const N: &'static str> ToUint for crate::___<N> {
             const U128: u128 = str_to_u128(N);
             const DIGITS: u32 = N.len() as u32;
         }
     };
+}
+
+impl<T> Sealed for crate::TStr<T> where T: Sealed {}
+
+impl<T> ToUint for crate::TStr<T>
+where
+    T: ToUint,
+{
+    // Intentionally not setting this.
+    // const USIZE: usize = T::USIZE;
+    const U128: u128 = T::U128;
+    const DIGITS: u32 = T::DIGITS;
 }
 
 #[cfg(feature = "const_generics")]
@@ -100,3 +107,8 @@ impl_for_const! {}
 
 #[cfg(not(feature = "const_generics"))]
 mod impl_no_const_generics;
+
+const fn u128_as_usize(n: u128) -> usize {
+    const MAXU: u128 = usize::max_value() as u128;
+    [n, MAXU][(n > MAXU) as usize] as usize
+}

@@ -1,6 +1,6 @@
 [package]
 name = "tstr_proc_macros"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 edition = "2018"
 license = "Zlib"
@@ -23,7 +23,8 @@ default = []
 syn_ = ["syn", "proc_macro2_"]
 proc_macro2_ = ["proc-macro2"]
 
-const_generics = []
+const_generics = ["min_const_generics"]
+min_const_generics = []
 
 [dependencies]
 proc-macro2 = {version = "1.0", optional = true}

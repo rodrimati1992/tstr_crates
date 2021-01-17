@@ -112,13 +112,18 @@ and then use that expanded code instead of going through the macros.
 # Cargo features
 
 - `"use_syn"`:
-Changes how literal passed to the macros of this crate are parsed to use the `syn` crate.
+Changes how literals passed to the macros of this crate are parsed to use the `syn` crate.
 Use this if there is some literal that could not be 
 parsed but is a valid str/integer literal.
 
+- `"min_const_generics"`: 
+changes the representation of type-level strings to use many `char` const parameter, 
+making for better compiler errors for non-alphanumeric-ascii strings.
+Requires Rust 1.51.0,
+since this feature reaches the stable channel on March 25, 2021 as part of  that compiler version.
+
 - `"const_generics"`: 
-changes library to represent type-level strings as 
-`&'static str` const parameter, 
+changes the representation of type-level strings to use a `&'static str` const parameter, 
 making for better compiler errors, and a few more features.
 Requires `&'static str` to be stably usable as const parameters.
 

@@ -37,5 +37,8 @@ jobs:
         cargo update
           
         cd "${{github.workspace}}/tstr/"
+        cargo test --features "for_examples min_const_generics"
+        cargo test --features "for_examples use_syn min_const_generics"
+
         cargo test --features "for_examples nightly_const_generics"
         cargo test --features "for_examples use_syn nightly_const_generics"

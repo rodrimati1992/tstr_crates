@@ -108,13 +108,18 @@
 //! # Cargo features
 //!
 //! - `"use_syn"`:
-//! Changes how literal passed to the macros of this crate are parsed to use the `syn` crate.
+//! Changes how literals passed to the macros of this crate are parsed to use the `syn` crate.
 //! Use this if there is some literal that could not be
 //! parsed but is a valid str/integer literal.
 //!
+//! - `"min_const_generics"`:
+//! changes the representation of type-level strings to use many `char` const parameter,
+//! making for better compiler errors for non-alphanumeric-ascii strings.
+//! Requires Rust 1.51.0,
+//! since this feature reaches the stable channel on March 25, 2021 as part of  that compiler version.
+//!
 //! - `"const_generics"`:
-//! changes library to represent type-level strings as
-//! `&'static str` const parameter,
+//! changes the representation of type-level strings to use a `&'static str` const parameter,
 //! making for better compiler errors, and a few more features.
 //! Requires `&'static str` to be stably usable as const parameters.
 //!
@@ -144,6 +149,7 @@
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "for_examples")))]
 pub mod for_examples;
 mod macros;
+mod make_tstr;
 mod to_uint;
 mod tstr_type;
 
@@ -153,10 +159,14 @@ extern crate self as tstr;
 #[doc(hidden)]
 pub use tstr_proc_macros::__ts_impl;
 
-pub use crate::{to_uint::ToUint, tstr_type::TStr};
+pub use crate::{make_tstr::MakeTStr, to_uint::ToUint, tstr_type::TStr};
 
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
 #[cfg(feature = "const_generics")]
 pub use crate::tstr_type::StrValue;
 
 include! {"./p.rs"}
+
+const _: () = {
+    ts!(100000000);
+};
