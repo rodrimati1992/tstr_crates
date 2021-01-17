@@ -1,3 +1,6 @@
+#![allow(clippy::or_fun_call)]
+#![allow(clippy::useless_conversion)]
+
 extern crate proc_macro;
 
 #[cfg(not(feature = "proc_macro2_"))]
@@ -68,7 +71,7 @@ pub fn __ts_impl(input_tokens: proc_macro::TokenStream) -> proc_macro::TokenStre
             }
             out
         }
-        Err(e) => e.into_compile_error(),
+        Err(e) => e.to_compile_error(),
     }
     .into()
 }

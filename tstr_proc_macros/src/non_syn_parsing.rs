@@ -112,7 +112,7 @@ fn parse_literal(lit: Literal) -> Result<TStr, Error> {
     Ok(TStr { string, span })
 }
 
-fn parse_string<'a>(input: &'a str, span: Span) -> Result<String, Error> {
+fn parse_string(input: &str, span: Span) -> Result<String, Error> {
     if !input.ends_with('"') {
         return Err(Error::new(
             span,
@@ -303,7 +303,7 @@ impl Error {
         }
     }
 
-    pub(crate) fn into_compile_error(&self) -> TokenStream {
+    pub(crate) fn to_compile_error(&self) -> TokenStream {
         let Error { ref message, span } = *self;
 
         let mut out = TokenStream::new();

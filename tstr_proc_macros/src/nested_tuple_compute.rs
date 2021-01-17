@@ -17,7 +17,7 @@ where
 {
     let mut out = TokenStream::new();
 
-    if input.len() == 0 {
+    if input.is_empty() {
         out.extend(std::iter::once(paren(span, |_| ())));
     } else if input.len() <= CHUNK_SIZE {
         func(input, &mut out);

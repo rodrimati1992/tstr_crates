@@ -47,12 +47,12 @@ pub trait ToUint: Sized {
     /// Gets the usize value of this type
     ///
     /// By default this value is a saturated cast from `Self::U128`.
-    fn to_usize(self) -> usize {
+    fn to_usize(&self) -> usize {
         Self::USIZE
     }
 
     /// Gets the u128 value of this type
-    fn to_u128(self) -> u128 {
+    fn to_u128(&self) -> u128 {
         Self::U128
     }
 }
