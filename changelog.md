@@ -1,3 +1,19 @@
+### 0.2.1
+
+Added `"cmp_traits"` feature to enable TStr comparison traits.
+
+Added `"rust_1_46"` feature to enable const functions to compare `&str` and `&[u8]`.
+
+Added TStrEq trait for equality comparison between type-level strings, enabled by the `"cmp_traits"` feature.
+
+Added a utils module, with `str_eq` and `u8_slice_eq` const functions, enabled bt the `"rust_1_46"` feature.
+
+Added `Assert` type for type-level-string related compile-time assertions, inside `tstr::asserts` module.
+
+Added `EqualityProof` and `InequalityProof` structs, inside `tstr::asserts` module,
+
+Added `get_two` method to types in `for_examples`, for examples that use `tstr::Assert`.
+
 ### 0.2.0
 
 Added support for passing multiple literals/identifiers in macros, outputting a tuple of TStrs.
