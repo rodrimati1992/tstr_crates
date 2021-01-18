@@ -18,6 +18,8 @@ include = [
 ]
 
 [features]
+cmp_traits = []
+
 min_const_generics = ["tstr_proc_macros/min_const_generics"]
 
 const_generics = ["tstr_proc_macros/const_generics", "min_const_generics"]

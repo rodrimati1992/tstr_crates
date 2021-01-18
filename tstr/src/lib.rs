@@ -107,6 +107,8 @@
 //!
 //! # Cargo features
 //!
+//! - `"cmp_traits"`: Enables the traits for comparing type-level strings.
+//!
 //! - `"use_syn"`:
 //! Changes how literals passed to the macros of this crate are parsed to use the `syn` crate.
 //! Use this if there is some literal that could not be
@@ -148,10 +150,20 @@
 #[cfg(feature = "for_examples")]
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "for_examples")))]
 pub mod for_examples;
+
+#[cfg(not(feature = "const_generics"))]
+#[cfg(feature = "cmp_traits")]
+mod for_tupled_reprs;
+
 mod macros;
 mod make_tstr;
 mod to_uint;
 mod tstr_type;
+
+#[cfg(feature = "cmp_traits")]
+mod tstr_cmp;
+
+pub mod utils;
 
 #[doc(hidden)]
 extern crate self as tstr;
@@ -161,12 +173,11 @@ pub use tstr_proc_macros::__ts_impl;
 
 pub use crate::{make_tstr::MakeTStr, to_uint::ToUint, tstr_type::TStr};
 
+#[cfg(feature = "cmp_traits")]
+pub use tstr_cmp::TStrEq;
+
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
 #[cfg(feature = "const_generics")]
 pub use crate::tstr_type::StrValue;
 
 include! {"./p.rs"}
-
-const _: () = {
-    ts!(100000000);
-};

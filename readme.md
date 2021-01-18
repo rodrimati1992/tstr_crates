@@ -111,6 +111,8 @@ and then use that expanded code instead of going through the macros.
 
 # Cargo features
 
+- `"cmp_traits"`: Enables the traits for comparing type-level strings.
+
 - `"use_syn"`:
 Changes how literals passed to the macros of this crate are parsed to use the `syn` crate.
 Use this if there is some literal that could not be 
