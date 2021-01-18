@@ -10,6 +10,8 @@ mod modules {
 
     mod string_args;
 
+    mod string_cmp;
+
     mod other_args;
 
     mod to_uint;
