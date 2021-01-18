@@ -19,8 +19,9 @@ include = [
 
 [features]
 cmp_traits = []
+rust_1_46 = []
 
-min_const_generics = ["tstr_proc_macros/min_const_generics"]
+min_const_generics = ["tstr_proc_macros/min_const_generics", "rust_1_46"]
 
 const_generics = ["tstr_proc_macros/const_generics", "min_const_generics"]
 nightly_const_generics = ["const_generics"]

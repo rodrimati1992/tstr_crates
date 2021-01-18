@@ -107,6 +107,9 @@
 //!
 //! # Cargo features
 //!
+//! - `"rust_1_46"`:
+//! Enables const functions in [`tstr::utils`] for comparing `&str` and `&[u8]`.
+//!
 //! - `"cmp_traits"`: Enables the traits for comparing type-level strings.
 //!
 //! - `"use_syn"`:
@@ -140,7 +143,7 @@
 //! This crate supports Rust versions back to Rust 1.40.0.
 //!
 //! [`Index`]: https://doc.rust-lang.org/std/ops/trait.Index.html
-//!
+//! [`tstr::utils`]: ./utils/index.html
 #![no_std]
 #![cfg_attr(feature = "nightly_const_generics", feature(const_generics))]
 #![cfg_attr(feature = "docsrs", feature(doc_cfg))]
@@ -154,6 +157,8 @@ pub mod for_examples;
 #[cfg(not(feature = "const_generics"))]
 #[cfg(feature = "cmp_traits")]
 mod for_tupled_reprs;
+
+pub mod asserts;
 
 mod macros;
 mod make_tstr;
@@ -171,7 +176,7 @@ extern crate self as tstr;
 #[doc(hidden)]
 pub use tstr_proc_macros::__ts_impl;
 
-pub use crate::{make_tstr::MakeTStr, to_uint::ToUint, tstr_type::TStr};
+pub use crate::{asserts::Assert, make_tstr::MakeTStr, to_uint::ToUint, tstr_type::TStr};
 
 #[cfg(feature = "cmp_traits")]
 pub use tstr_cmp::TStrEq;

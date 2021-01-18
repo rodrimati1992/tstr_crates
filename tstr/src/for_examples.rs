@@ -2,6 +2,9 @@
 
 use core::ops::{Index, IndexMut};
 
+#[cfg(feature = "cmp_traits")]
+use crate::{asserts::InequalityProof, TStr, TStrEq};
+
 use crate::TS;
 
 macro_rules! impl_index_indexmut {
@@ -12,12 +15,37 @@ macro_rules! impl_index_indexmut {
     ) => (
         $(
             impl_index_indexmut!{
-                @inner
+                @rep
                 impl $impl_params $self { $fields }
             }
         )*
+
+        impl_index_indexmut!{
+            @inner
+            impl $impl_params $self
+        }
+
+
     );
-    (@inner
+    (@inner impl[$($impl:tt)*] $self:ty ) => {
+        #[cfg(feature = "cmp_traits")]
+        #[cfg_attr(feature = "docsrs", doc(cfg(feature = "cmp_traits")))]
+        impl<$($impl)*>  $self {
+            pub fn get_two<A, B>(
+                &self,
+                field_a: TStr<A>,
+                field_b: TStr<B>,
+                _proof: InequalityProof<TStr<A>, TStr<B>>,
+            ) -> (&<Self as Index<TStr<A>>>::Output, &<Self as Index<TStr<B>>>::Output)
+            where
+                Self: Index<TStr<A>> + Index<TStr<B>>,
+                A: TStrEq<B>,
+            {
+                (&self[field_a], &self[field_b])
+            }
+        }
+    };
+    (@rep
         impl[$($impl:tt)*] $self:ty {
             ($field_name:ident : $type:ty)
         }

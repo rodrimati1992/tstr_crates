@@ -34,6 +34,8 @@
 ///
 /// ```
 ///
+#[cfg(feature = "rust_1_46")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "rust_1_46")))]
 pub const fn str_eq(left: &str, right: &str) -> bool {
     u8_slice_eq(left.as_bytes(), right.as_bytes())
 }
@@ -72,6 +74,8 @@ pub const fn str_eq(left: &str, right: &str) -> bool {
 ///
 /// ```
 ///
+#[cfg(feature = "rust_1_46")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "rust_1_46")))]
 pub const fn u8_slice_eq(left: &[u8], right: &[u8]) -> bool {
     if left.len() != right.len() {
         return false;
@@ -92,6 +96,7 @@ mod tests {
     use super::*;
 
     #[test]
+    #[cfg(feature = "rust_1_46")]
     fn slice_eq_test() {
         assert!(u8_slice_eq(&[], &[]));
         assert!(!u8_slice_eq(&[], &[0]));
@@ -106,6 +111,7 @@ mod tests {
     }
 
     #[test]
+    #[cfg(feature = "rust_1_46")]
     fn str_eq_test() {
         assert!(str_eq("", ""));
         assert!(!str_eq("", "0"));
