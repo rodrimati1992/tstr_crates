@@ -68,11 +68,48 @@ where
     const EQ: bool = T::EQ;
 }
 
+/// For comparison between two type-level strings,
+/// getting the `Ordering` of `Self` relative to `Rhs`.
+///
+/// This is only available with the `"const_generics"` feature,
+/// because I could not figure out how to make this work with representations other
+/// than the one that uses a `&'static str`-const-parameter.
+///
+/// # Example
+///
+/// ```rust
+///
+/// TODO
+///
+/// ```
+///
+#[cfg(feature = "const_generics")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
+pub trait TStrOrd<Rhs> {
+    /// The `Ordering` of `Self` relative to `Rhs`.
+    const CMP: core::cmp::Ordering;
+}
+
+#[cfg(feature = "const_generics")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
+impl<T, U> TStrOrd<TStr<U>> for TStr<T>
+where
+    T: TStrOrd<U>,
+{
+    const CMP: core::cmp::Ordering = T::CMP;
+}
+
 #[cfg(feature = "const_generics")]
 macro_rules! impl_const_generics {
     () => {
         impl<const S: &'static str, const Z: &'static str> TStrEq<crate::___<Z>> for crate::___<S> {
             const EQ: bool = crate::utils::str_eq(S, Z);
+        }
+
+        impl<const S: &'static str, const Z: &'static str> TStrOrd<crate::___<Z>>
+            for crate::___<S>
+        {
+            const CMP: core::cmp::Ordering = crate::utils::str_cmp(S, Z);
         }
     };
 }
