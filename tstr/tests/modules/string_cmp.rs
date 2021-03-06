@@ -1,14 +1,33 @@
 use tstr::{TStrEq, TS};
 
+#[cfg(feature = "const_generics")]
+use std::cmp::{Ord, Ordering};
+
+#[cfg(feature = "const_generics")]
+use tstr::{StrValue, TStrOrd};
+
 macro_rules! assert_str_eq {
     ($left:ty, $right:ty) => {
         assert!(<$left as TStrEq<$right>>::EQ);
+
+        #[cfg(feature = "const_generics")]
+        assert_eq!(<$left as TStrOrd<$right>>::CMP, Ordering::Equal);
     };
 }
 
 macro_rules! assert_str_ne {
     ($left:ty, [$($right:ty),* $(,)*]) => {
         $(assert!(<$left as TStrEq<$right>>::NE);)*
+
+        #[cfg(feature = "const_generics")]
+        {
+            $(
+                assert_eq!(
+                    <$left as TStrOrd<$right>>::CMP,
+                    <$left as StrValue>::STR.cmp(<$right as StrValue>::STR)
+                );
+            )*
+        }
     };
 }
 

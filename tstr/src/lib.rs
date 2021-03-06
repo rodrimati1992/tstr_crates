@@ -181,6 +181,9 @@ pub use crate::{asserts::Assert, make_tstr::MakeTStr, to_uint::ToUint, tstr_type
 #[cfg(feature = "cmp_traits")]
 pub use tstr_cmp::TStrEq;
 
+#[cfg(all(feature = "cmp_traits", feature = "const_generics"))]
+pub use tstr_cmp::TStrOrd;
+
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
 #[cfg(feature = "const_generics")]
 pub use crate::tstr_type::StrValue;

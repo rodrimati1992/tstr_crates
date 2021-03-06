@@ -1,6 +1,6 @@
 [package]
 name = "tstr"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 edition = "2018"
 license = "Zlib"
@@ -29,11 +29,13 @@ nightly_const_generics = ["const_generics"]
 use_syn = ["tstr_proc_macros/syn_"]
 for_examples = []
 
+testing = ["for_examples"]
+
 # private features
 docsrs = ["for_examples"]
 
 [dependencies.tstr_proc_macros]
-version = "0.2.0"
+version = "0.2.1"
 path = "../tstr_proc_macros"
 
 [package.metadata.docs.rs]
