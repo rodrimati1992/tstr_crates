@@ -10,7 +10,7 @@ mod cmp_macros;
 ///
 /// - String literals (eg: `TS!("hello")`, `TS!(r#"world"#)`)
 ///
-/// - Integes (eg: `TS!(0)`, `TS!(100)`):
+/// - Integers (eg: `TS!(0)`, `TS!(100)`):
 /// converting the integer to decimal, then stringifying it.
 ///
 /// - Single identifiers (eg: `TS!(foo)`, `TS!(bar)`): stringifying the identifier.
@@ -255,7 +255,7 @@ macro_rules! alias {
         $(;)?
     ) => (
         $(
-            $crate::alias!{
+            $crate::__priv_alias!{
                 @decide-docs
                 (
                     $(#[$attr])*
@@ -266,11 +266,16 @@ macro_rules! alias {
             }
         )*
     );
+}
+
+#[doc(hidden)]
+#[macro_export]
+macro_rules! __priv_alias {
     (@decide-docs
         $other:tt
         [($($expr:expr),* $(,)*)]
     )=>{
-        $crate::alias!{
+        $crate::__priv_alias!{
             @inner
             $other
             [$($expr),*]
@@ -286,7 +291,7 @@ macro_rules! alias {
         $other:tt
         [$expr:expr]
     )=>{
-        $crate::alias!{
+        $crate::__priv_alias!{
             @inner
             $other
             [$expr]

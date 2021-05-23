@@ -10,13 +10,19 @@ mod impl_no_const_generics;
 /// # Basic
 ///
 /// ```rust
-/// use tstr::{TS, TStrEq, ts};
+/// use tstr::{TS, TStrEq, tstr_eq, tstr_ne, ts};
 ///
 /// use std::cmp::Ordering;
 ///
-/// assert!(<TS!("foo") as TStrEq<TS!("foo")>>::EQ); // EQ for equal
+/// // tstr_eq uses this trait for comparing its TStr arguments for equality
+/// assert!(tstr_eq!(TS!("foo"), TS!("foo")));
+/// // what tstr_eq expands into
+/// assert!(<TS!("foo") as TStrEq<TS!("foo")>>::EQ);
 ///
-/// assert!(<TS!("foo") as TStrEq<TS!("bar")>>::NE); // NE for not equal
+/// // tstr_ne uses this trait for comparing its TStr arguments for inequality
+/// assert!(tstr_ne!(TS!("foo"), TS!("bar")));
+/// // what tstr_ne expands into
+/// assert!(<TS!("foo") as TStrEq<TS!("bar")>>::NE);
 ///
 /// // You can also compare TStrs using the `tstr_eq` and `tstr_ne` methods.
 /// assert!(ts!("foo").tstr_eq(&ts!("foo")));
@@ -102,14 +108,20 @@ where
 /// # Example
 ///
 /// ```rust
-/// use tstr::{TS, TStrOrd, ts};
+/// use tstr::{TS, TStrOrd, tstr_cmp, ts};
 ///
 /// use std::cmp::Ordering;
 ///
-/// const FOO_CMP_FOO: Ordering = <TS!("foo") as TStrOrd<TS!("foo")>>::CMP;
+/// const FOO_CMP_FOO: Ordering = {
+///     // tstr_cmp uses this trait for comparing its TStr arguments for ordering
+///     tstr_cmp!(TS!("foo"), TS!("foo"))
+/// };
 /// assert_eq!(FOO_CMP_FOO, Ordering::Equal);
 ///
-/// const FOO_CMP_FOOOOO: Ordering = <TS!("foo") as TStrOrd<TS!("fooooo")>>::CMP;
+/// const FOO_CMP_FOOOOO: Ordering = {
+///     // what tstr_cmp expands into
+///     <TS!("foo") as TStrOrd<TS!("fooooo")>>::CMP
+/// };
 /// assert_eq!(FOO_CMP_FOOOOO, Ordering::Less);
 ///
 /// // You can also compare TStrs using the `tstr_cmp` method.
