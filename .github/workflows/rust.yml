@@ -25,8 +25,8 @@ jobs:
         cargo test
 
         cd "${{github.workspace}}/tstr/"
-        cargo test --features "for_examples"
-        cargo test --features "for_examples use_syn"
+        cargo test --features "testing for_examples"
+        cargo test --features "testing for_examples use_syn"
 
 
     - uses: actions/checkout@v2
@@ -37,8 +37,8 @@ jobs:
         cargo update
           
         cd "${{github.workspace}}/tstr/"
-        cargo test --features "for_examples min_const_generics"
-        cargo test --features "for_examples use_syn min_const_generics"
+        cargo test --features "testing for_examples min_const_generics"
+        cargo test --features "testing for_examples use_syn min_const_generics"
 
-        cargo test --features "for_examples nightly_const_generics"
-        cargo test --features "for_examples use_syn nightly_const_generics"
+        cargo test --features "testing for_examples nightly_const_generics"
+        cargo test --features "testing for_examples use_syn nightly_const_generics"
