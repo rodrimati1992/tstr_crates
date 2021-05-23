@@ -12,6 +12,8 @@ Added `Assert` type for type-level-string related compile-time assertions, insid
 
 Added `EqualityProof` and `InequalityProof` structs, inside `tstr::asserts` module,
 
+Added `tstr_eq`, `tstr_ne`, and `tstr_cmp` macros for comparing type-level strings.
+
 Added `get_two` method to types in `for_examples`, for examples that use `tstr::Assert`.
 
 ### 0.2.0
