@@ -1,3 +1,7 @@
+#[macro_use]
+#[cfg(feature = "cmp_traits")]
+mod cmp_macros;
+
 /// The type of a type-level string, always a [`TStr`].
 ///
 /// # Arguments
