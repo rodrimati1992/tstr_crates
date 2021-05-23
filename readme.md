@@ -111,6 +111,11 @@ and then use that expanded code instead of going through the macros.
 
 # Cargo features
 
+- `"rust_1_46"`: 
+Enables const functions in [`tstr::utils`] for comparing `&str` and `&[u8]`.
+
+- `"cmp_traits"`: Enables the traits for comparing type-level strings.
+
 - `"use_syn"`:
 Changes how literals passed to the macros of this crate are parsed to use the `syn` crate.
 Use this if there is some literal that could not be 
@@ -142,3 +147,4 @@ This crate is unconditionally `#![no_std]`, and can be used anywhere that Rust c
 This crate supports Rust versions back to Rust 1.40.0.
 
 [`Index`]: https://doc.rust-lang.org/std/ops/trait.Index.html
+[`tstr::utils`]: https://docs.rs/tstr/*/tstr/utils/index.html

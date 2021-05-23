@@ -10,6 +10,9 @@ mod modules {
 
     mod string_args;
 
+    #[cfg(feature = "cmp_traits")]
+    mod string_cmp;
+
     mod other_args;
 
     mod to_uint;
