@@ -25,7 +25,7 @@ macro_rules! tstr_eq {
     };
 }
 
-/// For comparing [`TStr`] types for inequality using [`TStrEq::NE`]
+/// For comparing [`TStr`] types for inequality, using [`TStrEq::NE`]
 ///
 /// # Example
 ///
@@ -51,7 +51,7 @@ macro_rules! tstr_ne {
     };
 }
 
-/// For comparing [`TStr`] types for ordering using [`TStrOrd::CMP`]
+/// For comparing [`TStr`] types for ordering, using [`TStrOrd::CMP`]
 ///
 /// # Example
 ///
