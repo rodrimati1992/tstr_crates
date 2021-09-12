@@ -120,8 +120,7 @@
 //! - `"min_const_generics"`:
 //! changes the representation of type-level strings to use many `char` const parameter,
 //! making for better compiler errors for non-alphanumeric-ascii strings.
-//! Requires Rust 1.51.0,
-//! since this feature reaches the stable channel on March 25, 2021 as part of  that compiler version.
+//! Requires Rust 1.51.0.
 //!
 //! - `"const_generics"`:
 //! changes the representation of type-level strings to use a `&'static str` const parameter,
@@ -145,7 +144,7 @@
 //! [`Index`]: https://doc.rust-lang.org/std/ops/trait.Index.html
 //! [`tstr::utils`]: ./utils/index.html
 #![no_std]
-#![cfg_attr(feature = "nightly_const_generics", feature(const_generics))]
+#![cfg_attr(feature = "nightly_const_generics", feature(adt_const_params))]
 #![cfg_attr(feature = "docsrs", feature(doc_cfg))]
 #![allow(non_camel_case_types)]
 #![cfg_attr(feature = "nightly_const_generics", allow(incomplete_features))]
