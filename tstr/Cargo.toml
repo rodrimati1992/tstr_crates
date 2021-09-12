@@ -1,6 +1,6 @@
 [package]
 name = "tstr"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 edition = "2018"
 license = "Zlib"
@@ -13,7 +13,7 @@ repository = "https://github.com/rodrimati1992/tstr_crates/"
 include = [
     "Cargo.toml", 
     "src/**/*.rs", 
-    "../LICENSE-ZLIB.md", 
+    "LICENSE-ZLIB.md", 
     "../readme.md", 
 ]
 
@@ -35,7 +35,7 @@ testing = ["for_examples"]
 docsrs = ["for_examples"]
 
 [dependencies.tstr_proc_macros]
-version = "0.2.1"
+version = "0.2.2"
 path = "../tstr_proc_macros"
 
 [package.metadata.docs.rs]
