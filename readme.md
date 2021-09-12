@@ -124,8 +124,7 @@ parsed but is a valid str/integer literal.
 - `"min_const_generics"`: 
 changes the representation of type-level strings to use many `char` const parameter, 
 making for better compiler errors for non-alphanumeric-ascii strings.
-Requires Rust 1.51.0,
-since this feature reaches the stable channel on March 25, 2021 as part of  that compiler version.
+Requires Rust 1.51.0.
 
 - `"const_generics"`: 
 changes the representation of type-level strings to use a `&'static str` const parameter, 
