@@ -19,6 +19,7 @@
 /// [`TStr`]: ./struct.TStr.html
 ///
 #[macro_export]
+#[cfg(feature = "cmp_traits")]
 macro_rules! tstr_eq {
     ($left:ty, $right:ty $(,)*) => {
         <$left as $crate::TStrEq<$right>>::EQ
@@ -45,6 +46,7 @@ macro_rules! tstr_eq {
 /// [`TStrEq::NE`]: ./trait.TStrEq.html#associatedconstant.NE
 /// [`TStr`]: ./struct.TStr.html
 #[macro_export]
+#[cfg(feature = "cmp_traits")]
 macro_rules! tstr_ne {
     ($left:ty, $right:ty $(,)*) => {
         <$left as $crate::TStrEq<$right>>::NE
@@ -73,6 +75,7 @@ macro_rules! tstr_ne {
 /// [`TStr`]: ./struct.TStr.html
 #[cfg(feature = "const_generics")]
 #[macro_export]
+#[cfg(feature = "cmp_traits")]
 macro_rules! tstr_cmp {
     ($left:ty, $right:ty $(,)*) => {
         <$left as $crate::TStrOrd<$right>>::CMP

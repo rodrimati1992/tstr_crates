@@ -145,7 +145,7 @@
 //! [`tstr::utils`]: ./utils/index.html
 #![no_std]
 #![cfg_attr(feature = "nightly_const_generics", feature(adt_const_params))]
-#![cfg_attr(feature = "docsrs", feature(doc_cfg))]
+#![cfg_attr(feature = "docsrs", feature(doc_cfg, doc_auto_cfg))]
 #![allow(non_camel_case_types)]
 #![cfg_attr(feature = "nightly_const_generics", allow(incomplete_features))]
 
