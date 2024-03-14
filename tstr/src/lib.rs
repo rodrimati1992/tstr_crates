@@ -125,7 +125,8 @@
 //! - `"const_generics"`:
 //! changes the representation of type-level strings to use a `&'static str` const parameter,
 //! making for better compiler errors, and a few more features.
-//! Requires `&'static str` to be stably usable as const parameters.
+//! Requires `&'static str` to be stably usable as const parameters.  *This feature requires
+//! the use of a nightly compiler.*
 //!
 //! - `"nightly_const_generics"`: Equivalent to the `"const_generics"` feature,
 //! but enables the nightly compiler features to use `&'static str` const parameters.
