@@ -123,12 +123,14 @@
 //! Requires Rust 1.51.0.
 //!
 //! - `"const_generics"`:
-//! changes the representation of type-level strings to use a `&'static str` const parameter,
+//! Changes the representation of type-level strings to use a `&'static str` const parameter,
 //! making for better compiler errors, and a few more features.
-//! Requires `&'static str` to be stably usable as const parameters.
+//! As of 2023-03-17, this feature can't be enabled, because it
+//! requires `&'static str` to be stably usable as const parameters.
+//! Consider using `"nightly_const_generics"` if this feature can't be used.
 //!
 //! - `"nightly_const_generics"`: Equivalent to the `"const_generics"` feature,
-//! but enables the nightly compiler features to use `&'static str` const parameters.
+//! and enables the nightly compiler features to use `&'static str` const parameters.//!
 //!
 //! - `"for_examples"`: Enables the `for_examples` module,
 //! with a few types used in documentation examples.
