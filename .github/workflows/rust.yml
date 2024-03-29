@@ -26,6 +26,15 @@ jobs:
 
         cd "${{github.workspace}}/tstr/"
         cargo test --features "testing for_examples"
+
+    - uses: actions/checkout@v2
+    - name: ci-non-MSRV      
+      if: ${{ matrix.rust != '1.40.0' }}
+      run: |
+        rustup override set ${{ matrix.rust }}
+        cargo update
+          
+        cd "${{github.workspace}}/tstr/"
         cargo test --features "testing for_examples use_syn"
 
 
