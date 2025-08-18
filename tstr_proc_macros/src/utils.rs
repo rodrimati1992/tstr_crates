@@ -11,9 +11,17 @@ pub(crate) fn ident_token(ident: &str, span: Span) -> Once<TokenTree> {
     iter::once(tt)
 }
 
-#[cfg(all(feature = "min_const_generics", not(feature = "const_generics")))]
+#[cfg(not(feature = "str_generics"))]
 pub(crate) fn char_token(c: char, span: Span) -> Once<TokenTree> {
     let mut lit = Literal::character(c);
+    lit.set_span(span);
+    let tt = TokenTree::from(lit);
+    iter::once(tt)
+}
+
+#[cfg(not(feature = "str_generics"))]
+pub(crate) fn usize_token(number: usize, span: Span) -> Once<TokenTree> {
+    let mut lit = Literal::usize_unsuffixed(number);
     lit.set_span(span);
     let tt = TokenTree::from(lit);
     iter::once(tt)

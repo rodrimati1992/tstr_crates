@@ -1,4 +1,4 @@
-use tstr::{alias, ts, TS};
+use tstr::{TS, alias, ts};
 
 alias! {
     A = aaa;

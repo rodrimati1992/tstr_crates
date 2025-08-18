@@ -1,4 +1,4 @@
-use tstr::{ts, TS};
+use tstr::{TS, ts};
 
 #[allow(dead_code)]
 type ConcatIdents = TS!("foobarbazqux");

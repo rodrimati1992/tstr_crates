@@ -3,6 +3,8 @@ use core::{
     marker::PhantomData,
 };
 
+use crate::IsTStr;
+
 /// A type-level string type, similar to a `&'static str` const parameter.
 ///
 /// # Examples
@@ -89,140 +91,77 @@ use core::{
 ///
 /// ```
 ///
-pub struct TStr<T>(pub(crate) PhantomData<fn() -> T>);
+pub struct TStr<S>(pub(crate) PhantomData<fn() -> S>);
 
-impl<T> TStr<T> {
+impl<S> TStr<S> {
     /// Constructs the TStr.
+    pub const fn new() -> Self {
+        TStr(PhantomData)
+    }
+}
+
+impl<S> TStr<S> {
+    /// Gets the `&'static str` equivalent of this TStr
     ///
     /// # Example
     ///
     /// ```rust
-    /// use tstr::{TS, TStr};
+    /// use tstr::{TStr, ts};
     ///
-    /// type FOO = TS!(foo);
+    /// let foo: TStr<_> = ts!(foo);
+    /// assert_eq!(foo.to_str(), "foo");
     ///
-    /// let foo_1: FOO = TStr::NEW;
-    /// let foo_2 = FOO::NEW; // The same as the previous statement
+    /// assert_eq!(ts!("bar").to_str(), "bar");
     ///
     /// ```
-    pub const NEW: Self = TStr(PhantomData);
+    ///
+    pub const fn to_str(self) -> &'static str
+    where
+        Self: IsTStr,
+    {
+        Self::STR
+    }
 }
 
-#[cfg(feature = "const_generics")]
-macro_rules! const_generics_using {
-    () => {
-        /// For getting the `&'static str` value of this [`TStr`].
-        ///
-        /// You can use this as the bound for a generic [`TStr`] parameter.
-        ///
-        /// # Example
-        ///
-        /// ```rust
-        /// use tstr::{StrValue, ts};
-        ///
-        /// asserts(ts!(foo), ts!(bar), ts!(baz));
-        ///
-        /// fn asserts<A, B, C>(foo: A, bar: B, baz: C)
-        /// where
-        ///     A: StrValue,
-        ///     B: StrValue,
-        ///     C: StrValue,
-        /// {
-        ///     assert_eq!(A::STR, "foo");
-        ///     assert_eq!(foo.to_str(), "foo");
-        ///
-        ///     assert_eq!(B::STR, "bar");
-        ///     assert_eq!(bar.to_str(), "bar");
-        ///
-        ///     assert_eq!(C::STR, "baz");
-        ///     assert_eq!(baz.to_str(), "baz");
-        ///
-        /// }
-        ///
-        /// ```
-        ///
-        /// [`TStr`]: ./struct.TStr.html
-        #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
-        pub trait StrValue: Debug + Copy + Default + 'static {
-            /// The `&'static str` value of this `TStr`.
-            const STR: &'static str;
+impl<S> Copy for TStr<S> {}
 
-            /// Gets the `&'static str` value of this `TStr`.
-            fn to_str(self) -> &'static str {
-                Self::STR
-            }
-        }
-
-        #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
-        impl<const S: &'static str> StrValue for TStr<crate::___<S>> {
-            const STR: &'static str = S;
-        }
-
-        #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
-        impl<T> TStr<T>
-        where
-            Self: StrValue,
-        {
-            /// The `&'static str` value of this `TStr`.
-            ///
-            /// # Example
-            ///
-            /// ```rust
-            /// use tstr::TS;
-            ///
-            /// type FOO = TS!(foo);
-            /// type BAR = TS!(bar);
-            ///
-            /// assert_eq!(FOO::STR, "foo");
-            /// assert_eq!(BAR::STR, "bar");
-            ///
-            /// ```
-            pub const STR: &'static str = <Self as StrValue>::STR;
-        }
-    };
-}
-#[cfg(feature = "const_generics")]
-const_generics_using! {}
-
-impl<T> Copy for TStr<T> {}
-
-impl<T> Clone for TStr<T> {
+impl<S> Clone for TStr<S> {
     #[inline(always)]
     fn clone(&self) -> Self {
         *self
     }
 }
 
-impl<T> Default for TStr<T> {
+impl<S> Default for TStr<S> {
     #[inline(always)]
     fn default() -> Self {
-        Self::NEW
+        Self::new()
     }
 }
 
-impl<T> Debug for TStr<T> {
+impl<S> Debug for TStr<S> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("TStr").finish()
     }
 }
 
-impl<T> core::cmp::PartialEq for TStr<T> {
+impl<S> core::cmp::PartialEq for TStr<S> {
     #[inline(always)]
     fn eq(&self, _other: &Self) -> bool {
         true
     }
 }
 
-impl<T> core::cmp::Eq for TStr<T> {}
+impl<S> core::cmp::Eq for TStr<S> {}
 
-impl<T> core::cmp::PartialOrd for TStr<T> {
+impl<S> core::cmp::PartialOrd for TStr<S> {
     #[inline(always)]
     fn partial_cmp(&self, _other: &Self) -> Option<core::cmp::Ordering> {
         Some(core::cmp::Ordering::Equal)
     }
 }
 
-impl<T> core::cmp::Ord for TStr<T> {
+impl<S> core::cmp::Ord for TStr<S> {
     #[inline(always)]
     fn cmp(&self, _other: &Self) -> core::cmp::Ordering {
         core::cmp::Ordering::Equal

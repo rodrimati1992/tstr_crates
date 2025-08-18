@@ -18,13 +18,13 @@ pub(crate) fn parse_inputs(ts: TokenStream) -> Result<Inputs, Error> {
             return Err(Error::new(
                 x.span(),
                 &format!("Expected parentheses: found {}", x),
-            ))
+            ));
         }
         None => {
             return Err(Error::new(
                 Span::call_site(),
                 "Expected parentheses, found nothing",
-            ))
+            ));
         }
     };
 
@@ -268,7 +268,7 @@ fn parse_integer(input: &str, span: Span) -> Result<String, Error> {
                 return Err(Error::new(
                     span,
                     &format!("Unknown integer prefix: {}", &input[..2]),
-                ))
+                ));
             }
             None => return Ok(String::from("0")),
         };
@@ -321,45 +321,5 @@ impl Error {
         out.extend(once(msg_paren));
 
         out
-    }
-}
-
-trait TokenTreeExt: Sized {
-    fn into_token_tree(self) -> TokenTree;
-
-    fn set_span_recursive(self, span: Span) -> TokenTree {
-        let mut tt = self.into_token_tree();
-
-        tt.set_span(span);
-        if let TokenTree::Group(group) = tt {
-            let delim = group.delimiter();
-            let stream = group.stream().set_span_recursive(span);
-            tt = TokenTree::Group(Group::new(delim, stream));
-        }
-        tt.set_span(span);
-        tt
-    }
-}
-
-impl TokenTreeExt for TokenTree {
-    fn into_token_tree(self) -> TokenTree {
-        self
-    }
-}
-
-pub trait TokenStreamExt: Sized {
-    fn into_token_stream(self) -> TokenStream;
-
-    fn set_span_recursive(self, span: Span) -> TokenStream {
-        self.into_token_stream()
-            .into_iter()
-            .map(|tt| tt.set_span_recursive(span))
-            .collect()
-    }
-}
-
-impl TokenStreamExt for TokenStream {
-    fn into_token_stream(self) -> TokenStream {
-        self
     }
 }

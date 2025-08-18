@@ -11,7 +11,7 @@ This crate provides an encoding of type-level strings as types.
 This example demonstrates how you can use type-level strings,
 and the [`Index`] trait, to access fields of generic types by name.
 
-```rust
+```
 use std::ops::Index;
 
 use tstr::{TS, ts};
@@ -111,33 +111,20 @@ and then use that expanded code instead of going through the macros.
 
 # Cargo features
 
-- `"rust_1_46"`: 
-Enables const functions in [`tstr::utils`] for comparing `&str` and `&[u8]`.
-
-- `"cmp_traits"`: Enables the traits for comparing type-level strings.
-
 - `"use_syn"`:
 Changes how literals passed to the macros of this crate are parsed to use the `syn` crate.
-Use this if there is some literal that could not be 
+Use this if there is some literal that could not be
 parsed but is a valid str/integer literal.
 
-- `"min_const_generics"`: 
-changes the representation of type-level strings to use many `char` const parameter, 
-making for better compiler errors for non-alphanumeric-ascii strings.
-Requires Rust 1.51.0.
-
-- `"const_generics"`: 
+- `"str_generics"`:
 Changes the representation of type-level strings to use a `&'static str` const parameter,
 making for better compiler errors, and a few more features.
-As of 2023-03-17, this feature can't be enabled, because it
+As of 2025-08-18, this feature can't be enabled, because it
 requires `&'static str` to be stably usable as const parameters.
-Consider using `"nightly_const_generics"` if this feature can't be used.
+Consider using `"nightly_str_generics"` if this feature can't be used.
 
-- `"nightly_const_generics"`: Equivalent to the `"const_generics"` feature,
+- `"nightly_str_generics"`: Equivalent to the `"str_generics"` feature,
 and enables the nightly compiler features to use `&'static str` const parameters.
-
-- `"for_examples"`: Enables the `for_examples` module, 
-with a few types used in documentation examples.
 
 # No-std support
 
@@ -145,7 +132,10 @@ This crate is unconditionally `#![no_std]`, and can be used anywhere that Rust c
 
 # Minimum Supported Rust Version
 
-This crate supports Rust versions back to Rust 1.40.0.
+This crate supports Rust versions back to Rust 1.88.0.
+
+[`Index`]: core::ops::Index
+[`tstr::utils`]: crate::utils
 
 [`Index`]: https://doc.rust-lang.org/std/ops/trait.Index.html
 [`tstr::utils`]: https://docs.rs/tstr/*/tstr/utils/index.html

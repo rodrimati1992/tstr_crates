@@ -3,3 +3,4 @@ members=[
     "tstr",
     "tstr_proc_macros",
 ]
+resolver = "3"

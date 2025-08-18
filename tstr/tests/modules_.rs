@@ -10,10 +10,11 @@ mod modules {
 
     mod string_args;
 
-    #[cfg(feature = "cmp_traits")]
-    mod string_cmp;
+    // TODO: re-enable once comparing strings is possible
+    // mod string_cmp;
 
     mod other_args;
 
-    mod to_uint;
+    // TODO: re-enable once parsing is possible
+    // mod to_uint;
 }

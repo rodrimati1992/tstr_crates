@@ -1,6 +1,3 @@
-#[macro_use]
-mod cmp_macros;
-
 /// The type of a type-level string, always a [`TStr`].
 ///
 /// # Arguments
@@ -36,11 +33,11 @@ mod cmp_macros;
 ///     let foo = Enum::Foo(3, 5);
 ///     let bar = Enum::Bar("hello".to_string());
 ///     
-///     assert_eq!(foo.to_variant(Foo::NEW), Some((3, 5)));
-///     assert_eq!(foo.to_variant(Bar::NEW), None);
+///     assert_eq!(foo.to_variant(Foo::new()), Some((3, 5)));
+///     assert_eq!(foo.to_variant(Bar::new()), None);
 ///     
-///     assert_eq!(bar.to_variant(Foo::NEW), None);
-///     assert_eq!(bar.to_variant(Bar::NEW), Some("hello".to_string()));
+///     assert_eq!(bar.to_variant(Foo::new()), None);
+///     assert_eq!(bar.to_variant(Bar::new()), Some("hello".to_string()));
 /// }
 ///
 /// type Foo = TS!(Foo);
@@ -127,18 +124,44 @@ macro_rules! TS {
 /// which can be seen in the docs with the "for_examples" feature.
 ///
 /// ```rust
-/// use tstr::ts;
-/// use tstr::for_examples::{Foo, Bar};
+/// use tstr::{TS, ts};
 ///
-/// let this = Foo::new(3, 5, "8");
+/// # fn main() {
+/// let this = Foo { bar: 3, baz: 'X', qux: "8" };
+///
 /// assert_eq!(this[ts!(bar)], 3);
-/// assert_eq!(this[ts!(baz)], 5);
+/// assert_eq!(this[ts!(baz)], 'X');
 /// assert_eq!(this[ts!(qux)], "8");
+/// # }
 ///
-/// let other = Bar::new(13, false, Some('C'));
-/// assert_eq!(other[ts!(bar)], 13);
-/// assert_eq!(other[ts!(baz)], false);
-/// assert_eq!(other[ts!(boom)], Some('C'));
+/// #[derive(Debug)]
+/// pub struct Foo {
+///     bar: u32,
+///     baz: char,
+///     qux: &'static str,
+/// }
+///
+/// impl_field_index!{ bar: u32 }
+/// impl_field_index!{ baz: char }
+/// impl_field_index!{ qux: &'static str }
+///
+/// macro_rules! impl_field_index {
+///     ($field_name:ident: $field_type:ty) => {
+///         impl std::ops::Index<TS!($field_name)> for Foo {
+///             type Output = $field_type;
+///
+///             fn index(&self, _: TS!($field_name)) -> &$field_type {
+///                 &self.$field_name
+///             }
+///         }
+///
+///         impl std::ops::IndexMut<TS!($field_name)> for Foo {
+///             fn index_mut(&mut self, _: TS!($field_name)) -> &mut $field_type {
+///                 &mut self.$field_name
+///             }
+///         }
+///     }
+/// } use impl_field_index;
 ///
 /// ```
 /// ### Equivalences
@@ -170,7 +193,7 @@ macro_rules! TS {
 macro_rules! ts {
     ($($expr:expr),* $(,)* ) => {{
         let __look_at_the_notes__ =
-            <$crate::__ts_impl!(($crate) $($expr)*) as $crate::MakeTStr>::MAKE;
+            <$crate::__ts_impl!(($crate) $($expr)*) as $crate::Make>::MAKE;
         __look_at_the_notes__
     }};
 }
@@ -207,7 +230,15 @@ macro_rules! ts {
 /// ```rust
 /// use std::ops::Index;
 ///
-/// use tstr::for_examples::{Foo, Bar};
+/// use tstr::TS;
+///
+///
+/// let this = Foo { bar: 3, baz: 'X', qux: "8" };
+/// assert_eq!(get_bar_baz(&this), (3, 'X'));
+///
+/// let other = Bar { bar: 13, baz: false, qux: Some('C') };
+/// assert_eq!(get_bar_baz(&other), (13, false));
+///
 ///
 /// tstr::alias!{
 ///     // Declares both an NBar type alias and an NBar constant of that type.
@@ -215,32 +246,59 @@ macro_rules! ts {
 ///
 ///     // Declares both an NBaz type alias and an NBaz constant of that type.
 ///     pub NBaz = "baz";
-///
-///     // Declares both an NQux type alias and an NQux constant of that type.
-///     pub NQux = "qux";
-///
 /// }
-///
-/// // The macro can also be invoked like this
-/// tstr::alias!{ pub NBoom = boom }
-///
-/// let this = Foo::new(3, 5, "8");
-/// assert_eq!(get_bar_baz(&this), (3, 5));
-///
-/// let other = Bar::new(13, false, Some('C'));
-/// assert_eq!(get_bar_baz(&other), (13, false));
 ///
 ///
 /// type IndexOut<T, N> = <T as Index<N>>::Output;
 ///
 /// fn get_bar_baz<T>(this: &T) -> (IndexOut<T, NBar>, IndexOut<T, NBaz>)
 /// where
-///     T: Index<NBar> + Index<NBaz>,
-///     IndexOut<T, NBar>: Copy,
-///     IndexOut<T, NBaz>: Copy,
+///     T: Index<NBar, Output: Copy> + Index<NBaz, Output: Copy>,
 /// {
 ///     (this[NBar], this[NBaz])
 /// }
+///
+///
+/// #[derive(Debug)]
+/// pub struct Foo {
+///     bar: u32,
+///     baz: char,
+///     qux: &'static str,
+/// }
+///
+/// impl_field_index!{ Foo,bar: u32 }
+/// impl_field_index!{ Foo,baz: char }
+/// impl_field_index!{ Foo,qux: &'static str }
+///
+///
+/// #[derive(Debug)]
+/// pub struct Bar {
+///     bar: u32,
+///     baz: bool,
+///     qux: Option<char>,
+/// }
+///
+/// impl_field_index!{ Bar,bar: u32 }
+/// impl_field_index!{ Bar,baz: bool }
+/// impl_field_index!{ Bar,qux: Option<char> }
+///
+/// macro_rules! impl_field_index {
+///     ($Self:ty, $field_name:ident: $field_type:ty) => {
+///         impl std::ops::Index<TS!($field_name)> for $Self {
+///             type Output = $field_type;
+///
+///             fn index(&self, _: TS!($field_name)) -> &$field_type {
+///                 &self.$field_name
+///             }
+///         }
+///
+///         impl std::ops::IndexMut<TS!($field_name)> for $Self {
+///             fn index_mut(&mut self, _: TS!($field_name)) -> &mut $field_type {
+///                 &mut self.$field_name
+///             }
+///         }
+///     }
+/// } use impl_field_index;
 ///
 /// ```
 ///
@@ -316,6 +374,6 @@ macro_rules! __priv_alias {
         $(#[$attr])*
         #[allow(non_upper_case_globals, broken_intra_doc_links)]
         #[doc = $autodoc]
-        $vis const $name: $name = <$name as $crate::MakeTStr>::MAKE;
+        $vis const $name: $name = <$name as $crate::Make>::MAKE;
     };
 }

@@ -107,33 +107,20 @@
 //!
 //! # Cargo features
 //!
-//! - `"rust_1_46"`:
-//! Enables const functions in [`tstr::utils`] for comparing `&str` and `&[u8]`.
-//!
-//! - `"cmp_traits"`: Enables the traits for comparing type-level strings.
-//!
 //! - `"use_syn"`:
 //! Changes how literals passed to the macros of this crate are parsed to use the `syn` crate.
 //! Use this if there is some literal that could not be
 //! parsed but is a valid str/integer literal.
 //!
-//! - `"min_const_generics"`:
-//! changes the representation of type-level strings to use many `char` const parameter,
-//! making for better compiler errors for non-alphanumeric-ascii strings.
-//! Requires Rust 1.51.0.
-//!
-//! - `"const_generics"`:
+//! - `"str_generics"`:
 //! Changes the representation of type-level strings to use a `&'static str` const parameter,
 //! making for better compiler errors, and a few more features.
-//! As of 2023-03-17, this feature can't be enabled, because it
+//! As of 2025-08-18, this feature can't be enabled, because it
 //! requires `&'static str` to be stably usable as const parameters.
-//! Consider using `"nightly_const_generics"` if this feature can't be used.
+//! Consider using `"nightly_str_generics"` if this feature can't be used.
 //!
-//! - `"nightly_const_generics"`: Equivalent to the `"const_generics"` feature,
-//! and enables the nightly compiler features to use `&'static str` const parameters.//!
-//!
-//! - `"for_examples"`: Enables the `for_examples` module,
-//! with a few types used in documentation examples.
+//! - `"nightly_str_generics"`: Equivalent to the `"str_generics"` feature,
+//! and enables the nightly compiler features to use `&'static str` const parameters.
 //!
 //! # No-std support
 //!
@@ -141,33 +128,34 @@
 //!
 //! # Minimum Supported Rust Version
 //!
-//! This crate supports Rust versions back to Rust 1.40.0.
+//! This crate supports Rust versions back to Rust 1.88.0.
 //!
-//! [`Index`]: https://doc.rust-lang.org/std/ops/trait.Index.html
-//! [`tstr::utils`]: ./utils/index.html
+//! [`Index`]: core::ops::Index
+//! [`tstr::utils`]: crate::utils
 #![no_std]
-#![cfg_attr(feature = "nightly_const_generics", feature(adt_const_params))]
+#![cfg_attr(feature = "nightly_str_generics", feature(adt_const_params))]
 #![cfg_attr(feature = "docsrs", feature(doc_cfg, doc_auto_cfg))]
 #![allow(non_camel_case_types)]
-#![cfg_attr(feature = "nightly_const_generics", allow(incomplete_features))]
-
-#[cfg(feature = "for_examples")]
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "for_examples")))]
-pub mod for_examples;
-
-#[cfg(not(feature = "const_generics"))]
-#[cfg(feature = "cmp_traits")]
-mod for_tupled_reprs;
-
-pub mod asserts;
+#![cfg_attr(feature = "nightly_str_generics", allow(incomplete_features))]
 
 mod macros;
-mod make_tstr;
-mod to_uint;
+mod private_macros;
+
+mod make_trait;
+mod tstr_trait;
 mod tstr_type;
 
-#[cfg(feature = "cmp_traits")]
-mod tstr_cmp;
+#[cfg(not(feature = "str_generics"))]
+mod tstr_impl_with_chars;
+
+#[cfg(not(feature = "str_generics"))]
+pub(crate) use tstr_impl_with_chars::__TStrRepr;
+
+#[cfg(feature = "str_generics")]
+mod tstr_impl_with_str;
+
+#[cfg(feature = "str_generics")]
+pub(crate) use tstr_impl_with_str::__TStrRepr;
 
 pub mod utils;
 
@@ -177,16 +165,8 @@ extern crate self as tstr;
 #[doc(hidden)]
 pub use tstr_proc_macros::__ts_impl;
 
-pub use crate::{asserts::Assert, make_tstr::MakeTStr, to_uint::ToUint, tstr_type::TStr};
+use crate::tstr_trait::__TStrArg;
 
-#[cfg(feature = "cmp_traits")]
-pub use tstr_cmp::TStrEq;
-
-#[cfg(all(feature = "cmp_traits", feature = "const_generics"))]
-pub use tstr_cmp::TStrOrd;
-
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
-#[cfg(feature = "const_generics")]
-pub use crate::tstr_type::StrValue;
+pub use crate::{make_trait::Make, tstr_trait::IsTStr, tstr_type::TStr};
 
 include! {"./p.rs"}

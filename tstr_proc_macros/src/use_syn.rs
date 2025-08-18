@@ -1,10 +1,10 @@
 use proc_macro2::{Span, TokenStream};
 
 use syn::{
+    LitInt, LitStr,
     ext::IdentExt,
     parenthesized,
     parse::{Parse, ParseBuffer, ParseStream},
-    LitInt, LitStr,
 };
 
 use super::{Inputs, TStr};
