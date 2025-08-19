@@ -2,8 +2,11 @@ macro_rules! assert_equals_string {
     ($tstr_ty:ty, $string:expr) => {
         const _: () = {
             const X: &[u8] = $string.as_bytes();
-            assert!(matches!(<$tstr_ty>::new().to_str().as_bytes(), X));
-            assert!(matches!(<$tstr_ty>::new().to_bytes(), X));
+
+            let tstr = <$tstr_ty>::new();
+            assert!(matches!(tstr.to_str().as_bytes(), X));
+            assert!(matches!(tstr.to_bytes(), X));
+            assert!(tstr.len() == X.len());
         };
     };
 }

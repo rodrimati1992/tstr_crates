@@ -86,26 +86,25 @@ impl<S> TStr<S> {
 }
 
 impl<S> TStr<S> {
-    /// Gets the `&'static [u8]` equivalent of this TStr
+    /// Gets the length of the string in utf8
     ///
     /// # Example
     ///
     /// ```rust
-    /// use tstr::{TStr, ts};
+    /// use tstr::ts;
     ///
-    /// let foo: TStr<_> = ts!(foo);
-    /// assert_eq!(foo.to_bytes(), "foo".as_bytes());
+    /// const _: () = assert!(ts!(4).len() == 1);
     ///
-    /// const BAR_STR: &[u8] = ts!("bar").to_bytes();
-    /// assert_eq!(BAR_STR, "bar".as_bytes());
+    /// const _: () = assert!(ts!("hello").len() == 5);
+    ///
+    /// const _: () = assert!(ts!(rustacean).len() == 9);
     ///
     /// ```
-    ///
-    pub const fn to_bytes(self) -> &'static [u8]
+    pub const fn len(self) -> usize
     where
         Self: IsTStr,
     {
-        Self::BYTES
+        <Self as IsTStr>::LENGTH
     }
 
     /// Gets the `&'static str` equivalent of this TStr
@@ -128,6 +127,28 @@ impl<S> TStr<S> {
         Self: IsTStr,
     {
         Self::STR
+    }
+
+    /// Gets the `&'static [u8]` equivalent of this TStr
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use tstr::{TStr, ts};
+    ///
+    /// let foo: TStr<_> = ts!(foo);
+    /// assert_eq!(foo.to_bytes(), "foo".as_bytes());
+    ///
+    /// const BAR_STR: &[u8] = ts!("bar").to_bytes();
+    /// assert_eq!(BAR_STR, "bar".as_bytes());
+    ///
+    /// ```
+    ///
+    pub const fn to_bytes(self) -> &'static [u8]
+    where
+        Self: IsTStr,
+    {
+        Self::BYTES
     }
 
     /// Compares two `TStr`s for equality
