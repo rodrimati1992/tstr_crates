@@ -2,7 +2,7 @@ use crate::{___, __TStrArg, __TStrArgBinary};
 
 impl<S, const LEN: usize> __TStrArg for ___<S, LEN>
 where
-    S: __TStrRepr,
+    S: __TStrRepr + 'static,
 {
     #[doc(hidden)]
     const __LENGTH: usize = LEN;

@@ -1,7 +1,30 @@
 use crate::{__TStrRepr, Make, TStr};
 
-/// Trait for bounding
-pub trait IsTStr: typewit::Identity<Type = TStr<<Self as IsTStr>::Arg>> + Make {
+use core::{
+    cmp::{Eq, Ord, PartialEq, PartialOrd},
+    fmt::{Debug, Display},
+    hash::Hash,
+};
+
+/// Trait for generic [`TStr`]s.
+pub trait IsTStr:
+    typewit::Identity<Type = TStr<<Self as IsTStr>::Arg>>
+    + 'static
+    + Copy
+    + Clone
+    + Debug
+    + Display
+    + Default
+    + Hash
+    + Make
+    + Eq
+    + Ord
+    + PartialEq
+    + PartialOrd
+    + Send
+    + Sized
+    + Sync
+{
     /// The type parameter of `TStr`
     type Arg: __TStrArg;
 
@@ -34,7 +57,7 @@ where
 
 /// implementation detail of tstr crate
 #[doc(hidden)]
-pub trait __TStrArg: __TStrRepr {
+pub trait __TStrArg: __TStrRepr + 'static {
     #[doc(hidden)]
     const __LENGTH: usize;
 

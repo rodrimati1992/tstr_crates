@@ -1,5 +1,7 @@
 use core::{
+    cmp::Ordering,
     fmt::{self, Debug},
+    hash::{Hash, Hasher},
     marker::PhantomData,
 };
 
@@ -158,13 +160,13 @@ impl<S> TStr<S> {
     /// ```rust
     /// use tstr::ts;
     ///
-    /// const _: () = assert!( ts!("foo").eq(ts!("foo")));
+    /// const _: () = assert!( ts!("foo").const_eq(ts!("foo")));
     ///
-    /// const _: () = assert!(!ts!("foo").eq(ts!("bar")));
+    /// const _: () = assert!(!ts!("foo").const_eq(ts!("bar")));
     ///
     /// ```
     ///
-    pub const fn eq<S2>(self, _: S2) -> bool
+    pub const fn const_eq<S2>(self, _: S2) -> bool
     where
         Self: IsTStr,
         S2: IsTStr,
@@ -179,13 +181,13 @@ impl<S> TStr<S> {
     /// ```rust
     /// use tstr::ts;
     ///
-    /// const _: () = assert!(!ts!("foo").ne(ts!("foo")));
+    /// const _: () = assert!(!ts!("foo").const_ne(ts!("foo")));
     ///
-    /// const _: () = assert!( ts!("foo").ne(ts!("bar")));
+    /// const _: () = assert!( ts!("foo").const_ne(ts!("bar")));
     ///
     /// ```
     ///
-    pub const fn ne<S2>(self, _: S2) -> bool
+    pub const fn const_ne<S2>(self, _: S2) -> bool
     where
         Self: IsTStr,
         S2: IsTStr,
@@ -201,15 +203,15 @@ impl<S> TStr<S> {
     /// use tstr::ts;
     /// use core::cmp::Ordering;
     ///
-    /// assert_eq!(const { ts!("foo").cmp(ts!("foo")) }, Ordering::Equal);
+    /// assert_eq!(const { ts!("foo").const_cmp(ts!("foo")) }, Ordering::Equal);
     ///
-    /// assert_eq!(const { ts!("foo").cmp(ts!("bar")) }, Ordering::Greater);
+    /// assert_eq!(const { ts!("foo").const_cmp(ts!("bar")) }, Ordering::Greater);
     ///
-    /// assert_eq!(const { ts!("bar").cmp(ts!("foo")) }, Ordering::Less);
+    /// assert_eq!(const { ts!("bar").const_cmp(ts!("foo")) }, Ordering::Less);
     ///
     /// ```
     ///
-    pub const fn cmp<R>(self, _: R) -> core::cmp::Ordering
+    pub const fn const_cmp<R>(self, _: R) -> Ordering
     where
         Self: IsTStr,
         R: IsTStr,
@@ -234,31 +236,66 @@ impl<S> Default for TStr<S> {
     }
 }
 
-impl<S> Debug for TStr<S> {
+impl<S> Debug for TStr<S>
+where
+    Self: IsTStr,
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("TStr").finish()
+        Debug::fmt(self.to_str(), f)
     }
 }
 
-impl<S> core::cmp::PartialEq for TStr<S> {
-    #[inline(always)]
-    fn eq(&self, _other: &Self) -> bool {
-        true
+impl<S> fmt::Display for TStr<S>
+where
+    Self: IsTStr,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Display::fmt(self.to_str(), f)
     }
 }
 
-impl<S> core::cmp::Eq for TStr<S> {}
-
-impl<S> core::cmp::PartialOrd for TStr<S> {
+impl<S, S2> core::cmp::PartialEq<S2> for TStr<S>
+where
+    Self: IsTStr,
+    S2: IsTStr,
+{
     #[inline(always)]
-    fn partial_cmp(&self, _other: &Self) -> Option<core::cmp::Ordering> {
-        Some(core::cmp::Ordering::Equal)
+    fn eq(&self, other: &S2) -> bool {
+        self.const_eq(*other)
     }
 }
 
-impl<S> core::cmp::Ord for TStr<S> {
+impl<S> core::cmp::Eq for TStr<S> where Self: IsTStr {}
+
+impl<S, S2> core::cmp::PartialOrd<S2> for TStr<S>
+where
+    Self: IsTStr,
+    S2: IsTStr,
+{
     #[inline(always)]
-    fn cmp(&self, _other: &Self) -> core::cmp::Ordering {
-        core::cmp::Ordering::Equal
+    fn partial_cmp(&self, other: &S2) -> Option<Ordering> {
+        Some(self.const_cmp(*other))
+    }
+}
+
+impl<S> core::cmp::Ord for TStr<S>
+where
+    Self: IsTStr,
+{
+    #[inline(always)]
+    fn cmp(&self, _other: &Self) -> Ordering {
+        Ordering::Equal
+    }
+}
+
+// rustc expands #[derive(Hash)] on unit structs into this
+impl<S> Hash for TStr<S>
+where
+    Self: IsTStr,
+{
+    fn hash<H>(&self, _state: &mut H)
+    where
+        H: Hasher,
+    {
     }
 }
