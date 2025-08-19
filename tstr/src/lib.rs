@@ -165,7 +165,7 @@ extern crate self as tstr;
 #[doc(hidden)]
 pub use tstr_proc_macros::__ts_impl;
 
-use crate::tstr_trait::__TStrArg;
+use crate::tstr_trait::{__TStrArg, __TStrArgBinary};
 
 pub use crate::{make_trait::Make, tstr_trait::IsTStr, tstr_type::TStr};
 

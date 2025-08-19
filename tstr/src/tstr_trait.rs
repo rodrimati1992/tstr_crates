@@ -1,9 +1,9 @@
-use crate::{Make, TStr};
+use crate::{__TStrRepr, Make, TStr};
 
 /// Trait for bounding
 pub trait IsTStr: typewit::Identity<Type = TStr<<Self as IsTStr>::Arg>> + Make {
     /// The type parameter of `TStr`
-    type Arg;
+    type Arg: __TStrArg;
 
     /// Constructs a TStr.
     const TSTR: TStr<Self::Arg> = TStr::new();
@@ -34,7 +34,7 @@ where
 
 /// implementation detail of tstr crate
 #[doc(hidden)]
-pub trait __TStrArg: crate::__TStrRepr {
+pub trait __TStrArg: __TStrRepr {
     #[doc(hidden)]
     const __LENGTH: usize;
 
@@ -43,4 +43,23 @@ pub trait __TStrArg: crate::__TStrRepr {
 
     #[doc(hidden)]
     const __STR: &str;
+
+    #[doc(hidden)]
+    type __WithRhs<Rhs: __TStrArg>: __TStrArgBinary;
+
+    #[cfg(feature = "str_generics")]
+    type __WithLhsArgs<const LEFT_S: &'static str>: __TStrArgBinary;
+
+    #[cfg(not(feature = "str_generics"))]
+    type __WithLhsArgs<LeftS: __TStrRepr, const LEFT_LEN: usize>: __TStrArgBinary;
 }
+
+pub trait __TStrArgBinary {
+    #[doc(hidden)]
+    const __EQ: bool;
+
+    #[doc(hidden)]
+    const __CMP: core::cmp::Ordering;
+}
+
+pub(crate) type __ToTStrArgBinary<L, R> = <L as __TStrArg>::__WithRhs<R>;

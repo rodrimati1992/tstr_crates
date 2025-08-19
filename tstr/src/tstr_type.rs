@@ -3,9 +3,9 @@ use core::{
     marker::PhantomData,
 };
 
-use crate::IsTStr;
+use crate::{__TStrArgBinary, IsTStr};
 
-/// A type-level string type, similar to a `&'static str` const parameter.
+/// A type-level string type, emulates a `&'static str` const parameter.
 ///
 /// # Examples
 ///
@@ -14,8 +14,7 @@ use crate::IsTStr;
 /// This example demonstrates how you can use `TStr` to implement a generic accessor trait.
 ///
 /// ```rust
-/// use tstr::TStr;
-/// use tstr::{TS, ts};
+/// use tstr::{IsTStr, TS, TStr, ts};
 ///
 /// fn main() {
 ///     let mut tup = (3, 5, 8);
@@ -38,10 +37,10 @@ use crate::IsTStr;
 ///     
 /// }
 ///
-/// fn replace<T, N>(this: &mut T, name: TStr<N>, replacement: T::Field) -> T::Field
+/// fn replace<T, N>(this: &mut T, name: N, replacement: T::Field) -> T::Field
 /// where
-///     T: Access<TStr<N>>,
-///     T::Field: Clone,
+///     N: IsTStr,
+///     T: Access<N, Field: Clone>,
 /// {
 ///     let ret = this.get(name).clone();
 ///     this.set(name, replacement);
@@ -56,38 +55,24 @@ use crate::IsTStr;
 ///     fn set(&mut self, _field_name: N, val: Self::Field);
 /// }
 ///
-/// impl<A, B, C> Access<TS!(0)> for (A, B, C) {
-///     type Field = A;
+/// impl_access_for_tuple3!{ 0: A }
+/// impl_access_for_tuple3!{ 1: B }
+/// impl_access_for_tuple3!{ 2: C }
 ///
-///     fn get(&self, _field_name: TS!(0)) -> &A {
-///         &self.0
-///     }
-///     fn set(&mut self, _field_name: TS!(0), val: A){
-///         self.0 = val;
-///     }
-/// }
-///
-/// impl<A, B, C> Access<TS!(1)> for (A, B, C) {
-///     type Field = B;
-///
-///     fn get(&self, _field_name: TS!(1)) -> &B {
-///         &self.1
-///     }
-///     fn set(&mut self, _field_name: TS!(1), val: B){
-///         self.1 = val;
-///     }
-/// }
-///
-/// impl<A, B, C> Access<TS!(2)> for (A, B, C) {
-///     type Field = C;
-///
-///     fn get(&self, _field_name: TS!(2)) -> &C {
-///         &self.2
-///     }
-///     fn set(&mut self, _field_name: TS!(2), val: C){
-///         self.2 = val;
-///     }
-/// }
+/// macro_rules! impl_access_for_tuple3 {
+///     ($field:tt: $field_type:ty) => {
+///         impl<A, B, C> Access<TS!($field)> for (A, B, C) {
+///             type Field = $field_type;
+///     
+///             fn get(&self, _field_name: TS!($field)) -> &$field_type {
+///                 &self.$field
+///             }
+///             fn set(&mut self, _field_name: TS!($field), val: $field_type){
+///                 self.$field = val;
+///             }
+///         }
+///     };
+/// } use impl_access_for_tuple3;
 ///
 /// ```
 ///
@@ -101,6 +86,28 @@ impl<S> TStr<S> {
 }
 
 impl<S> TStr<S> {
+    /// Gets the `&'static [u8]` equivalent of this TStr
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use tstr::{TStr, ts};
+    ///
+    /// let foo: TStr<_> = ts!(foo);
+    /// assert_eq!(foo.to_bytes(), "foo".as_bytes());
+    ///
+    /// const BAR_STR: &[u8] = ts!("bar").to_bytes();
+    /// assert_eq!(BAR_STR, "bar".as_bytes());
+    ///
+    /// ```
+    ///
+    pub const fn to_bytes(self) -> &'static [u8]
+    where
+        Self: IsTStr,
+    {
+        Self::BYTES
+    }
+
     /// Gets the `&'static str` equivalent of this TStr
     ///
     /// # Example
@@ -111,7 +118,8 @@ impl<S> TStr<S> {
     /// let foo: TStr<_> = ts!(foo);
     /// assert_eq!(foo.to_str(), "foo");
     ///
-    /// assert_eq!(ts!("bar").to_str(), "bar");
+    /// const BAR_STR: &str = ts!("bar").to_str();
+    /// assert_eq!(BAR_STR, "bar");
     ///
     /// ```
     ///
@@ -120,6 +128,72 @@ impl<S> TStr<S> {
         Self: IsTStr,
     {
         Self::STR
+    }
+
+    /// Compares two `TStr`s for equality
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use tstr::ts;
+    ///
+    /// const _: () = assert!( ts!("foo").eq(ts!("foo")));
+    ///
+    /// const _: () = assert!(!ts!("foo").eq(ts!("bar")));
+    ///
+    /// ```
+    ///
+    pub const fn eq<S2>(self, _: S2) -> bool
+    where
+        Self: IsTStr,
+        S2: IsTStr,
+    {
+        crate::tstr_trait::__ToTStrArgBinary::<<Self as IsTStr>::Arg, S2::Arg>::__EQ
+    }
+
+    /// Compares two `TStr`s for inequality
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use tstr::ts;
+    ///
+    /// const _: () = assert!(!ts!("foo").ne(ts!("foo")));
+    ///
+    /// const _: () = assert!( ts!("foo").ne(ts!("bar")));
+    ///
+    /// ```
+    ///
+    pub const fn ne<S2>(self, _: S2) -> bool
+    where
+        Self: IsTStr,
+        S2: IsTStr,
+    {
+        !crate::tstr_trait::__ToTStrArgBinary::<<Self as IsTStr>::Arg, S2::Arg>::__EQ
+    }
+
+    /// Compares two `TStr`s for ordering
+    ///
+    /// # Examples
+    ///
+    /// ```rust
+    /// use tstr::ts;
+    /// use core::cmp::Ordering;
+    ///
+    /// assert_eq!(const { ts!("foo").cmp(ts!("foo")) }, Ordering::Equal);
+    ///
+    /// assert_eq!(const { ts!("foo").cmp(ts!("bar")) }, Ordering::Greater);
+    ///
+    /// assert_eq!(const { ts!("bar").cmp(ts!("foo")) }, Ordering::Less);
+    ///
+    /// ```
+    ///
+    pub const fn cmp<R>(self, _: R) -> core::cmp::Ordering
+    where
+        Self: IsTStr,
+        R: IsTStr,
+    {
+        crate::tstr_trait::__ToTStrArgBinary::<<Self as IsTStr>::Arg, R::Arg>::__CMP
     }
 }
 

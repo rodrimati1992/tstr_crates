@@ -10,8 +10,7 @@ mod modules {
 
     mod string_args;
 
-    // TODO: re-enable once comparing strings is possible
-    // mod string_cmp;
+    mod string_cmp;
 
     mod other_args;
 

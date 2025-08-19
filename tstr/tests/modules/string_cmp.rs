@@ -1,30 +1,25 @@
-use tstr::{TStrEq, TS};
+use tstr::{IsTStr, TS};
 
-#[cfg(feature = "str_generics")]
 use std::cmp::{Ord, Ordering};
-
-#[cfg(feature = "str_generics")]
-use tstr::{StrValue, TStrOrd};
 
 macro_rules! assert_str_eq {
     ($left:ty, $right:ty) => {
-        assert!(<$left as TStrEq<$right>>::EQ);
+        assert!(<$left>::TSTR.eq(<$right>::TSTR));
+        assert!(!<$left>::TSTR.ne(<$right>::TSTR));
 
-        #[cfg(feature = "str_generics")]
-        assert_eq!(<$left as TStrOrd<$right>>::CMP, Ordering::Equal);
+        assert_eq!(<$left>::TSTR.cmp(<$right>::TSTR), Ordering::Equal);
     };
 }
 
 macro_rules! assert_str_ne {
     ($left:ty, [$($right:ty),* $(,)*]) => {
-        $(assert!(<$left as TStrEq<$right>>::NE);)*
+        $(assert!(<$left>::TSTR.ne(<$right>::TSTR));)*
 
-        #[cfg(feature = "str_generics")]
         {
             $(
                 assert_eq!(
-                    <$left as TStrOrd<$right>>::CMP,
-                    <$left as StrValue>::STR.cmp(<$right as StrValue>::STR)
+                    <$left>::TSTR.cmp(<$right>::TSTR),
+                    <$left>::TSTR.to_str().cmp(<$right>::TSTR.to_str())
                 );
             )*
         }
@@ -74,6 +69,18 @@ type Len64B = TS!("-aaaaaaa-aaaaaaa-aaaaaaa-aaaaaaa-aaaaaaa-aaaaaaa-aaaaaaa-aaaa
 
 type Len65A = TS!("-aaaaaaa-aaaaaaa-aaaaaaa-aaaaaaa-aaaaaaa-aaaaaaa-aaaaaaa-aaaaaaa-");
 type Len65B = TS!("-aaaaaaa-aaaaaaa-aaaaaaa-_______-aaaaaaa-aaaaaaa-aaaaaaa-aaaaaaa-");
+
+#[test]
+fn comparing_shorter_to_longer() {
+    type ABAAA = TS!(ABAAA);
+    type AABA = TS!(AABA);
+    type ABAA = TS!(ABAA);
+    type BAAA = TS!(BAAA);
+
+    assert_eq!(BAAA::TSTR.cmp(ABAAA::TSTR), Ordering::Greater);
+    assert_eq!(ABAA::TSTR.cmp(ABAAA::TSTR), Ordering::Less);
+    assert_eq!(AABA::TSTR.cmp(ABAAA::TSTR), Ordering::Less);
+}
 
 #[test]
 fn equal_strs() {
@@ -167,6 +174,14 @@ fn short_strs() {
         Len6A,
         [
             Len0, Len1A, Len2A, Len3A, Len4A, Len5A, Len6B, Len7A, Len8A, Len9A, Len17A, Len25A,
+            Len63A, Len64A, Len65A,
+        ]
+    );
+
+    assert_str_ne!(
+        Len6B,
+        [
+            Len0, Len1A, Len2A, Len3A, Len4A, Len5A, Len6A, Len7A, Len8A, Len9A, Len17A, Len25A,
             Len63A, Len64A, Len65A,
         ]
     );
