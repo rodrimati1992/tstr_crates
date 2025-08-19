@@ -1,3 +1,5 @@
+use std::panic::{AssertUnwindSafe, catch_unwind};
+
 macro_rules! assert_equals_string {
     ($tstr_ty:ty, $string:expr) => {
         const _: () = {
@@ -31,4 +33,26 @@ macro_rules! str_test_case {
     ($string:tt, $tuple:ty $(,)*) => {
         test_case!($string, $tuple, $string);
     };
+}
+
+#[track_caller]
+pub fn must_panic<F, R>(f: F)
+where
+    F: FnOnce() -> R,
+{
+    match catch_unwind(AssertUnwindSafe(f)) {
+        Ok(_) => panic!("expected panic, none happened"),
+        Err(_) => {}
+    }
+}
+
+#[test]
+fn test_must_panic_no_panic() {
+    must_panic(|| panic!());
+}
+
+#[test]
+#[should_panic]
+fn test_must_panic_panics() {
+    must_panic(|| ());
 }

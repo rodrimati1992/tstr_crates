@@ -8,7 +8,7 @@ use core::{
 #[cfg(feature = "const_panic")]
 use const_panic::{
     PanicVal,
-    fmt::{FmtArg, FmtKind, PanicFmt},
+    fmt::{FmtArg, PanicFmt},
 };
 
 use crate::{__TStrArgBinary, IsTStr};

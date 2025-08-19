@@ -138,6 +138,10 @@
 #![allow(non_camel_case_types)]
 #![cfg_attr(feature = "nightly_str_generics", allow(incomplete_features))]
 
+#[cfg(feature = "const_panic")]
+#[doc(hidden)]
+pub mod assertions;
+
 mod macros;
 mod private_macros;
 
@@ -174,3 +178,10 @@ include! {"./p.rs"}
 #[cfg(feature = "const_panic")]
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_panic")))]
 pub use const_panic::unwrap_ok as unwrap;
+
+#[doc(hidden)]
+pub mod __p {
+    pub use const_panic::concat_panic;
+
+    pub use core::{concat, stringify};
+}
