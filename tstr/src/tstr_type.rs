@@ -5,6 +5,12 @@ use core::{
     marker::PhantomData,
 };
 
+#[cfg(feature = "const_panic")]
+use const_panic::{
+    PanicVal,
+    fmt::{FmtArg, FmtKind, PanicFmt},
+};
+
 use crate::{__TStrArgBinary, IsTStr};
 
 /// A type-level string type, emulates a `&'static str` const parameter.
@@ -297,5 +303,37 @@ where
     where
         H: Hasher,
     {
+    }
+}
+
+#[cfg(feature = "const_panic")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_panic")))]
+impl<S> PanicFmt for TStr<S>
+where
+    Self: IsTStr,
+{
+    type This = Self;
+    type Kind = const_panic::IsCustomType;
+
+    const PV_COUNT: usize = 1;
+}
+
+#[cfg(feature = "const_panic")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_panic")))]
+impl<S> TStr<S> {
+    /// Formats a TStr
+    pub const fn to_panicval(&self, fmtarg: FmtArg) -> PanicVal<'static>
+    where
+        Self: IsTStr,
+    {
+        const_panic::StdWrapper(self.to_str()).to_panicval(fmtarg)
+    }
+
+    /// Formats a TStr
+    pub const fn to_panicvals(&self, fmtarg: FmtArg) -> [PanicVal<'static>; 1]
+    where
+        Self: IsTStr,
+    {
+        [self.to_panicval(fmtarg)]
     }
 }

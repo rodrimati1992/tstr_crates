@@ -6,6 +6,9 @@ mod modules {
 
     mod concat_args;
 
+    #[cfg(feature = "const_panic")]
+    mod const_panic_tests;
+
     mod long_strings;
 
     mod string_args;

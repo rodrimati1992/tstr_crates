@@ -170,3 +170,7 @@ use crate::tstr_trait::{__TStrArg, __TStrArgBinary};
 pub use crate::{make_trait::Make, tstr_trait::IsTStr, tstr_type::TStr};
 
 include! {"./p.rs"}
+
+#[cfg(feature = "const_panic")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_panic")))]
+pub use const_panic::unwrap_ok as unwrap;

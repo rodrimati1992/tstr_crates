@@ -19,14 +19,27 @@ include = [
 ]
 
 [features]
+default = ["const_panic"]
 str_generics = ["tstr_proc_macros/str_generics"]
 nightly_str_generics = ["str_generics"]
+const_panic = ["dep:const_panic"]
 
 use_syn = ["tstr_proc_macros/syn_"]
 for_examples = []
 
 # private features
 docsrs = []
+
+[dependencies.const_panic]
+version = "0.2.14"
+features = ["rust_1_82"]
+default-features = false
+optional = true
+
+[dev-dependencies.const_panic]
+version = "0.2.14"
+features = ["non_basic", "rust_1_82"]
+default-features = false
 
 [dependencies.typewit]
 version = "1.12"
