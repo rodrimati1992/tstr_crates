@@ -139,8 +139,9 @@
 #![cfg_attr(feature = "nightly_str_generics", allow(incomplete_features))]
 
 #[cfg(feature = "const_panic")]
-#[doc(hidden)]
-pub mod assertions;
+mod assertions;
+
+pub mod strlike;
 
 mod macros;
 mod private_macros;
@@ -181,6 +182,8 @@ pub use const_panic::unwrap_ok as unwrap;
 
 #[doc(hidden)]
 pub mod __p {
+    pub use crate::__Empty;
+
     pub use const_panic::concat_panic;
 
     pub use core::{concat, stringify};

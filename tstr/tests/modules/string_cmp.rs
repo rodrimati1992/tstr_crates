@@ -71,15 +71,6 @@ type Len65A = TS!("-aaaaaaa-aaaaaaa-aaaaaaa-aaaaaaa-aaaaaaa-aaaaaaa-aaaaaaa-aaaa
 type Len65B = TS!("-aaaaaaa-aaaaaaa-aaaaaaa-_______-aaaaaaa-aaaaaaa-aaaaaaa-aaaaaaa-");
 
 #[test]
-fn empty_string_test() {
-    assert!(tstr::ts!("").const_eq(tstr::EMPTY));
-    assert!(tstr::EMPTY.const_eq(tstr::ts!("")));
-
-    assert!(tstr::ts!(" ").const_ne(tstr::EMPTY));
-    assert!(tstr::EMPTY.const_ne(tstr::ts!(" ")));
-}
-
-#[test]
 fn comparing_shorter_to_longer() {
     type ABAAA = TS!(ABAAA);
     type AABA = TS!(AABA);

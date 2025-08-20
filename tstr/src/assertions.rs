@@ -1,7 +1,3 @@
-use typewit::{Identity, TypeEq};
-
-use crate::{IsTStr, TStr};
-
 macro_rules! cmp_assertc_docs {
     () => {
         concat!(
@@ -17,6 +13,8 @@ macro_rules! cmp_assertc_docs {
             "- `&&str`\n",
             "- `TStr<_>`\n",
             "- `&TStr<_>`\n",
+            "\n\n",
+            "(the references can be of any lifetime)\n",
             "\n\n",
             "The rest of the arguments are formatting arguments for the panic message",
             " for when the assertion fails, ",
@@ -35,6 +33,8 @@ macro_rules! cmp_assertc_docs {
             "they must implement the [`const_panic::fmt::PanicFmt`]",
             " trait as described in its docs.\n",
             "\n\n",
+            "[`TStr`]: crate::TStr",
+            "\n",
         )
     };
 }
@@ -43,10 +43,10 @@ macro_rules! cmp_assertc_docs {
 #[macro_export]
 macro_rules! __cmp_assert_inner {
     ($left:expr, $right:expr, $is_equal:ident, $operator:literal, $($($fmt:tt)+)?) => (
-        match ($left, $right) {
+        match (&$left, &$right) {
             (left, right) => {
-                let left = $crate::assertions::__coerce_assert_comparable(left);
-                let right = $crate::assertions::__coerce_assert_comparable(right);
+                let left = $crate::strlike::as_str($crate::strlike::as_strlike!(left));
+                let right = $crate::strlike::as_str($crate::strlike::as_strlike!(right));
 
                 if let $is_equal = $crate::utils::str_eq(left, right) {
                     $crate::__p::concat_panic!{
@@ -202,74 +202,3 @@ macro_rules! assertc_ne {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
-/// Trait for the types that the `tstr` assert macros can compare.
-///
-/// This trait is sealed and cannot be implemented oI thought idempotence only meant that the first time an operation is done will give the same resuutside of the `tstr` crate.
-pub trait AssertComparable<'a, 'b: 'a>: Sized {
-    #[doc(hidden)]
-    // needed for __AssertComparableWitness to have a type that impls IsTStr,
-    // `&str` and `&&str` use a dummy associated type
-    type __TStr: IsTStr;
-
-    #[doc(hidden)]
-    const __ASSERT_COMPARABLE_WITNESS: __AssertComparableWitness<'a, 'b, Self>;
-}
-
-impl<'a, 'b: 'a> AssertComparable<'a, 'b> for &'b str {
-    type __TStr = crate::Empty;
-
-    const __ASSERT_COMPARABLE_WITNESS: __AssertComparableWitness<'a, 'b, Self> =
-        __AssertComparableWitness::Str(TypeEq::NEW);
-}
-
-impl<'a, 'b: 'a> AssertComparable<'a, 'b> for &'a &'b str {
-    type __TStr = crate::Empty;
-
-    const __ASSERT_COMPARABLE_WITNESS: __AssertComparableWitness<'a, 'b, Self> =
-        __AssertComparableWitness::RefStr(TypeEq::NEW);
-}
-
-impl<'a, 'b: 'a, S> AssertComparable<'a, 'b> for TStr<S>
-where
-    TStr<S>: IsTStr,
-{
-    type __TStr = TStr<S>;
-
-    const __ASSERT_COMPARABLE_WITNESS: __AssertComparableWitness<'a, 'b, Self> =
-        __AssertComparableWitness::TStr(<TStr<S> as Identity>::TYPE_EQ);
-}
-
-impl<'a, 'b: 'a, S> AssertComparable<'a, 'b> for &'a TStr<S>
-where
-    TStr<S>: IsTStr,
-{
-    type __TStr = TStr<S>;
-
-    const __ASSERT_COMPARABLE_WITNESS: __AssertComparableWitness<'a, 'b, Self> =
-        __AssertComparableWitness::RefTStr(<TStr<S> as Identity>::TYPE_EQ.in_ref());
-}
-
-type ACToTstr<'a, 'b, T> = TStr<<<T as AssertComparable<'a, 'b>>::__TStr as IsTStr>::Arg>;
-
-#[doc(hidden)]
-pub enum __AssertComparableWitness<'a, 'b, T: AssertComparable<'a, 'b>> {
-    Str(TypeEq<T, &'b str>),
-    RefStr(TypeEq<T, &'a &'b str>),
-    TStr(TypeEq<T, ACToTstr<'a, 'b, T>>),
-    RefTStr(TypeEq<T, &'a ACToTstr<'a, 'b, T>>),
-}
-
-#[doc(hidden)]
-pub const fn __coerce_assert_comparable<'a, 'b, A>(this: A) -> &'a str
-where
-    'b: 'a,
-    A: AssertComparable<'a, 'b>,
-{
-    match A::__ASSERT_COMPARABLE_WITNESS {
-        __AssertComparableWitness::Str(te) => te.to_right(this),
-        __AssertComparableWitness::RefStr(te) => te.to_right(this),
-        __AssertComparableWitness::TStr(te) => te.to_right(this).to_str(),
-        __AssertComparableWitness::RefTStr(te) => te.to_right(this).to_str(),
-    }
-}

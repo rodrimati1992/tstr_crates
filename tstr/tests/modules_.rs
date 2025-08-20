@@ -15,6 +15,8 @@ mod modules {
 
     mod string_cmp;
 
+    mod strlike_tests;
+
     mod other_args;
 
     // TODO: re-enable once parsing is possible

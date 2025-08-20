@@ -12,8 +12,8 @@ macro_rules! declare_min_const {
         /// implementation detail of tstr
         pub struct ___<S, const LEN: usize>(core::marker::PhantomData<fn() -> S>);
 
-        /// An empty `TStr`.
-        pub type Empty = crate::TStr<___<(), 0>>;
+        #[doc(hidden)]
+        pub type __Empty = crate::TStr<___<(), 0>>;
     }
 }
 
@@ -28,13 +28,10 @@ macro_rules! declare_const_items {
         /// implementation detail of tstr
         pub struct ___<const S: &'static str>;
         
-        /// An empty `TStr`.
-        pub type Empty = crate::TStr<___<"">>;
+        #[doc(hidden)]
+        pub type __Empty = crate::TStr<___<"">>;
     };
 }
 
 #[cfg(feature = "str_generics")]
 declare_const_items! {}
-
-/// An empty `TStr`.
-pub const EMPTY: Empty = Empty::new();

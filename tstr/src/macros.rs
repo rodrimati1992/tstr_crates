@@ -105,6 +105,7 @@
 /// [`TStr`]: ./struct.TStr.html
 #[macro_export]
 macro_rules! TS {
+    ("") => { $crate::__p::__Empty };
     (($($expr:expr),* $(,)*)) => {
         $crate::__ts_impl!(($crate) $($expr)*)
     };

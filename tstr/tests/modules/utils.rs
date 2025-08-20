@@ -36,6 +36,22 @@ macro_rules! str_test_case {
 }
 
 #[track_caller]
+pub fn assert_type<Expected: ?Sized>(x: &impl ?Sized) {
+    assert_eq!(
+        std::any::type_name_of_val(x),
+        std::any::type_name::<Expected>(),
+    );
+}
+
+#[track_caller]
+pub fn assert_typename<T: ?Sized, Expected: ?Sized>() {
+    assert_eq!(
+        std::any::type_name::<T>(),
+        std::any::type_name::<Expected>(),
+    );
+}
+
+#[track_caller]
 pub fn must_panic<F, R>(f: F)
 where
     F: FnOnce() -> R,
