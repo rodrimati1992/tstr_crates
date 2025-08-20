@@ -84,6 +84,22 @@ use crate::{__TStrArgBinary, IsTStr};
 ///
 /// ```
 ///
+/// ### Parsing integers
+///
+/// Parsing integers from `TStr`s, since the primitive integers all have
+/// [`const fn from_str_radix`](u32::from_str_radix) functions,
+/// parsing them doesn't require direct support from `TStr` itself.
+///
+/// ```rust
+/// use tstr::ts;
+///
+/// // parses the number at compile-time!
+/// const NUMBER: u32 = tstr::unwrap!(u32::from_str_radix(ts!(1234).to_str(), 10));
+///
+/// assert_eq!(NUMBER, 1234u32);
+/// ```
+///
+///
 pub struct TStr<S>(pub(crate) PhantomData<fn() -> S>);
 
 impl<S> TStr<S> {
