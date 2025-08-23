@@ -9,6 +9,7 @@ macro_rules! with_elem_count_idents {
 }
 pub(crate) use with_elem_count_idents;
 
+#[cfg(not(feature = "str_generics"))]
 macro_rules! with_elem_count_idents2 {
     ($($macro:ident)::* !{$($prev_args:tt)*}) => (
         $($macro)::* !{
@@ -19,4 +20,6 @@ macro_rules! with_elem_count_idents2 {
         }
     )
 }
+
+#[cfg(not(feature = "str_generics"))]
 pub(crate) use with_elem_count_idents2;

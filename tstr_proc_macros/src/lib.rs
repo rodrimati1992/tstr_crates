@@ -82,13 +82,15 @@ fn output_tstr(crate_path: &TokenStream, tstr: &TStr, out: &mut TokenStream) {
 }
 
 #[cfg(feature = "str_generics")]
-fn output_tstr_param(_crate_path: &TokenStream, tstr: &TStr, out: &mut TokenStream) {
+fn output_tstr_param(crate_path: &TokenStream, tstr: &TStr, out: &mut TokenStream) {
+    use crate::utils::{colon2_token, ident_token, punct_token};
+
     let string = tstr.string.as_str();
     let span = tstr.span;
 
     out.extend(crate_path.clone());
     out.extend(colon2_token(span));
-    out.extend(ident_token("__", span));
+    out.extend(ident_token("___", span));
     out.extend(punct_token('<', span));
 
     let mut lit = Literal::string(&string);

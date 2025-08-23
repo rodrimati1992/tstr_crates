@@ -77,8 +77,12 @@ pub trait __TStrArg: __TStrRepr + 'static {
     type __WithLhsArgs<LeftS: __TStrRepr, const LEFT_LEN: usize>: __TStrArgBinary<Lhs = crate::___<LeftS, LEFT_LEN>, Rhs = Self>;
 }
 
+#[doc(hidden)]
 pub trait __TStrArgBinary {
+    #[doc(hidden)]
     type Lhs: __TStrRepr;
+
+    #[doc(hidden)]
     type Rhs: __TStrRepr;
 
     #[doc(hidden)]
@@ -87,6 +91,7 @@ pub trait __TStrArgBinary {
     #[doc(hidden)]
     const __CMP: core::cmp::Ordering;
 
+    #[doc(hidden)]
     const __TYPE_CMP: typewit::TypeCmp<crate::TStr<Self::Lhs>, crate::TStr<Self::Rhs>>;
 }
 

@@ -20,7 +20,7 @@ include = [
 
 [features]
 default = ["const_panic"]
-str_generics = ["tstr_proc_macros/str_generics"]
+str_generics = ["tstr_proc_macros/str_generics", "typewit/adt_const_marker"]
 nightly_str_generics = ["str_generics"]
 const_panic = ["dep:const_panic"]
 

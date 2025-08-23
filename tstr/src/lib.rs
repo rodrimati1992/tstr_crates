@@ -134,6 +134,7 @@
 //! [`tstr::utils`]: crate::utils
 #![no_std]
 #![cfg_attr(feature = "nightly_str_generics", feature(adt_const_params))]
+#![cfg_attr(feature = "nightly_str_generics", feature(unsized_const_params))]
 #![cfg_attr(feature = "docsrs", feature(doc_cfg, doc_auto_cfg))]
 #![cfg_attr(feature = "nightly_str_generics", allow(incomplete_features))]
 //////////
