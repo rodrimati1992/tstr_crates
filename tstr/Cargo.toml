@@ -42,7 +42,8 @@ features = ["non_basic", "rust_1_82"]
 default-features = false
 
 [dependencies.typewit]
-version = "1.12"
+version = "1.13"
+features = ["rust_1_61"]
 default-features = false
 
 [dependencies.tstr_proc_macros]

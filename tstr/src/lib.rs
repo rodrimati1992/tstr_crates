@@ -135,8 +135,14 @@
 #![no_std]
 #![cfg_attr(feature = "nightly_str_generics", feature(adt_const_params))]
 #![cfg_attr(feature = "docsrs", feature(doc_cfg, doc_auto_cfg))]
-#![allow(non_camel_case_types)]
 #![cfg_attr(feature = "nightly_str_generics", allow(incomplete_features))]
+//////////
+// lints
+//////////
+#![allow(non_camel_case_types)]
+#![forbid(unsafe_code)]
+
+pub use typewit;
 
 #[cfg(feature = "const_panic")]
 mod assertions;

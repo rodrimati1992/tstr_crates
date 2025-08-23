@@ -11,6 +11,9 @@ use const_panic::{
     fmt::{FmtArg, PanicFmt},
 };
 
+use typewit::Identity;
+
+use crate::tstr_trait::__ToTStrArgBinary;
 use crate::{__TStrArgBinary, IsTStr};
 
 /// A type-level string type, emulates a `&'static str` const parameter.
@@ -193,7 +196,7 @@ impl<S> TStr<S> {
         Self: IsTStr,
         S2: IsTStr,
     {
-        crate::tstr_trait::__ToTStrArgBinary::<<Self as IsTStr>::Arg, S2::Arg>::__EQ
+        __ToTStrArgBinary::<<Self as IsTStr>::Arg, S2::Arg>::__EQ
     }
 
     /// Compares two `TStr`s for inequality
@@ -214,7 +217,7 @@ impl<S> TStr<S> {
         Self: IsTStr,
         S2: IsTStr,
     {
-        !crate::tstr_trait::__ToTStrArgBinary::<<Self as IsTStr>::Arg, S2::Arg>::__EQ
+        !__ToTStrArgBinary::<<Self as IsTStr>::Arg, S2::Arg>::__EQ
     }
 
     /// Compares two `TStr`s for ordering
@@ -238,7 +241,58 @@ impl<S> TStr<S> {
         Self: IsTStr,
         R: IsTStr,
     {
-        crate::tstr_trait::__ToTStrArgBinary::<<Self as IsTStr>::Arg, R::Arg>::__CMP
+        __ToTStrArgBinary::<<Self as IsTStr>::Arg, R::Arg>::__CMP
+    }
+
+    /// Compares two `TStr`s for inequality,
+    /// returning a proof of (in)equality of `Self` and `R`
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use tstr::{IsTStr, TStr, TS};
+    /// use std::marker::PhantomData as PD;
+    ///
+    ///
+    /// assert_eq!(typecast_arg(Guess::<TS!(bar)>(PD)), Err(Guess::<TS!(bar)>(PD)));
+    /// assert_eq!(typecast_arg(Guess::<TS!(bar)>(PD)), Err(Guess::<TS!(bar)>(PD)));
+    ///
+    /// assert_eq!(typecast_arg(Guess::<Answer>(PD)), Ok(Guess::<Answer>(PD)));
+    ///
+    ///
+    /// #[derive(Debug, PartialEq, Eq)]
+    /// struct Guess<S>(PD<S>);
+    ///
+    /// type Answer = TS!(hello);
+    ///
+    /// const fn typecast_arg<S>(guess: Guess<TStr<S>>) -> Result<Guess<Answer>, Guess<TStr<S>>>
+    /// where
+    ///     TStr<S>: IsTStr
+    /// {
+    ///     match TStr::<S>::new().type_eq(Answer::new()).eq() {
+    ///         Some(te) => Ok(te.map(GuessFn).to_right(guess)),
+    ///         None => Err(guess),
+    ///     }
+    /// }
+    ///
+    /// tstr::typewit::type_fn!{
+    ///     // type-level function from any `S` to `Guess<S>`
+    ///     struct GuessFn;
+    ///     impl<S> S => Guess<S>
+    /// }
+    ///
+    /// ```
+    ///
+    pub const fn type_eq<R>(self, _: R) -> typewit::TypeCmp<Self, R>
+    where
+        Self: IsTStr,
+        R: IsTStr,
+    {
+        const {
+            __ToTStrArgBinary::<<Self as IsTStr>::Arg, R::Arg>::__TYPE_CMP
+                .join_left(<Self as Identity>::TYPE_EQ)
+                .join_right(<R as Identity>::TYPE_EQ.flip())
+        }
     }
 }
 

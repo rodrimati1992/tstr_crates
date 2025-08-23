@@ -4,8 +4,10 @@ use std::cmp::{Ord, Ordering};
 
 macro_rules! assert_str_eq {
     ($left:ty, $right:ty) => {
+        assert!(<$left>::TSTR.type_eq(<$right>::TSTR).is_eq());
         assert!(<$left>::TSTR.const_eq(<$right>::TSTR));
         assert!(!<$left>::TSTR.const_ne(<$right>::TSTR));
+        assert!(!<$left>::TSTR.type_eq(<$right>::TSTR).is_ne());
 
         assert_eq!(<$left>::TSTR.const_cmp(<$right>::TSTR), Ordering::Equal);
     };
@@ -13,7 +15,10 @@ macro_rules! assert_str_eq {
 
 macro_rules! assert_str_ne {
     ($left:ty, [$($right:ty),* $(,)*]) => {
-        $(assert!(<$left>::TSTR.const_ne(<$right>::TSTR));)*
+        $(
+            assert!(<$left>::TSTR.const_ne(<$right>::TSTR));
+            assert!(<$left>::TSTR.type_eq(<$right>::TSTR).is_ne());
+        )*
 
         {
             $(

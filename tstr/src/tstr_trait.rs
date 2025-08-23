@@ -68,21 +68,32 @@ pub trait __TStrArg: __TStrRepr + 'static {
     const __STR: &str;
 
     #[doc(hidden)]
-    type __WithRhs<Rhs: __TStrArg>: __TStrArgBinary;
+    type __WithRhs<Rhs: __TStrArg>: __TStrArgBinary<Lhs = Self, Rhs = Rhs>;
 
     #[cfg(feature = "str_generics")]
-    type __WithLhsArgs<const LEFT_S: &'static str>: __TStrArgBinary;
+    type __WithLhsArgs<const LEFT_S: &'static str>: __TStrArgBinary<Lhs = crate::___<LEFT_S>, Rhs = Self>;
 
     #[cfg(not(feature = "str_generics"))]
-    type __WithLhsArgs<LeftS: __TStrRepr, const LEFT_LEN: usize>: __TStrArgBinary;
+    type __WithLhsArgs<LeftS: __TStrRepr, const LEFT_LEN: usize>: __TStrArgBinary<Lhs = crate::___<LeftS, LEFT_LEN>, Rhs = Self>;
 }
 
 pub trait __TStrArgBinary {
+    type Lhs: __TStrRepr;
+    type Rhs: __TStrRepr;
+
     #[doc(hidden)]
     const __EQ: bool;
 
     #[doc(hidden)]
     const __CMP: core::cmp::Ordering;
+
+    const __TYPE_CMP: typewit::TypeCmp<crate::TStr<Self::Lhs>, crate::TStr<Self::Rhs>>;
 }
 
 pub(crate) type __ToTStrArgBinary<L, R> = <L as __TStrArg>::__WithRhs<R>;
+
+typewit::inj_type_fn! {
+    pub(crate) struct TStrFn;
+
+    impl<S> S => crate::TStr<S>;
+}
