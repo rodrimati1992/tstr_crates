@@ -154,6 +154,7 @@ mod macros;
 mod private_macros;
 
 mod make_trait;
+mod tstr_fns;
 mod tstr_trait;
 mod tstr_type;
 
@@ -177,9 +178,14 @@ extern crate self as tstr;
 #[doc(hidden)]
 pub use tstr_proc_macros::__ts_impl;
 
-use crate::tstr_trait::{__TStrArg, __TStrArgBinary};
+use crate::tstr_trait::__TStrArgBinary;
 
-pub use crate::{make_trait::Make, tstr_trait::IsTStr, tstr_type::TStr};
+pub use crate::{
+    make_trait::Make,
+    tstr_fns::*,
+    tstr_trait::{IsTStr, TStrArg},
+    tstr_type::TStr,
+};
 
 include! {"./p.rs"}
 

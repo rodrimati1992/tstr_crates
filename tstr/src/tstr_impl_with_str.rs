@@ -1,8 +1,8 @@
-use crate::{___, __TStrArg, __TStrArgBinary};
+use crate::{___, __TStrArgBinary, TStrArg};
 
 use typewit::const_marker::Str;
 
-impl<const S: &'static str> __TStrArg for crate::___<S> {
+impl<const S: &'static str> TStrArg for crate::___<S> {
     #[doc(hidden)]
     const __LENGTH: usize = S.len();
 
@@ -13,7 +13,7 @@ impl<const S: &'static str> __TStrArg for crate::___<S> {
     const __STR: &str = S;
 
     #[doc(hidden)]
-    type __WithRhs<Rhs: __TStrArg> = <Rhs as __TStrArg>::__WithLhsArgs<S>;
+    type __WithRhs<Rhs: TStrArg> = <Rhs as TStrArg>::__WithLhsArgs<S>;
 
     type __WithLhsArgs<const LEFT_S: &'static str> = (crate::___<LEFT_S>, crate::___<S>);
 }

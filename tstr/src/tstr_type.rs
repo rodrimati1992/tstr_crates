@@ -11,10 +11,7 @@ use const_panic::{
     fmt::{FmtArg, PanicFmt},
 };
 
-use typewit::Identity;
-
-use crate::tstr_trait::__ToTStrArgBinary;
-use crate::{__TStrArgBinary, IsTStr};
+use crate::IsTStr;
 
 /// A type-level string type, emulates a `&'static str` const parameter.
 ///
@@ -97,7 +94,7 @@ use crate::{__TStrArgBinary, IsTStr};
 /// use tstr::ts;
 ///
 /// // parses the number at compile-time!
-/// const NUMBER: u32 = tstr::unwrap!(u32::from_str_radix(ts!(1234).to_str(), 10));
+/// const NUMBER: u32 = tstr::unwrap!(u32::from_str_radix(tstr::to_str(ts!(1234)), 10));
 ///
 /// assert_eq!(NUMBER, 1234u32);
 /// ```
@@ -109,190 +106,6 @@ impl<S> TStr<S> {
     /// Constructs the TStr.
     pub const fn new() -> Self {
         TStr(PhantomData)
-    }
-}
-
-impl<S> TStr<S> {
-    /// Gets the length of the string in utf8
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use tstr::ts;
-    ///
-    /// const _: () = assert!(ts!(4).len() == 1);
-    ///
-    /// const _: () = assert!(ts!("hello").len() == 5);
-    ///
-    /// const _: () = assert!(ts!(rustacean).len() == 9);
-    ///
-    /// ```
-    pub const fn len(self) -> usize
-    where
-        Self: IsTStr,
-    {
-        <Self as IsTStr>::LENGTH
-    }
-
-    /// Gets the `&'static str` equivalent of this TStr
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use tstr::{TStr, ts};
-    ///
-    /// let foo: TStr<_> = ts!(foo);
-    /// assert_eq!(foo.to_str(), "foo");
-    ///
-    /// const BAR_STR: &str = ts!("bar").to_str();
-    /// assert_eq!(BAR_STR, "bar");
-    ///
-    /// ```
-    ///
-    pub const fn to_str(self) -> &'static str
-    where
-        Self: IsTStr,
-    {
-        Self::STR
-    }
-
-    /// Gets the `&'static [u8]` equivalent of this TStr
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use tstr::{TStr, ts};
-    ///
-    /// let foo: TStr<_> = ts!(foo);
-    /// assert_eq!(foo.to_bytes(), "foo".as_bytes());
-    ///
-    /// const BAR_STR: &[u8] = ts!("bar").to_bytes();
-    /// assert_eq!(BAR_STR, "bar".as_bytes());
-    ///
-    /// ```
-    ///
-    pub const fn to_bytes(self) -> &'static [u8]
-    where
-        Self: IsTStr,
-    {
-        Self::BYTES
-    }
-
-    /// Compares two `TStr`s for equality
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use tstr::ts;
-    ///
-    /// const _: () = assert!( ts!("foo").const_eq(ts!("foo")));
-    ///
-    /// const _: () = assert!(!ts!("foo").const_eq(ts!("bar")));
-    ///
-    /// ```
-    ///
-    pub const fn const_eq<S2>(self, _: S2) -> bool
-    where
-        Self: IsTStr,
-        S2: IsTStr,
-    {
-        __ToTStrArgBinary::<<Self as IsTStr>::Arg, S2::Arg>::__EQ
-    }
-
-    /// Compares two `TStr`s for inequality
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use tstr::ts;
-    ///
-    /// const _: () = assert!(!ts!("foo").const_ne(ts!("foo")));
-    ///
-    /// const _: () = assert!( ts!("foo").const_ne(ts!("bar")));
-    ///
-    /// ```
-    ///
-    pub const fn const_ne<S2>(self, _: S2) -> bool
-    where
-        Self: IsTStr,
-        S2: IsTStr,
-    {
-        !__ToTStrArgBinary::<<Self as IsTStr>::Arg, S2::Arg>::__EQ
-    }
-
-    /// Compares two `TStr`s for ordering
-    ///
-    /// # Examples
-    ///
-    /// ```rust
-    /// use tstr::ts;
-    /// use core::cmp::Ordering;
-    ///
-    /// assert_eq!(const { ts!("foo").const_cmp(ts!("foo")) }, Ordering::Equal);
-    ///
-    /// assert_eq!(const { ts!("foo").const_cmp(ts!("bar")) }, Ordering::Greater);
-    ///
-    /// assert_eq!(const { ts!("bar").const_cmp(ts!("foo")) }, Ordering::Less);
-    ///
-    /// ```
-    ///
-    pub const fn const_cmp<R>(self, _: R) -> Ordering
-    where
-        Self: IsTStr,
-        R: IsTStr,
-    {
-        __ToTStrArgBinary::<<Self as IsTStr>::Arg, R::Arg>::__CMP
-    }
-
-    /// Compares two `TStr`s for inequality,
-    /// returning a proof of (in)equality of `Self` and `R`
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use tstr::{IsTStr, TStr, TS};
-    /// use std::marker::PhantomData as PD;
-    ///
-    ///
-    /// assert_eq!(typecast_arg(Guess::<TS!(bar)>(PD)), Err(Guess::<TS!(bar)>(PD)));
-    /// assert_eq!(typecast_arg(Guess::<TS!(bar)>(PD)), Err(Guess::<TS!(bar)>(PD)));
-    ///
-    /// assert_eq!(typecast_arg(Guess::<Answer>(PD)), Ok(Guess::<Answer>(PD)));
-    ///
-    ///
-    /// #[derive(Debug, PartialEq, Eq)]
-    /// struct Guess<S>(PD<S>);
-    ///
-    /// type Answer = TS!(hello);
-    ///
-    /// const fn typecast_arg<S>(guess: Guess<TStr<S>>) -> Result<Guess<Answer>, Guess<TStr<S>>>
-    /// where
-    ///     TStr<S>: IsTStr
-    /// {
-    ///     match TStr::<S>::new().type_eq(Answer::new()).eq() {
-    ///         Some(te) => Ok(te.map(GuessFn).to_right(guess)),
-    ///         None => Err(guess),
-    ///     }
-    /// }
-    ///
-    /// tstr::typewit::type_fn!{
-    ///     // type-level function from any `S` to `Guess<S>`
-    ///     struct GuessFn;
-    ///     impl<S> S => Guess<S>
-    /// }
-    ///
-    /// ```
-    ///
-    pub const fn type_eq<R>(self, _: R) -> typewit::TypeCmp<Self, R>
-    where
-        Self: IsTStr,
-        R: IsTStr,
-    {
-        const {
-            __ToTStrArgBinary::<<Self as IsTStr>::Arg, R::Arg>::__TYPE_CMP
-                .join_left(<Self as Identity>::TYPE_EQ)
-                .join_right(<R as Identity>::TYPE_EQ.flip())
-        }
     }
 }
 
@@ -337,7 +150,7 @@ where
 {
     #[inline(always)]
     fn eq(&self, other: &S2) -> bool {
-        self.const_eq(*other)
+        self.tstr_eq(*other)
     }
 }
 
@@ -350,7 +163,7 @@ where
 {
     #[inline(always)]
     fn partial_cmp(&self, other: &S2) -> Option<Ordering> {
-        Some(self.const_cmp(*other))
+        Some(self.tstr_cmp(*other))
     }
 }
 
@@ -396,7 +209,7 @@ impl<S> TStr<S> {
     where
         Self: IsTStr,
     {
-        const_panic::StdWrapper(self.to_str()).to_panicval(fmtarg)
+        const_panic::StdWrapper(crate::to_str(*self)).to_panicval(fmtarg)
     }
 
     /// Formats a TStr

@@ -1,32 +1,37 @@
-use crate::{___, __TStrArg, __TStrArgBinary, TStr};
+use crate::{___, __TStrArgBinary, TStr, TStrArg};
 
 use typewit::{HasTypeWitness, Identity};
 
 mod typecmp_for_chars_repr;
 use self::typecmp_for_chars_repr::{__TStrReprBinary, EqKindCmp, NeKindCmp};
 
-impl<S, const LEN: usize> __TStrArg for ___<S, LEN>
+impl<S, const LEN: usize> TStrArg for ___<S, LEN>
 where
     S: __TStrRepr + 'static,
 {
+    /// Implementation detail
     #[doc(hidden)]
     const __LENGTH: usize = LEN;
 
+    /// Implementation detail
     #[doc(hidden)]
     const __BYTES: &[u8] = &{
         let_bytes! {let ret, S, LEN}
         ret
     };
 
+    /// Implementation detail
     #[doc(hidden)]
     const __STR: &str = match core::str::from_utf8(Self::__BYTES) {
         Ok(x) => x,
         Err(_) => unreachable!(),
     };
 
+    /// Implementation detail
     #[doc(hidden)]
-    type __WithRhs<Rhs: __TStrArg> = <Rhs as __TStrArg>::__WithLhsArgs<S, LEN>;
+    type __WithRhs<Rhs: TStrArg> = <Rhs as TStrArg>::__WithLhsArgs<S, LEN>;
 
+    /// Implementation detail
     #[doc(hidden)]
     type __WithLhsArgs<S1: __TStrRepr, const LEN1: usize> = (___<S1, LEN1>, ___<S, LEN>);
 }

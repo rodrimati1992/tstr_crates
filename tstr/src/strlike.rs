@@ -45,10 +45,7 @@ impl StrLike for str {
     const __STR_LIKE_WITNESS: __StrLikeWitness<Self> = __StrLikeWitness::Str(TypeEq::NEW);
 }
 
-impl<S> StrLike for TStr<S>
-where
-    TStr<S>: IsTStr,
-{
+impl<S: crate::TStrArg> StrLike for TStr<S> {
     #[doc(hidden)]
     type __TStr = TStr<S>;
 
@@ -87,7 +84,7 @@ where
 {
     match A::__STR_LIKE_WITNESS {
         __StrLikeWitness::Str(te) => te.in_ref().to_right(this),
-        __StrLikeWitness::TStr(te) => te.in_ref().to_right(this).to_str(),
+        __StrLikeWitness::TStr(te) => crate::to_str(*te.in_ref().to_right(this)),
     }
 }
 
@@ -107,10 +104,7 @@ impl<T: ?Sized + AsStrLike> AsStrLike for &T {
 impl AsStrLike for str {
     type Target = Self;
 }
-impl<S> AsStrLike for TStr<S>
-where
-    Self: IsTStr,
-{
+impl<S: crate::TStrArg> AsStrLike for TStr<S> {
     type Target = Self;
 }
 
