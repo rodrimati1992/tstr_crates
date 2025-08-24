@@ -1,4 +1,4 @@
-macro_rules! cmp_assertc_docs {
+macro_rules! cmp_assert_str_docs {
     () => {
         concat!(
             "[**examples below**](#examples)",
@@ -45,8 +45,8 @@ macro_rules! __cmp_assert_inner {
     ($left:expr, $right:expr, $is_equal:ident, $operator:literal, $($($fmt:tt)+)?) => (
         match (&$left, &$right) {
             (left, right) => {
-                let left = $crate::strlike::as_str($crate::strlike::as_strlike!(left));
-                let right = $crate::strlike::as_str($crate::strlike::as_strlike!(right));
+                let left = $crate::strlike::as_str!(left);
+                let right = $crate::strlike::as_str!(right);
 
                 if let $is_equal = $crate::utils::str_eq(left, right) {
                     $crate::__p::concat_panic!{
@@ -69,7 +69,7 @@ macro_rules! __cmp_assert_inner {
 
 /// For asserting that two `&str` and/or [`TStr`] are equal.
 ///
-#[doc = cmp_assertc_docs!()]
+#[doc = cmp_assert_str_docs!()]
 ///
 /// # Example
 ///
@@ -79,16 +79,16 @@ macro_rules! __cmp_assert_inner {
 /// use tstr::ts;
 ///
 /// // compile-time asserts
-/// const { tstr::assertc_eq!(ts!(foo), ts!("foo")) }
-/// const { tstr::assertc_eq!(ts!(foo), "foo") }
-/// const { tstr::assertc_eq!("foo", ts!("foo")) }
-/// const { tstr::assertc_eq!("foo", "foo") }
+/// const { tstr::assert_str_eq!(ts!(foo), ts!("foo")) }
+/// const { tstr::assert_str_eq!(ts!(foo), "foo") }
+/// const { tstr::assert_str_eq!("foo", ts!("foo")) }
+/// const { tstr::assert_str_eq!("foo", "foo") }
 ///
 /// // runtime asserts
-/// tstr::assertc_eq!(ts!(foo), ts!("foo"));
-/// tstr::assertc_eq!(ts!(foo), "foo");
-/// tstr::assertc_eq!("foo", ts!("foo"));
-/// tstr::assertc_eq!("foo", "foo");
+/// tstr::assert_str_eq!(ts!(foo), ts!("foo"));
+/// tstr::assert_str_eq!(ts!(foo), "foo");
+/// tstr::assert_str_eq!("foo", ts!("foo"));
+/// tstr::assert_str_eq!("foo", "foo");
 /// ```
 ///
 /// ### Failing
@@ -99,7 +99,7 @@ macro_rules! __cmp_assert_inner {
 /// const fn expects_bar<S: IsTStr>() {
 ///     const {
 ///         let expected = "bar";
-///         tstr::assertc_eq!(
+///         tstr::assert_str_eq!(
 ///             S::VAL, expected,
 ///             "unfortunately you passed ", S::VAL, " when ", expected, " was expected"
 ///         )
@@ -120,7 +120,7 @@ macro_rules! __cmp_assert_inner {
 ///               : unfortunately you passed "foo" when "bar" was expected
 ///   --> tstr/src/assertions.rs:130:9
 ///    |
-/// 9  | /         tstr::assertc_eq!(
+/// 9  | /         tstr::assert_str_eq!(
 /// 10 | |             S::VAL, expected,
 /// 11 | |             "unfortunately you passed ", S::VAL, " when ", expected, " was expected"
 /// 12 | |         )
@@ -128,7 +128,7 @@ macro_rules! __cmp_assert_inner {
 /// ```
 #[macro_export]
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_panic")))]
-macro_rules! assertc_eq {
+macro_rules! assert_str_eq {
     ($left:expr, $right:expr $(, $($fmt:tt)* )? ) => (
         $crate::__cmp_assert_inner!{$left, $right, false, "==", $($($fmt)*)?}
     );
@@ -136,7 +136,7 @@ macro_rules! assertc_eq {
 
 /// For asserting that two `&str` and/or [`TStr`] are unequal.
 ///
-#[doc = cmp_assertc_docs!()]
+#[doc = cmp_assert_str_docs!()]
 ///
 /// # Example
 ///
@@ -146,16 +146,16 @@ macro_rules! assertc_eq {
 /// use tstr::ts;
 ///
 /// // compile-time asserts
-/// const { tstr::assertc_ne!(ts!(foo), ts!("bar")) }
-/// const { tstr::assertc_ne!(ts!(foo), "qux") }
-/// const { tstr::assertc_ne!("foo", ts!("hello")) }
-/// const { tstr::assertc_ne!("foo", "world") }
+/// const { tstr::assert_str_ne!(ts!(foo), ts!("bar")) }
+/// const { tstr::assert_str_ne!(ts!(foo), "qux") }
+/// const { tstr::assert_str_ne!("foo", ts!("hello")) }
+/// const { tstr::assert_str_ne!("foo", "world") }
 ///
 /// // runtime asserts
-/// tstr::assertc_ne!(ts!(foo), ts!("bar"));
-/// tstr::assertc_ne!(ts!(foo), "qux");
-/// tstr::assertc_ne!("foo", ts!("hello"));
-/// tstr::assertc_ne!("foo", "world");
+/// tstr::assert_str_ne!(ts!(foo), ts!("bar"));
+/// tstr::assert_str_ne!(ts!(foo), "qux");
+/// tstr::assert_str_ne!("foo", ts!("hello"));
+/// tstr::assert_str_ne!("foo", "world");
 /// ```
 ///
 /// ### Failing
@@ -165,7 +165,7 @@ macro_rules! assertc_eq {
 ///
 /// const fn expects_not_bar<S: IsTStr>() {
 ///     const {
-///         tstr::assertc_ne!(
+///         tstr::assert_str_ne!(
 ///             S::VAL, "bar",
 ///             "unfortunately you passed ", S::VAL, ", the only value that isn't allowed"
 ///         )
@@ -186,7 +186,7 @@ macro_rules! assertc_eq {
 ///               : unfortunately you passed "bar", the only value that isn't allowed
 ///   --> tstr/src/assertions.rs:196:9
 ///    |
-/// 8  | /         tstr::assertc_ne!(
+/// 8  | /         tstr::assert_str_ne!(
 /// 9  | |             S::VAL, "bar",
 /// 10 | |             "unfortunately you passed ", S::VAL, ", the only value that isn't allowed"
 /// 11 | |         )
@@ -195,7 +195,7 @@ macro_rules! assertc_eq {
 /// ```
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_panic")))]
 #[macro_export]
-macro_rules! assertc_ne {
+macro_rules! assert_str_ne {
     ($left:expr, $right:expr $(, $($fmt:tt)* )? ) => (
         $crate::__cmp_assert_inner!{$left, $right, true, "!=", $($($fmt)*)?}
     );

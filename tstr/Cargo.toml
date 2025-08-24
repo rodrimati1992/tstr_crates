@@ -29,6 +29,7 @@ for_examples = []
 
 # private features
 docsrs = []
+__ui_tests = ["trybuild"]
 
 [dependencies.const_panic]
 version = "0.2.14"
@@ -49,6 +50,11 @@ default-features = false
 [dependencies.tstr_proc_macros]
 version = "0.3.0"
 path = "../tstr_proc_macros"
+
+# no such thing as optional dev-dependencies, aaaaaaah
+[dependencies.trybuild]
+version = "1.0"
+optional = true
 
 [package.metadata.docs.rs]
 features = ["docsrs", "nightly_str_generics"]

@@ -22,4 +22,6 @@ mod modules {
     mod trait_fn_equiv_tests;
 
     mod tstr_methods_tests;
+
+    mod ui_tests;
 }

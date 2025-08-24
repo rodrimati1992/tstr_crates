@@ -12,7 +12,7 @@ use typewit::Identity;
 pub trait IsTStr:
     Identity<Type = TStr<<Self as IsTStr>::Arg>>
     + 'static
-    + crate::strlike::AsStrLike
+    + crate::strlike::StrLike<__TStr = Self>
     + Copy
     + Clone
     + Debug
@@ -310,11 +310,11 @@ where
 ///
 /// You only need this trait if you're using using `TStr` explicitly in the code,
 /// it's usually better have a type parameter bounded by
-/// the [`IsTStr`] trait instead of using [`TStr`] directly.
+/// the [`IsTStr`] trait instead of using `TStr` directly.
 ///
 /// # Example
 ///
-/// This example shows an usecase where you'll need to use this trait,
+/// This example shows a usecase where you'll need to use this trait,
 /// implementing traits for `TStr`.
 ///
 /// ```rust

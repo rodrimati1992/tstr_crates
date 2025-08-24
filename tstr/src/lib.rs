@@ -198,5 +198,6 @@ pub mod __p {
 
     pub use const_panic::concat_panic;
 
+    pub use core::array;
     pub use core::{concat, stringify};
 }

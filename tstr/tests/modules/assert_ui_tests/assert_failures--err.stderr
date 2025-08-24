@@ -1,0 +1,23 @@
+error[E0080]: evaluation panicked:
+              assertion failed: LEFT == RIGHT
+               left: `"uh"`
+              right: `"what"`
+              : hello"how are you"
+ --> tests/modules/assert_ui_tests/assert_failures--err.rs:4:15
+  |
+4 | const _: () = tstr::assert_str_eq!(ts!(uh), "what", "hello", {?}: "how are you");
+  |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ evaluation of `_` failed here
+  |
+  = note: this error originates in the macro `$crate::__p::concat_panic` which comes from the expansion of the macro `tstr::assert_str_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0080]: evaluation panicked:
+              assertion failed: LEFT != RIGHT
+               left: `"no"`
+              right: `"no"`
+              : 10 0x14
+ --> tests/modules/assert_ui_tests/assert_failures--err.rs:6:15
+  |
+6 | const _: () = tstr::assert_str_ne!("no", ts!(no), 10u8, " ", {#X}: 20u16);
+  |               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ evaluation of `_` failed here
+  |
+  = note: this error originates in the macro `$crate::__p::concat_panic` which comes from the expansion of the macro `tstr::assert_str_ne` (in Nightly builds, run with -Z macro-backtrace for more info)
