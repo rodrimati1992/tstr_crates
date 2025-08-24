@@ -195,6 +195,7 @@ include! {"./p.rs"}
 #[doc(hidden)]
 pub mod __p {
     pub use crate::__Empty;
+    pub use crate::macros::__IgnoreArgReturnEmpty;
 
     pub use const_panic::concat_panic;
 

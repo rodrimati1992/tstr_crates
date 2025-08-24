@@ -1,0 +1,53 @@
+error: unexpected token after the argument
+ --> tests/modules/ts_macros_ui_tests/./ts_macros_syntax-unsyn-err.rs
+  |
+  |     alias!{ pub _compile_err3 = crate::bar::compile_error!{"foo"}; }
+  |                                      ^
+
+error: unexpected token after the argument
+ --> tests/modules/ts_macros_ui_tests/./ts_macros_syntax-unsyn-err.rs
+  |
+  |     alias!{ pub _compile_err2 = foo::bar::compile_error!{"foo"}; }
+  |                                    ^
+
+error: unexpected token after the argument
+ --> tests/modules/ts_macros_ui_tests/./ts_macros_syntax-unsyn-err.rs
+  |
+  |     alias!{ pub _compile_err1 = compile_error!{"foo"}; }
+  |                                              ^
+
+error: expected one of: `concat`, `stringify`, identifier, string literal, integer literal
+ --> tests/modules/ts_macros_ui_tests/./ts_macros_syntax-unsyn-err.rs
+  |
+  |     alias!{ pub _brackets = []; }
+  |                             ^
+
+error: expected one of: `concat`, `stringify`, identifier, string literal, integer literal
+ --> tests/modules/ts_macros_ui_tests/./ts_macros_syntax-unsyn-err.rs
+  |
+  |     alias!{ pub _parentheses = (); }
+  |                                ^
+
+error: expected one of: `concat`, `stringify`, identifier, string literal, integer literal
+ --> tests/modules/ts_macros_ui_tests/./ts_macros_syntax-unsyn-err.rs
+  |
+  |     alias!{ pub _braces = {}; }
+  |                           ^
+
+error: expected one of: `concat`, `stringify`, identifier, string literal, integer literal
+ --> tests/modules/ts_macros_ui_tests/./ts_macros_syntax-unsyn-err.rs
+  |
+  |     alias!{ pub _dotdot = ..; }
+  |                           ^
+
+error: expected expression, found `=`
+ --> tests/modules/ts_macros_ui_tests/./ts_macros_syntax-unsyn-err.rs
+  |
+  |     alias!{ pub _equals = (=); }
+  |                            ^ expected expression
+
+error: expected one of: `concat`, `stringify`, identifier, string literal, integer literal
+ --> tests/modules/ts_macros_ui_tests/./ts_macros_syntax-unsyn-err.rs
+  |
+  |     alias!{ pub _equals = (=); }
+  |                           ^

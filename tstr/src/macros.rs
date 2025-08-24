@@ -322,3 +322,15 @@ macro_rules! alias {
         )*
     );
 }
+
+#[doc(hidden)]
+pub trait __PickFirst<B: ?Sized> {
+    type First: ?Sized;
+}
+
+impl<A: ?Sized, B: ?Sized> __PickFirst<B> for A {
+    type First = A;
+}
+
+#[doc(hidden)]
+pub type __IgnoreArgReturnEmpty<A> = <TS!("") as __PickFirst<A>>::First;

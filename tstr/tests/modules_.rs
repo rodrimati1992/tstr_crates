@@ -2,7 +2,7 @@ mod modules {
     #[macro_use]
     mod utils;
 
-    mod alias_and_tuples;
+    mod aliases;
 
     mod concat_args;
 

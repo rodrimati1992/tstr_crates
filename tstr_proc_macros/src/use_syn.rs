@@ -1,4 +1,4 @@
-use proc_macro2::{Span, TokenStream};
+use proc_macro2::{Delimiter, Span, TokenStream, TokenTree};
 
 use syn::{
     LitInt, LitStr,
@@ -9,23 +9,44 @@ use syn::{
 
 use super::{Inputs, TStr};
 
-impl Parse for Inputs {
-    fn parse(input: ParseStream<'_>) -> syn::Result<Self> {
-        let content;
-        let _ = parenthesized!(content in input);
+pub(crate) fn parse_inputs(
+    ts: proc_macro2::TokenStream,
+    crate_token: &mut Option<proc_macro::TokenStream>,
+) -> Result<Inputs, syn::Error> {
+    syn::parse::Parser::parse2(
+        |input: ParseStream| {
+            let content;
+            parenthesized!(content in input);
 
-        let crate_path = content.parse::<proc_macro2::TokenStream>()?;
+            let crate_path = content
+                .parse::<proc_macro2::TokenStream>()
+                .expect("TokenStream never fails to parse");
 
-        let mut strings = Vec::<TStr>::new();
-        while !input.is_empty() {
-            strings.push(input.parse()?);
-        }
+            *crate_token = Some(crate_path.into());
 
-        Ok(Self {
-            crate_path,
-            strings,
-        })
-    }
+            // unwrapping the :expr that the tstr macros passed in
+            let expr_tokens = match input.parse::<TokenTree>()? {
+                TokenTree::Group(group) if group.delimiter() == Delimiter::None => group.stream(),
+                _ => panic!("not an :expr!"),
+            };
+
+            let string = syn::parse::Parser::parse2(
+                |ts_input: ParseStream| {
+                    let ret = TStr::parse(ts_input)?;
+
+                    if !ts_input.is_empty() {
+                        return Err(ts_input.error("unexpected token after the argument"));
+                    }
+
+                    Ok(ret)
+                },
+                expr_tokens,
+            )?;
+
+            Ok(Inputs { string })
+        },
+        ts,
+    )
 }
 
 impl Parse for TStr {
@@ -52,11 +73,12 @@ impl Parse for TStr {
             let (span, content) = parse_post_macro_name(input)?;
             (content.parse::<TokenStream>()?.to_string(), span)
         } else if lookahead.peek(syn::Ident::peek_any) {
-            let ident = input.parse::<syn::Ident>()?;
+            let ident = input.call(syn::Ident::parse_any)?;
             let mut value = ident.to_string();
             if value.starts_with("r#") {
                 value.drain(..2);
             }
+
             (value, ident.span())
         } else if lookahead.peek(LitStr) {
             let lit = input.parse::<LitStr>()?;
@@ -75,7 +97,7 @@ fn parse_post_macro_name(input: ParseStream) -> syn::Result<(Span, ParseBuffer)>
     input.parse::<syn::Token!(!)>()?;
     let content;
     let paren = parenthesized!(content in input);
-    Ok((paren.span, content))
+    Ok((paren.span.join(), content))
 }
 
 mod kw {

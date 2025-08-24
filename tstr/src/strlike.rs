@@ -102,8 +102,13 @@ impl<S: crate::IsTStr> StrLike for S {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+#[diagnostic::on_unimplemented(
+    message = "`StrLike` is not implemented for `{T}`",
+    label = "`tstr::strlike::StrLike` is not implemented for `{T}`",
+    note = "help:\nconsider adding a `{T}: ?Sized + tstr::strlike::StrLike` bound\n"
+)]
 #[doc(hidden)]
-pub trait __AsStrLikeHelper {
+pub trait __use_StrLike_instead_of_this_trait<__, Kind, T: ?Sized> {
     #[doc(hidden)]
     type Target: StrLike + ?Sized;
 }
@@ -119,6 +124,11 @@ pub trait __AsStrLikeHelper {
 // The hidden trait is a necessary workaround, because `&T` impls
 // are considered to overlap with blanket impls
 // (even if the trait can't be implemented for references).
+#[diagnostic::on_unimplemented(
+    message = "`StrLike` is not implemented for `{Self}`",
+    label = "`tstr::strlike::StrLike` is not implemented for `{Self}`",
+    note = "help:\nconsider adding a `{Self}: ?Sized + tstr::strlike::StrLike` bound\n"
+)]
 #[doc(hidden)]
 pub trait __AsStrLike {
     // The [`StrLike`] type that `Self` is/points to.
@@ -126,24 +136,29 @@ pub trait __AsStrLike {
     type Target: StrLike + ?Sized;
 }
 
-impl<T: ?Sized + __AsStrLike> __AsStrLikeHelper for (__RefKind, &T) {
+#[diagnostic::do_not_recommend]
+impl<T: ?Sized + __AsStrLike> __use_StrLike_instead_of_this_trait<(), __RefKind, &T> for () {
     type Target = T::Target;
 }
 
-impl __AsStrLikeHelper for (__StrKind, str) {
+#[diagnostic::do_not_recommend]
+impl __use_StrLike_instead_of_this_trait<(), __StrKind, str> for () {
     type Target = str;
 }
 
-impl<S: IsTStr> __AsStrLikeHelper for (__StrKind, S) {
+#[diagnostic::do_not_recommend]
+impl<S: IsTStr> __use_StrLike_instead_of_this_trait<(), __StrKind, S> for () {
     type Target = S;
 }
 
+#[diagnostic::do_not_recommend]
 impl<T> __AsStrLike for T
 where
     T: ?Sized + __StrLikeBase,
-    (<T as __StrLikeBase>::__Kind, T): __AsStrLikeHelper,
+    (): __use_StrLike_instead_of_this_trait<(), <T as __StrLikeBase>::__Kind, T>,
 {
-    type Target = <(<T as __StrLikeBase>::__Kind, T) as __AsStrLikeHelper>::Target;
+    type Target =
+        <() as __use_StrLike_instead_of_this_trait<(), <T as __StrLikeBase>::__Kind, T>>::Target;
 }
 
 /// Macro version of [`StrLike::as_str`], which can be used in `const`.

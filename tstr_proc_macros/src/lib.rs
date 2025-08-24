@@ -36,22 +36,41 @@ use min_const_generics::output_tstr_param;
 pub fn __ts_impl(input_tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let input_tokens = TokenStream::from(input_tokens);
 
+    let mut crate_path = None;
+
     #[cfg(feature = "syn_")]
-    let parsed = syn::parse2::<Inputs>(input_tokens);
+    let parsed = use_syn::parse_inputs(input_tokens, &mut crate_path);
 
     #[cfg(not(feature = "syn_"))]
-    let parsed = non_syn_parsing::parse_inputs(input_tokens);
+    let parsed = non_syn_parsing::parse_inputs(input_tokens, &mut crate_path);
+
+    let crate_path: TokenStream = crate_path
+        .expect("proc macros aren't invoked directly, so $crate is always passed")
+        .into();
 
     match parsed {
-        Ok(Inputs {
-            crate_path,
-            strings,
-        }) => {
+        Ok(Inputs { string }) => {
             let mut out = TokenStream::new();
-            output_tstr(&crate_path, &strings[0], &mut out);
+            output_tstr(&crate_path, &string, &mut out);
             out
         }
-        Err(e) => e.to_compile_error(),
+        Err(e) => {
+            use crate::utils::{colon2_token, ident_token, punct_token};
+
+            let mut out = TokenStream::new();
+            let span = e.span();
+
+            out.extend(crate_path.clone());
+            out.extend(colon2_token(span));
+            out.extend(ident_token("__p", span));
+            out.extend(colon2_token(span));
+            out.extend(ident_token("__IgnoreArgReturnEmpty", span));
+            out.extend(punct_token('<', span));
+            out.extend(e.to_compile_error());
+            out.extend(punct_token('>', span));
+
+            out
+        }
     }
     .into()
 }
@@ -90,8 +109,7 @@ fn output_tstr_param(crate_path: &TokenStream, tstr: &TStr, out: &mut TokenStrea
 }
 
 struct Inputs {
-    crate_path: TokenStream,
-    strings: Vec<TStr>,
+    string: TStr,
 }
 
 struct TStr {
