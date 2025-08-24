@@ -161,7 +161,7 @@ where
 /// type Answer = TS!(hello);
 ///
 /// const fn typecast_arg<S: IsTStr>(guess: Guess<S>) -> Result<Guess<Answer>, Guess<S>> {
-///     match tstr::type_eq(S::TSTR, Answer::TSTR).eq() {
+///     match tstr::type_eq(S::VAL, Answer::VAL).eq() {
 ///         Some(te) => Ok(te.map(GuessFn).to_right(guess)),
 ///         None => Err(guess),
 ///     }

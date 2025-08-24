@@ -1,4 +1,4 @@
-use crate::{__TStrRepr, Make, TStr};
+use crate::{__TStrRepr, TStr};
 
 use core::{
     cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd},
@@ -6,9 +6,11 @@ use core::{
     hash::Hash,
 };
 
+use typewit::Identity;
+
 /// Trait for generic [`TStr`]s.
 pub trait IsTStr:
-    typewit::Identity<Type = TStr<<Self as IsTStr>::Arg>>
+    Identity<Type = TStr<<Self as IsTStr>::Arg>>
     + 'static
     + crate::strlike::AsStrLike
     + Copy
@@ -17,7 +19,6 @@ pub trait IsTStr:
     + Display
     + Default
     + Hash
-    + Make
     + Eq
     + Ord
     + PartialEq
@@ -31,7 +32,7 @@ pub trait IsTStr:
     type Arg: TStrArg;
 
     /// Constructs a TStr.
-    const TSTR: Self;
+    const VAL: Self;
 
     /// The length of this string when encoded to utf8
     const LENGTH: usize;
@@ -41,6 +42,70 @@ pub trait IsTStr:
 
     /// This string converted to a string
     const STR: &str;
+
+    /// Coerces `Self` to `TStr<Self::Arg>`, only necessary in generic contexts
+    ///
+    /// The const equivalent of this trait method is the
+    /// [`TStr::from_gen`](crate::TStr::from_gen) constructor.
+    ///
+    /// While it's always possible to construct a `TStr` through its
+    /// [`new`](crate::TStr::new) constructor,
+    /// this method ensures that it's the same string as `Self`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use tstr::{IsTStr, TStr};
+    ///
+    /// #[repr(transparent)]
+    /// struct Foo<T, N: IsTStr> {
+    ///     val: T,
+    ///     // since TStr is zero-sized, it can be put in `#[repr(transparent)]` types
+    ///     // next to the wrapped non-Zero-Sized-Type.
+    ///     name: TStr<N::Arg>,
+    /// }
+    ///
+    /// impl<T, N: IsTStr> Foo<T, N> {
+    ///     pub fn new(val: T, tstr: N) -> Self {
+    ///         Self{ val, name: tstr.to_tstr() }
+    ///     }
+    /// }
+    /// ```
+    ///
+    fn to_tstr(self) -> TStr<Self::Arg> {
+        <Self as Identity>::TYPE_EQ.to_right(self)
+    }
+
+    /// Coerces a `TStr` into `Self`, only necessary in generic contexts.
+    ///
+    /// The const equivalent of this trait method is the
+    /// [`TStr::to_gen`](crate::TStr::to_gen) method.
+    ///
+    /// While it's always possible to construct `Self` through the
+    /// [`VAL`](crate::IsTStr::VAL) associated constant,
+    /// this function ensures that it's the same string as the argument.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use tstr::{IsTStr, TStr};
+    ///
+    /// #[repr(transparent)]
+    /// struct Foo<T, N: IsTStr> {
+    ///     val: T,
+    ///     name: TStr<N::Arg>,
+    /// }
+    ///
+    /// impl<T, N: IsTStr> Foo<T, N> {
+    ///     fn name(&self) -> N {
+    ///         N::from_tstr(self.name)
+    ///     }
+    /// }
+    /// ```
+    ///
+    fn from_tstr(tstr: TStr<Self::Arg>) -> Self {
+        <Self as Identity>::TYPE_EQ.to_left(tstr)
+    }
 
     /// Gets the length of the string in utf8
     ///
@@ -207,7 +272,7 @@ pub trait IsTStr:
     /// where
     ///     S: IsTStr
     /// {
-    ///     match S::TSTR.type_eq(Answer::new()).eq() {
+    ///     match S::VAL.type_eq(Answer::new()).eq() {
     ///         Some(te) => Ok(te.map(GuessFn).to_right(guess)),
     ///         None => Err(guess),
     ///     }
@@ -232,7 +297,7 @@ where
 {
     type Arg = S;
 
-    const TSTR: Self = Self::new();
+    const VAL: Self = Self::new();
 
     const LENGTH: usize = S::__LENGTH;
 
@@ -241,7 +306,7 @@ where
     const STR: &str = S::__STR;
 }
 
-/// For bounding the type parameter of [`TStr`] in trait impls.
+/// For bounding the type parameter of [`TStr`].
 ///
 /// Usually, it's better to use a type parameter bounded by the [`IsTStr`] trait,
 /// since it allows the type to imply many commonly derived traits.

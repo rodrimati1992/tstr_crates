@@ -153,7 +153,6 @@ pub mod strlike;
 mod macros;
 mod private_macros;
 
-mod make_trait;
 mod tstr_fns;
 mod tstr_trait;
 mod tstr_type;
@@ -181,7 +180,6 @@ pub use tstr_proc_macros::__ts_impl;
 use crate::tstr_trait::__TStrArgBinary;
 
 pub use crate::{
-    make_trait::Make,
     tstr_fns::*,
     tstr_trait::{IsTStr, TStrArg},
     tstr_type::TStr,

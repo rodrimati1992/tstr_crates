@@ -100,8 +100,8 @@ macro_rules! __cmp_assert_inner {
 ///     const {
 ///         let expected = "bar";
 ///         tstr::assertc_eq!(
-///             S::TSTR, expected,
-///             "unfortunately you passed ", S::TSTR, " when ", expected, " was expected"
+///             S::VAL, expected,
+///             "unfortunately you passed ", S::VAL, " when ", expected, " was expected"
 ///         )
 ///     };
 /// }
@@ -121,8 +121,8 @@ macro_rules! __cmp_assert_inner {
 ///   --> tstr/src/assertions.rs:130:9
 ///    |
 /// 9  | /         tstr::assertc_eq!(
-/// 10 | |             S::TSTR, expected,
-/// 11 | |             "unfortunately you passed ", S::TSTR, " when ", expected, " was expected"
+/// 10 | |             S::VAL, expected,
+/// 11 | |             "unfortunately you passed ", S::VAL, " when ", expected, " was expected"
 /// 12 | |         )
 ///    | |_________^ evaluation of `expects_bar::<tstr::TStr<tstr::___<tstr::__<'f', 'o', 'o'>, 3>>>::{constant#0}` failed here
 /// ```
@@ -166,8 +166,8 @@ macro_rules! assertc_eq {
 /// const fn expects_not_bar<S: IsTStr>() {
 ///     const {
 ///         tstr::assertc_ne!(
-///             S::TSTR, "bar",
-///             "unfortunately you passed ", S::TSTR, ", the only value that isn't allowed"
+///             S::VAL, "bar",
+///             "unfortunately you passed ", S::VAL, ", the only value that isn't allowed"
 ///         )
 ///     };
 /// }
@@ -187,8 +187,8 @@ macro_rules! assertc_eq {
 ///   --> tstr/src/assertions.rs:196:9
 ///    |
 /// 8  | /         tstr::assertc_ne!(
-/// 9  | |             S::TSTR, "bar",
-/// 10 | |             "unfortunately you passed ", S::TSTR, ", the only value that isn't allowed"
+/// 9  | |             S::VAL, "bar",
+/// 10 | |             "unfortunately you passed ", S::VAL, ", the only value that isn't allowed"
 /// 11 | |         )
 ///    | |_________^ evaluation of `expects_not_bar::<tstr::TStr<tstr::___<tstr::__<'b', 'a', 'r'>, 3>>>::{constant#0}` failed here
 ///

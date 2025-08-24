@@ -4,36 +4,36 @@ use std::cmp::{Ord, Ordering};
 
 macro_rules! assert_str_eq {
     ($left:ty, $right:ty) => {
-        assert!(<$left>::TSTR.type_eq(<$right>::TSTR).is_eq());
-        assert!(<$left>::TSTR.tstr_eq(<$right>::TSTR));
-        assert!(tstr::eq(<$left>::TSTR, <$right>::TSTR));
+        assert!(<$left>::VAL.type_eq(<$right>::VAL).is_eq());
+        assert!(<$left>::VAL.tstr_eq(<$right>::VAL));
+        assert!(tstr::eq(<$left>::VAL, <$right>::VAL));
 
-        assert!(!<$left>::TSTR.tstr_ne(<$right>::TSTR));
-        assert!(!tstr::ne(<$left>::TSTR, <$right>::TSTR));
-        assert!(!<$left>::TSTR.type_eq(<$right>::TSTR).is_ne());
+        assert!(!<$left>::VAL.tstr_ne(<$right>::VAL));
+        assert!(!tstr::ne(<$left>::VAL, <$right>::VAL));
+        assert!(!<$left>::VAL.type_eq(<$right>::VAL).is_ne());
 
-        assert_eq!(<$left>::TSTR.tstr_cmp(<$right>::TSTR), Ordering::Equal);
-        assert_eq!(tstr::cmp(<$left>::TSTR, <$right>::TSTR), Ordering::Equal);
+        assert_eq!(<$left>::VAL.tstr_cmp(<$right>::VAL), Ordering::Equal);
+        assert_eq!(tstr::cmp(<$left>::VAL, <$right>::VAL), Ordering::Equal);
     };
 }
 
 macro_rules! assert_str_ne {
     ($left:ty, [$($right:ty),* $(,)*]) => {
         $(
-            assert!(<$left>::TSTR.tstr_ne(<$right>::TSTR));
-            assert!(tstr::ne(<$left>::TSTR, <$right>::TSTR));
-            assert!(<$left>::TSTR.type_eq(<$right>::TSTR).is_ne());
+            assert!(<$left>::VAL.tstr_ne(<$right>::VAL));
+            assert!(tstr::ne(<$left>::VAL, <$right>::VAL));
+            assert!(<$left>::VAL.type_eq(<$right>::VAL).is_ne());
         )*
 
         {
             $(
                 assert_eq!(
-                    <$left>::TSTR.tstr_cmp(<$right>::TSTR),
-                    <$left>::TSTR.to_str().cmp(<$right>::TSTR.to_str())
+                    <$left>::VAL.tstr_cmp(<$right>::VAL),
+                    <$left>::VAL.to_str().cmp(<$right>::VAL.to_str())
                 );
                 assert_eq!(
-                    tstr::cmp(<$left>::TSTR, <$right>::TSTR),
-                    <$left>::TSTR.to_str().cmp(<$right>::TSTR.to_str())
+                    tstr::cmp(<$left>::VAL, <$right>::VAL),
+                    <$left>::VAL.to_str().cmp(<$right>::VAL.to_str())
                 );
             )*
         }
@@ -91,13 +91,13 @@ fn comparing_shorter_to_longer() {
     type ABAA = TS!(ABAA);
     type BAAA = TS!(BAAA);
 
-    assert_eq!(BAAA::TSTR.tstr_cmp(ABAAA::TSTR), Ordering::Greater);
-    assert_eq!(ABAA::TSTR.tstr_cmp(ABAAA::TSTR), Ordering::Less);
-    assert_eq!(AABA::TSTR.tstr_cmp(ABAAA::TSTR), Ordering::Less);
+    assert_eq!(BAAA::VAL.tstr_cmp(ABAAA::VAL), Ordering::Greater);
+    assert_eq!(ABAA::VAL.tstr_cmp(ABAAA::VAL), Ordering::Less);
+    assert_eq!(AABA::VAL.tstr_cmp(ABAAA::VAL), Ordering::Less);
 
-    assert_eq!(tstr::cmp(BAAA::TSTR, ABAAA::TSTR), Ordering::Greater);
-    assert_eq!(tstr::cmp(ABAA::TSTR, ABAAA::TSTR), Ordering::Less);
-    assert_eq!(tstr::cmp(AABA::TSTR, ABAAA::TSTR), Ordering::Less);
+    assert_eq!(tstr::cmp(BAAA::VAL, ABAAA::VAL), Ordering::Greater);
+    assert_eq!(tstr::cmp(ABAA::VAL, ABAAA::VAL), Ordering::Less);
+    assert_eq!(tstr::cmp(AABA::VAL, ABAAA::VAL), Ordering::Less);
 }
 
 #[test]

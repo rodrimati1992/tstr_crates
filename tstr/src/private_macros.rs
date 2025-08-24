@@ -1,3 +1,5 @@
+#![allow(unused_macros, unused_imports)]
+
 macro_rules! with_elem_count_idents {
     ($($macro:ident)::* !{$($prev_args:tt)*}) => (
         $($macro)::* !{

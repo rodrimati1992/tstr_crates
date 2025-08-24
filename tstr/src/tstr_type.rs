@@ -11,9 +11,11 @@ use const_panic::{
     fmt::{FmtArg, PanicFmt},
 };
 
-use crate::IsTStr;
+use crate::{IsTStr, TStrArg};
 
 /// A type-level string type, emulates a `&'static str` const parameter.
+///
+/// This type is zero-sized and has an alignment of 1.
 ///
 /// # Examples
 ///
@@ -102,10 +104,82 @@ use crate::IsTStr;
 ///
 pub struct TStr<S>(pub(crate) PhantomData<fn() -> S>);
 
+// const layout assertions
+const _: () = assert!(size_of::<crate::TS!("")>() == 0);
+const _: () = assert!(align_of::<crate::TS!("")>() == 1);
+
 impl<S> TStr<S> {
     /// Constructs the TStr.
     pub const fn new() -> Self {
         TStr(PhantomData)
+    }
+}
+
+impl<S: TStrArg> TStr<S> {
+    /// Coerces an `impl IsTStr` into a `TStr`, only necessary in generic contexts
+    ///
+    /// The trait method equivalent of this const function is
+    /// [`IsTStr::to_tstr`](crate::IsTStr::to_tstr).
+    ///
+    /// While it's always possible to construct a `TStr` through its
+    /// [`new`](crate::TStr::new) constructor,
+    /// this method ensures that it's the same string as the argument.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use tstr::{IsTStr, TStr};
+    ///
+    /// #[repr(transparent)]
+    /// struct Foo<T, N: IsTStr> {
+    ///     val: T,
+    ///     // since TStr is zero-sized, it can be put in `#[repr(transparent)]` types
+    ///     // next to the wrapped non-Zero-Sized-Type.
+    ///     name: TStr<N::Arg>,
+    /// }
+    ///
+    /// impl<T, N: IsTStr> Foo<T, N> {
+    ///     pub fn new(val: T, tstr: N) -> Self {
+    ///         Self{ val, name: TStr::from_gen(tstr) }
+    ///     }
+    /// }
+    /// ```
+    ///
+    pub const fn from_gen<G>(tstr: G) -> Self
+    where
+        G: IsTStr<Arg = S>,
+    {
+        <G as typewit::Identity>::TYPE_EQ.to_right(tstr)
+    }
+    /// Coerces a `TStr` into an `impl IsTStr`, only necessary in generic contexts
+    ///
+    /// While it's always possible to construct an `IsTStr` through its
+    /// [`VAL`](crate::IsTStr::VAL) associated constant,
+    /// this method ensures that it's the same string as `Self`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use tstr::{IsTStr, TStr};
+    ///
+    /// #[repr(transparent)]
+    /// struct Foo<T, N: IsTStr> {
+    ///     val: T,
+    ///     name: TStr<N::Arg>,
+    /// }
+    ///
+    /// impl<T, N: IsTStr> Foo<T, N> {
+    ///     const fn name(&self) -> N {
+    ///         self.name.to_gen()
+    ///     }
+    /// }
+    /// ```
+    ///
+    pub const fn to_gen<G>(self) -> G
+    where
+        G: IsTStr<Arg = S>,
+    {
+        <G as typewit::Identity>::TYPE_EQ.to_left(self)
     }
 }
 
@@ -127,7 +201,7 @@ impl<S> Default for TStr<S> {
 
 impl<S> Debug for TStr<S>
 where
-    Self: IsTStr,
+    S: TStrArg,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         Debug::fmt(self.to_str(), f)
@@ -136,7 +210,7 @@ where
 
 impl<S> fmt::Display for TStr<S>
 where
-    Self: IsTStr,
+    S: TStrArg,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         fmt::Display::fmt(self.to_str(), f)
@@ -145,7 +219,7 @@ where
 
 impl<S, S2> core::cmp::PartialEq<S2> for TStr<S>
 where
-    Self: IsTStr,
+    S: TStrArg,
     S2: IsTStr,
 {
     #[inline(always)]
@@ -154,11 +228,11 @@ where
     }
 }
 
-impl<S> core::cmp::Eq for TStr<S> where Self: IsTStr {}
+impl<S> core::cmp::Eq for TStr<S> where S: TStrArg {}
 
 impl<S, S2> core::cmp::PartialOrd<S2> for TStr<S>
 where
-    Self: IsTStr,
+    S: TStrArg,
     S2: IsTStr,
 {
     #[inline(always)]
@@ -169,7 +243,7 @@ where
 
 impl<S> core::cmp::Ord for TStr<S>
 where
-    Self: IsTStr,
+    S: TStrArg,
 {
     #[inline(always)]
     fn cmp(&self, _other: &Self) -> Ordering {
@@ -180,7 +254,7 @@ where
 // rustc expands #[derive(Hash)] on unit structs into this
 impl<S> Hash for TStr<S>
 where
-    Self: IsTStr,
+    S: TStrArg,
 {
     fn hash<H>(&self, _state: &mut H)
     where
@@ -193,7 +267,7 @@ where
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_panic")))]
 impl<S> PanicFmt for TStr<S>
 where
-    Self: IsTStr,
+    S: TStrArg,
 {
     type This = Self;
     type Kind = const_panic::IsCustomType;
@@ -207,7 +281,7 @@ impl<S> TStr<S> {
     /// Formats a TStr
     pub const fn to_panicval(&self, fmtarg: FmtArg) -> PanicVal<'static>
     where
-        Self: IsTStr,
+        S: TStrArg,
     {
         const_panic::StdWrapper(crate::to_str(*self)).to_panicval(fmtarg)
     }
@@ -215,7 +289,7 @@ impl<S> TStr<S> {
     /// Formats a TStr
     pub const fn to_panicvals(&self, fmtarg: FmtArg) -> [PanicVal<'static>; 1]
     where
-        Self: IsTStr,
+        S: TStrArg,
     {
         [self.to_panicval(fmtarg)]
     }
