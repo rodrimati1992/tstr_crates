@@ -1,0 +1,261 @@
+error[E0277]: the trait bound `T: IsTStr` is not satisfied
+ --> tests/modules/tstr_methods_ui_tests/non_trait_versions-char-err.rs:5:24
+  |
+5 |     _ = TStr::from_gen(ts);
+  |         -------------- ^^ the trait `IsTStr` is not implemented for `T`
+  |         |
+  |         required by a bound introduced by this call
+  |
+note: required by a bound in `tstr::TStr::<S>::from_gen`
+ --> src/tstr_type.rs
+  |
+  |     pub const fn from_gen<G>(tstr: G) -> Self
+  |                  -------- required by a bound in this associated function
+  |     where
+  |         G: IsTStr<Arg = S>,
+  |            ^^^^^^^^^^^^^^^ required by this bound in `TStr::<S>::from_gen`
+help: consider further restricting type parameter `T` with trait `IsTStr`
+  |
+4 | const fn unary<T: Copy + tstr::IsTStr>(ts: T) {
+  |                        ++++++++++++++
+
+error[E0277]: the trait bound `T: IsTStr` is not satisfied
+ --> tests/modules/tstr_methods_ui_tests/non_trait_versions-char-err.rs:6:28
+  |
+6 |     let _: T = TStr::new().to_gen();
+  |                            ^^^^^^ the trait `IsTStr` is not implemented for `T`
+  |
+note: required by a bound in `tstr::TStr::<S>::to_gen`
+ --> src/tstr_type.rs
+  |
+  |     pub const fn to_gen<G>(self) -> G
+  |                  ------ required by a bound in this associated function
+  |     where
+  |         G: IsTStr<Arg = S>,
+  |            ^^^^^^^^^^^^^^^ required by this bound in `TStr::<S>::to_gen`
+help: consider further restricting type parameter `T` with trait `IsTStr`
+  |
+4 | const fn unary<T: Copy + tstr::IsTStr>(ts: T) {
+  |                        ++++++++++++++
+
+error[E0277]: the trait bound `T: IsTStr` is not satisfied
+ --> tests/modules/tstr_methods_ui_tests/non_trait_versions-char-err.rs:7:19
+  |
+7 |     _ = tstr::len(ts);
+  |         --------- ^^ the trait `IsTStr` is not implemented for `T`
+  |         |
+  |         required by a bound introduced by this call
+  |
+note: required by a bound in `tstr::len`
+ --> src/tstr_fns.rs
+  |
+  | pub const fn len<S: IsTStr>(_: S) -> usize {
+  |                     ^^^^^^ required by this bound in `len`
+help: consider further restricting type parameter `T` with trait `IsTStr`
+  |
+4 | const fn unary<T: Copy + tstr::IsTStr>(ts: T) {
+  |                        ++++++++++++++
+
+error[E0277]: the trait bound `T: IsTStr` is not satisfied
+ --> tests/modules/tstr_methods_ui_tests/non_trait_versions-char-err.rs:8:24
+  |
+8 |     _ = tstr::to_bytes(ts);
+  |         -------------- ^^ the trait `IsTStr` is not implemented for `T`
+  |         |
+  |         required by a bound introduced by this call
+  |
+note: required by a bound in `tstr::to_bytes`
+ --> src/tstr_fns.rs
+  |
+  | pub const fn to_bytes<S: IsTStr>(_: S) -> &'static [u8] {
+  |                          ^^^^^^ required by this bound in `to_bytes`
+help: consider further restricting type parameter `T` with trait `IsTStr`
+  |
+4 | const fn unary<T: Copy + tstr::IsTStr>(ts: T) {
+  |                        ++++++++++++++
+
+error[E0277]: the trait bound `T: IsTStr` is not satisfied
+ --> tests/modules/tstr_methods_ui_tests/non_trait_versions-char-err.rs:9:22
+  |
+9 |     _ = tstr::to_str(ts);
+  |         ------------ ^^ the trait `IsTStr` is not implemented for `T`
+  |         |
+  |         required by a bound introduced by this call
+  |
+note: required by a bound in `tstr::to_str`
+ --> src/tstr_fns.rs
+  |
+  | pub const fn to_str<S: IsTStr>(_: S) -> &'static str {
+  |                        ^^^^^^ required by this bound in `to_str`
+help: consider further restricting type parameter `T` with trait `IsTStr`
+  |
+4 | const fn unary<T: Copy + tstr::IsTStr>(ts: T) {
+  |                        ++++++++++++++
+
+error[E0277]: the trait bound `L: IsTStr` is not satisfied
+  --> tests/modules/tstr_methods_ui_tests/non_trait_versions-char-err.rs:13:19
+   |
+13 |     _ = tstr::cmp(l, r);
+   |         --------- ^ the trait `IsTStr` is not implemented for `L`
+   |         |
+   |         required by a bound introduced by this call
+   |
+note: required by a bound in `tstr::cmp`
+  --> src/tstr_fns.rs
+   |
+   | pub const fn cmp<Lhs, Rhs>(_: Lhs, _: Rhs) -> core::cmp::Ordering
+   |              --- required by a bound in this function
+   | where
+   |     Lhs: IsTStr,
+   |          ^^^^^^ required by this bound in `cmp`
+help: consider further restricting type parameter `L` with trait `IsTStr`
+   |
+12 | const fn binary<L: Copy + tstr::IsTStr, R: Copy>(l: L, r: R) {
+   |                         ++++++++++++++
+
+error[E0277]: the trait bound `R: IsTStr` is not satisfied
+  --> tests/modules/tstr_methods_ui_tests/non_trait_versions-char-err.rs:13:22
+   |
+13 |     _ = tstr::cmp(l, r);
+   |         ---------    ^ the trait `IsTStr` is not implemented for `R`
+   |         |
+   |         required by a bound introduced by this call
+   |
+note: required by a bound in `tstr::cmp`
+  --> src/tstr_fns.rs
+   |
+   | pub const fn cmp<Lhs, Rhs>(_: Lhs, _: Rhs) -> core::cmp::Ordering
+   |              --- required by a bound in this function
+...
+   |     Rhs: IsTStr,
+   |          ^^^^^^ required by this bound in `cmp`
+help: consider further restricting type parameter `R` with trait `IsTStr`
+   |
+12 | const fn binary<L: Copy, R: Copy + tstr::IsTStr>(l: L, r: R) {
+   |                                  ++++++++++++++
+
+error[E0277]: the trait bound `L: IsTStr` is not satisfied
+  --> tests/modules/tstr_methods_ui_tests/non_trait_versions-char-err.rs:14:18
+   |
+14 |     _ = tstr::ne(l, r);
+   |         -------- ^ the trait `IsTStr` is not implemented for `L`
+   |         |
+   |         required by a bound introduced by this call
+   |
+note: required by a bound in `tstr::ne`
+  --> src/tstr_fns.rs
+   |
+   | pub const fn ne<Lhs, Rhs>(_: Lhs, _: Rhs) -> bool
+   |              -- required by a bound in this function
+   | where
+   |     Lhs: IsTStr,
+   |          ^^^^^^ required by this bound in `ne`
+help: consider further restricting type parameter `L` with trait `IsTStr`
+   |
+12 | const fn binary<L: Copy + tstr::IsTStr, R: Copy>(l: L, r: R) {
+   |                         ++++++++++++++
+
+error[E0277]: the trait bound `R: IsTStr` is not satisfied
+  --> tests/modules/tstr_methods_ui_tests/non_trait_versions-char-err.rs:14:21
+   |
+14 |     _ = tstr::ne(l, r);
+   |         --------    ^ the trait `IsTStr` is not implemented for `R`
+   |         |
+   |         required by a bound introduced by this call
+   |
+note: required by a bound in `tstr::ne`
+  --> src/tstr_fns.rs
+   |
+   | pub const fn ne<Lhs, Rhs>(_: Lhs, _: Rhs) -> bool
+   |              -- required by a bound in this function
+...
+   |     Rhs: IsTStr,
+   |          ^^^^^^ required by this bound in `ne`
+help: consider further restricting type parameter `R` with trait `IsTStr`
+   |
+12 | const fn binary<L: Copy, R: Copy + tstr::IsTStr>(l: L, r: R) {
+   |                                  ++++++++++++++
+
+error[E0277]: the trait bound `L: IsTStr` is not satisfied
+  --> tests/modules/tstr_methods_ui_tests/non_trait_versions-char-err.rs:15:18
+   |
+15 |     _ = tstr::eq(l, r);
+   |         -------- ^ the trait `IsTStr` is not implemented for `L`
+   |         |
+   |         required by a bound introduced by this call
+   |
+note: required by a bound in `tstr::eq`
+  --> src/tstr_fns.rs
+   |
+   | pub const fn eq<Lhs, Rhs>(_: Lhs, _: Rhs) -> bool
+   |              -- required by a bound in this function
+   | where
+   |     Lhs: IsTStr,
+   |          ^^^^^^ required by this bound in `eq`
+help: consider further restricting type parameter `L` with trait `IsTStr`
+   |
+12 | const fn binary<L: Copy + tstr::IsTStr, R: Copy>(l: L, r: R) {
+   |                         ++++++++++++++
+
+error[E0277]: the trait bound `R: IsTStr` is not satisfied
+  --> tests/modules/tstr_methods_ui_tests/non_trait_versions-char-err.rs:15:21
+   |
+15 |     _ = tstr::eq(l, r);
+   |         --------    ^ the trait `IsTStr` is not implemented for `R`
+   |         |
+   |         required by a bound introduced by this call
+   |
+note: required by a bound in `tstr::eq`
+  --> src/tstr_fns.rs
+   |
+   | pub const fn eq<Lhs, Rhs>(_: Lhs, _: Rhs) -> bool
+   |              -- required by a bound in this function
+...
+   |     Rhs: IsTStr,
+   |          ^^^^^^ required by this bound in `eq`
+help: consider further restricting type parameter `R` with trait `IsTStr`
+   |
+12 | const fn binary<L: Copy, R: Copy + tstr::IsTStr>(l: L, r: R) {
+   |                                  ++++++++++++++
+
+error[E0277]: the trait bound `L: IsTStr` is not satisfied
+  --> tests/modules/tstr_methods_ui_tests/non_trait_versions-char-err.rs:16:23
+   |
+16 |     _ = tstr::type_eq(l, r);
+   |         ------------- ^ the trait `IsTStr` is not implemented for `L`
+   |         |
+   |         required by a bound introduced by this call
+   |
+note: required by a bound in `tstr::type_eq`
+  --> src/tstr_fns.rs
+   |
+   | pub const fn type_eq<Lhs, Rhs>(_: Lhs, _: Rhs) -> typewit::TypeCmp<Lhs, Rhs>
+   |              ------- required by a bound in this function
+   | where
+   |     Lhs: IsTStr,
+   |          ^^^^^^ required by this bound in `type_eq`
+help: consider further restricting type parameter `L` with trait `IsTStr`
+   |
+12 | const fn binary<L: Copy + tstr::IsTStr, R: Copy>(l: L, r: R) {
+   |                         ++++++++++++++
+
+error[E0277]: the trait bound `R: IsTStr` is not satisfied
+  --> tests/modules/tstr_methods_ui_tests/non_trait_versions-char-err.rs:16:26
+   |
+16 |     _ = tstr::type_eq(l, r);
+   |         -------------    ^ the trait `IsTStr` is not implemented for `R`
+   |         |
+   |         required by a bound introduced by this call
+   |
+note: required by a bound in `tstr::type_eq`
+  --> src/tstr_fns.rs
+   |
+   | pub const fn type_eq<Lhs, Rhs>(_: Lhs, _: Rhs) -> typewit::TypeCmp<Lhs, Rhs>
+   |              ------- required by a bound in this function
+...
+   |     Rhs: IsTStr,
+   |          ^^^^^^ required by this bound in `type_eq`
+help: consider further restricting type parameter `R` with trait `IsTStr`
+   |
+12 | const fn binary<L: Copy, R: Copy + tstr::IsTStr>(l: L, r: R) {
+   |                                  ++++++++++++++

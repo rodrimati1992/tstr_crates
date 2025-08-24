@@ -13,7 +13,12 @@
 #[test]
 fn ui() {
     let t = trybuild::TestCases::new();
-    for dir in ["assert_ui_tests", "strlike_ui_tests", "ts_macros_ui_tests"] {
+    for dir in [
+        "assert_ui_tests",
+        "strlike_ui_tests",
+        "ts_macros_ui_tests",
+        "tstr_methods_ui_tests",
+    ] {
         #[cfg(not(feature = "str_generics"))]
         t.compile_fail(format!("tests/modules/{}/*-char-err.rs", dir));
 

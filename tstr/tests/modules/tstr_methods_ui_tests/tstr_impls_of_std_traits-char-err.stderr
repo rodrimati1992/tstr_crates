@@ -1,0 +1,21 @@
+error[E0277]: the trait bound `T: TStrArg` is not satisfied
+  --> tests/modules/tstr_methods_ui_tests/tstr_impls_of_std_traits-char-err.rs:24:19
+   |
+24 |     assert_traits(ts);
+   |     ------------- ^^ the trait `TStrArg` is not implemented for `T`
+   |     |
+   |     required by a bound introduced by this call
+   |
+   = note: required for `tstr::TStr<T>` to implement `std::fmt::Debug`
+note: required by a bound in `assert_traits`
+  --> tests/modules/tstr_methods_ui_tests/tstr_impls_of_std_traits-char-err.rs:9:11
+   |
+3  | const fn assert_traits<T>(_: T)
+   |          ------------- required by a bound in this function
+...
+9  |         + std::fmt::Debug
+   |           ^^^^^^^^^^^^^^^ required by this bound in `assert_traits`
+help: consider restricting type parameter `T` with trait `TStrArg`
+   |
+23 | const fn generic<T: tstr::TStrArg>(ts: TStr<T>) {
+   |                   +++++++++++++++
