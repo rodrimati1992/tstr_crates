@@ -5,20 +5,22 @@ use typewit::{
     const_marker::{Char, Usize},
 };
 
-pub trait __TStrReprBinaryArgs {
+pub trait __TypeCmpComputerArgs {
     type Lhs: __TStrRepr;
     type Rhs: __TStrRepr;
 }
 
-pub trait __TStrReprBinary: __TStrReprBinaryArgs {
+pub trait __TypeCmpComputer: __TypeCmpComputerArgs {
     const TYPE_CMP: TypeCmp<Self::Lhs, Self::Rhs>;
 }
 
 //////////////////////////////////////////////////////////////////
 
+// Helper for getting a `TypeCmp<Lhs, Rhs>` (a proof of equality/inequality)
+// of types with the same `__TStrRepr::__Kind`
 pub struct EqKindCmp<LhsDetail, Lhs, Rhs>(LhsDetail, Lhs, Rhs);
 
-impl<LhsDetail, Lhs, Rhs> __TStrReprBinaryArgs for EqKindCmp<LhsDetail, Lhs, Rhs>
+impl<LhsDetail, Lhs, Rhs> __TypeCmpComputerArgs for EqKindCmp<LhsDetail, Lhs, Rhs>
 where
     Lhs: __TStrRepr,
     Rhs: __TStrRepr,
@@ -33,7 +35,7 @@ typewit::inj_type_fn! {
     impl<S, const LEN: usize> (S, Usize<LEN>) => crate::___<S, LEN>
 }
 
-impl<Lhs, LS, const LLEN: usize, RS, const RLEN: usize> __TStrReprBinary
+impl<Lhs, LS, const LLEN: usize, RS, const RLEN: usize> __TypeCmpComputer
     for EqKindCmp<crate::___<LS, LLEN>, Lhs, crate::___<RS, RLEN>>
 where
     Lhs: __TStrRepr + Identity<Type = crate::___<LS, LLEN>>,
@@ -42,7 +44,7 @@ where
 {
     const TYPE_CMP: TypeCmp<Self::Lhs, Self::Rhs> = {
         TypeCmp::zip(
-            <LS::__WithRhs<RS>>::TYPE_CMP,
+            <LS::__TypeCmpWithRhs<RS>>::TYPE_CMP,
             Usize::<LLEN>.equals(Usize::<RLEN>),
         )
         .map(ArgsWLenFn)
@@ -52,7 +54,7 @@ where
 
 ///////
 
-impl<Lhs> __TStrReprBinary for EqKindCmp<(), Lhs, ()>
+impl<Lhs> __TypeCmpComputer for EqKindCmp<(), Lhs, ()>
 where
     Lhs: __TStrRepr + Identity<Type = ()>,
 {
@@ -77,7 +79,7 @@ macro_rules! with_idents_inner {
         }
 
         impl<Lhs, $(const $ident: char,)* $(const $identg: char,)*>
-            __TStrReprBinary
+            __TypeCmpComputer
         for EqKindCmp<crate::__<$($ident,)*>, Lhs, crate::__<$($identg,)*>>
         where
             Lhs: __TStrRepr + Identity<Type = crate::__<$($ident,)*>>,
@@ -106,7 +108,7 @@ macro_rules! with_idents_inner {
         }
 
         impl<Lhs, $($ident: __TStrRepr,)* $($identg: __TStrRepr,)*>
-            __TStrReprBinary
+            __TypeCmpComputer
         for EqKindCmp<($($ident,)*), Lhs, ($($identg,)*)>
         where
             Lhs: __TStrRepr + Identity<Type = ($($ident,)*)>,
@@ -115,10 +117,10 @@ macro_rules! with_idents_inner {
                 TypeCmp::zip(
                     $(
                         TypeCmp::zip4(
-                            <$l0::__WithRhs<$r0>>::TYPE_CMP,
-                            <$l1::__WithRhs<$r1>>::TYPE_CMP,
-                            <$l2::__WithRhs<$r2>>::TYPE_CMP,
-                            <$l3::__WithRhs<$r3>>::TYPE_CMP,
+                            <$l0::__TypeCmpWithRhs<$r0>>::TYPE_CMP,
+                            <$l1::__TypeCmpWithRhs<$r1>>::TYPE_CMP,
+                            <$l2::__TypeCmpWithRhs<$r2>>::TYPE_CMP,
+                            <$l3::__TypeCmpWithRhs<$r3>>::TYPE_CMP,
                         ),
                     )*
                 ).map(Tuple8Fn)
@@ -142,7 +144,7 @@ crate::private_macros::with_elem_count_idents2! { with_idents!{} }
 /// Helper for getting a proof that Lhs != Rhs
 pub struct NeKindCmp<Lhs, Rhs>(Lhs, Rhs);
 
-impl<Lhs, Rhs> __TStrReprBinaryArgs for NeKindCmp<Lhs, Rhs>
+impl<Lhs, Rhs> __TypeCmpComputerArgs for NeKindCmp<Lhs, Rhs>
 where
     Lhs: __TStrRepr,
     Rhs: __TStrRepr,
@@ -151,7 +153,7 @@ where
     type Rhs = Rhs;
 }
 
-impl<Lhs, Rhs> __TStrReprBinary for NeKindCmp<Lhs, Rhs>
+impl<Lhs, Rhs> __TypeCmpComputer for NeKindCmp<Lhs, Rhs>
 where
     Lhs: __TStrRepr,
     Rhs: __TStrRepr,

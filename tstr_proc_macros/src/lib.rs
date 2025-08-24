@@ -34,8 +34,6 @@ use min_const_generics::output_tstr_param;
 #[doc(hidden)]
 #[proc_macro]
 pub fn __ts_impl(input_tokens: proc_macro::TokenStream) -> proc_macro::TokenStream {
-    use crate::utils::{paren, punct_token};
-
     let input_tokens = TokenStream::from(input_tokens);
 
     #[cfg(feature = "syn_")]
@@ -50,16 +48,7 @@ pub fn __ts_impl(input_tokens: proc_macro::TokenStream) -> proc_macro::TokenStre
             strings,
         }) => {
             let mut out = TokenStream::new();
-            if strings.len() == 1 {
-                output_tstr(&crate_path, &strings[0], &mut out);
-            } else {
-                out.extend([paren(Span::call_site(), |out| {
-                    for tstr in &strings {
-                        output_tstr(&crate_path, tstr, out);
-                        out.extend(punct_token(',', tstr.span));
-                    }
-                })]);
-            }
+            output_tstr(&crate_path, &strings[0], &mut out);
             out
         }
         Err(e) => e.to_compile_error(),

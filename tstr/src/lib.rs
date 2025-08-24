@@ -143,8 +143,6 @@
 #![allow(non_camel_case_types)]
 #![forbid(unsafe_code)]
 
-pub use typewit;
-
 #[cfg(feature = "const_panic")]
 mod assertions;
 
@@ -185,11 +183,14 @@ pub use crate::{
     tstr_type::TStr,
 };
 
-include! {"./p.rs"}
+pub use typewit;
 
+#[doc(no_inline)]
 #[cfg(feature = "const_panic")]
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_panic")))]
-pub use const_panic::unwrap_ok as unwrap;
+pub use const_panic::{self, unwrap_ok as unwrap};
+
+include! {"./p.rs"}
 
 #[doc(hidden)]
 pub mod __p {

@@ -3,7 +3,7 @@ use crate::{___, __TStrArgBinary, TStr, TStrArg};
 use typewit::{HasTypeWitness, Identity};
 
 mod typecmp_for_chars_repr;
-use self::typecmp_for_chars_repr::{__TStrReprBinary, EqKindCmp, NeKindCmp};
+use self::typecmp_for_chars_repr::{__TypeCmpComputer, EqKindCmp, NeKindCmp};
 
 impl<S, const LEN: usize> TStrArg for ___<S, LEN>
 where
@@ -115,13 +115,12 @@ where
 
     #[doc(hidden)]
     const __TYPE_CMP: typewit::TypeCmp<TStr<___<S1, LEN1>>, TStr<___<S2, LEN2>>> = {
-        <<___<S1, LEN1> as __TStrRepr>::__WithRhs<___<S2, LEN2>> as __TStrReprBinary>::TYPE_CMP
+        <<___<S1, LEN1> as __TStrRepr>::__TypeCmpWithRhs<___<S2, LEN2>> as __TypeCmpComputer>::TYPE_CMP
             .map(crate::tstr_trait::TStrFn)
     };
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-
 typewit::type_fn! {
     struct TyKindFn;
 
@@ -171,34 +170,34 @@ macro_rules! with_idents {($_:tt $len:literal ($($ident:ident)*) ($($identg:iden
         )*
 
         #[doc(hidden)]
-        type __WithRhs<Rhs: __TStrRepr>: __TStrReprBinary<Lhs = Self, Rhs = Rhs>;
+        type __TypeCmpWithRhs<Rhs: __TStrRepr>: __TypeCmpComputer<Lhs = Self, Rhs = Rhs>;
 
         #[doc(hidden)]
-        type __WithLhsArgsWLen<Lhs, S: __TStrRepr, const LEN: usize>
-        : __TStrReprBinary<Lhs = Lhs, Rhs = Self>
+        type __TypeCmpWithLhsArgsWLen<Lhs, S: __TStrRepr, const LEN: usize>
+        : __TypeCmpComputer<Lhs = Lhs, Rhs = Self>
         where
             Lhs: __TStrRepr + Identity<Type = crate::___<S, LEN>>;
 
         #[doc(hidden)]
-        type __WithLhsArgsUnit<Lhs>
-        : __TStrReprBinary<Lhs = Lhs, Rhs = Self>
+        type __TypeCmpWithLhsArgsUnit<Lhs>
+        : __TypeCmpComputer<Lhs = Lhs, Rhs = Self>
         where
             Lhs: __TStrRepr + Identity<Type = ()>;
 
         #[doc(hidden)]
-        type __WithLhsArgsChars<Lhs, $(const $identg: char),*>
-        : __TStrReprBinary<Lhs = Lhs, Rhs = Self>
+        type __TypeCmpWithLhsArgsChars<Lhs, $(const $identg: char),*>
+        : __TypeCmpComputer<Lhs = Lhs, Rhs = Self>
         where
             Lhs: __TStrRepr + Identity<Type = crate::__<$($identg,)*>>;
 
         #[doc(hidden)]
-        type __WithLhsArgsTuple8<Lhs, $($identg: __TStrRepr),*>
-        : __TStrReprBinary<Lhs = Lhs, Rhs = Self>
+        type __TypeCmpWithLhsArgsTuple8<Lhs, $($identg: __TStrRepr),*>
+        : __TypeCmpComputer<Lhs = Lhs, Rhs = Self>
         where
             Lhs: __TStrRepr + Identity<Type = ($($identg,)*)>;
     }
 
-    macro_rules! with_reprargs_assoc_types {
+    macro_rules! typecmp_with_lhs_args__assoc_types {
         (
             ArgsWLen = $SelfWL:ty,
             ArgsUnit = $SelfU:ty,
@@ -206,22 +205,22 @@ macro_rules! with_idents {($_:tt $len:literal ($($ident:ident)*) ($($identg:iden
             ArgsTuple8 = $SelfT8:ty $_(,)?
         ) => {
             #[doc(hidden)]
-            type __WithLhsArgsWLen<Lhs, LS: __TStrRepr, const LLEN: usize> = $SelfWL
+            type __TypeCmpWithLhsArgsWLen<Lhs, LS: __TStrRepr, const LLEN: usize> = $SelfWL
             where
                 Lhs: __TStrRepr + Identity<Type = crate::___<LS, LLEN>>;
 
             #[doc(hidden)]
-            type __WithLhsArgsUnit<Lhs> = $SelfU
+            type __TypeCmpWithLhsArgsUnit<Lhs> = $SelfU
             where
                 Lhs: __TStrRepr + Identity<Type = ()>;
 
             #[doc(hidden)]
-            type __WithLhsArgsChars<Lhs, $(const $identg: char),*> = $SelfC
+            type __TypeCmpWithLhsArgsChars<Lhs, $(const $identg: char),*> = $SelfC
             where
                 Lhs: __TStrRepr + Identity<Type = crate::__<$($identg,)*>>;
 
             #[doc(hidden)]
-            type __WithLhsArgsTuple8<Lhs, $($identg: __TStrRepr),*> = $SelfT8
+            type __TypeCmpWithLhsArgsTuple8<Lhs, $($identg: __TStrRepr),*> = $SelfT8
             where
                 Lhs: __TStrRepr + Identity<Type = ($($identg,)*)>;
 
@@ -246,9 +245,9 @@ macro_rules! with_idents {($_:tt $len:literal ($($ident:ident)*) ($($identg:iden
             type $ident = S::$ident;
         )*
 
-        type __WithRhs<Rhs: __TStrRepr> = Rhs::__WithLhsArgsWLen<Self, S, LEN>;
+        type __TypeCmpWithRhs<Rhs: __TStrRepr> = Rhs::__TypeCmpWithLhsArgsWLen<Self, S, LEN>;
 
-        with_reprargs_assoc_types!{
+        typecmp_with_lhs_args__assoc_types!{
             ArgsWLen = EqKindCmp<crate::___<LS, LLEN>, Lhs, Self>,
             ArgsUnit = NeKindCmp<Lhs, Self>,
             ArgsChars = NeKindCmp<Lhs, Self>,
@@ -265,9 +264,9 @@ macro_rules! with_idents {($_:tt $len:literal ($($ident:ident)*) ($($identg:iden
 
         $(type $ident = ();)*
 
-        type __WithRhs<Rhs: __TStrRepr> = Rhs::__WithLhsArgsUnit<Self>;
+        type __TypeCmpWithRhs<Rhs: __TStrRepr> = Rhs::__TypeCmpWithLhsArgsUnit<Self>;
 
-        with_reprargs_assoc_types!{
+        typecmp_with_lhs_args__assoc_types!{
             ArgsWLen = NeKindCmp<Lhs, Self>,
             ArgsUnit = EqKindCmp<(), Lhs, Self>,
             ArgsChars = NeKindCmp<Lhs, Self>,
@@ -284,9 +283,9 @@ macro_rules! with_idents {($_:tt $len:literal ($($ident:ident)*) ($($identg:iden
 
         $(type $ident = ();)*
 
-        type __WithRhs<Rhs: __TStrRepr> = Rhs::__WithLhsArgsChars<Self, $($ident,)*>;
+        type __TypeCmpWithRhs<Rhs: __TStrRepr> = Rhs::__TypeCmpWithLhsArgsChars<Self, $($ident,)*>;
 
-        with_reprargs_assoc_types!{
+        typecmp_with_lhs_args__assoc_types!{
             ArgsWLen = NeKindCmp<Lhs, Self>,
             ArgsUnit = NeKindCmp<Lhs, Self>,
             ArgsChars = EqKindCmp<crate::__<$($identg,)*>, Lhs, Self>,
@@ -303,9 +302,9 @@ macro_rules! with_idents {($_:tt $len:literal ($($ident:ident)*) ($($identg:iden
 
         $(type $ident = $ident;)*
 
-        type __WithRhs<Rhs: __TStrRepr> = Rhs::__WithLhsArgsTuple8<Self, $($ident,)*>;
+        type __TypeCmpWithRhs<Rhs: __TStrRepr> = Rhs::__TypeCmpWithLhsArgsTuple8<Self, $($ident,)*>;
 
-        with_reprargs_assoc_types!{
+        typecmp_with_lhs_args__assoc_types!{
             ArgsWLen = NeKindCmp<Lhs, Self>,
             ArgsUnit = NeKindCmp<Lhs, Self>,
             ArgsChars = NeKindCmp<Lhs, Self>,

@@ -308,11 +308,14 @@ where
 
 /// For bounding the type parameter of [`TStr`].
 ///
-/// Usually, it's better to use a type parameter bounded by the [`IsTStr`] trait,
-/// since it allows the type to imply many commonly derived traits.
-/// You only need this trait if you're using using `TStr` explicitly in the code.
+/// You only need this trait if you're using using `TStr` explicitly in the code,
+/// it's usually better have a type parameter bounded by
+/// the [`IsTStr`] trait instead of using [`TStr`] directly.
 ///
 /// # Example
+///
+/// This example shows an usecase where you'll need to use this trait,
+/// implementing traits for `TStr`.
 ///
 /// ```rust
 /// use tstr::{IsTStr, TStr, TStrArg, ts};
@@ -362,6 +365,7 @@ pub trait TStrArg: __TStrRepr + 'static {
     type __WithLhsArgs<LeftS: __TStrRepr, const LEFT_LEN: usize>: __TStrArgBinary<Lhs = crate::___<LeftS, LEFT_LEN>, Rhs = Self>;
 }
 
+// implemented for `(Lhs, Rhs)`, does binary operations on a pair of type arguments of TStrs
 #[doc(hidden)]
 pub trait __TStrArgBinary {
     #[doc(hidden)]

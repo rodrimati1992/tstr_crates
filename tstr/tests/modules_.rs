@@ -19,6 +19,7 @@ mod modules {
 
     mod other_args;
 
-    // TODO: re-enable once parsing is possible
-    // mod to_uint;
+    mod trait_fn_equiv_tests;
+
+    mod tstr_methods_tests;
 }
