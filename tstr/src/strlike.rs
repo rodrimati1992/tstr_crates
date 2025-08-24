@@ -35,6 +35,24 @@ pub trait StrLike: AsStrLike<Target = Self> {
 
     #[doc(hidden)]
     const __STR_LIKE_WITNESS: __StrLikeWitness<Self>;
+
+    /// Converts `self` into a `&str`
+    ///
+    /// The const equivalent of this trait method is the
+    /// [`strlike::as_str`](crate::strlike::as_str) function.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use tstr::{strlike::StrLike, ts};
+    ///
+    /// assert_eq!("foo".as_str(), "foo");
+    /// assert_eq!(ts!(bar).as_str(), "bar");
+    /// ```
+    ///
+    fn as_str(&self) -> &str {
+        as_str(self)
+    }
 }
 
 impl StrLike for str {
@@ -63,6 +81,8 @@ pub enum __StrLikeWitness<T: ?Sized + StrLike> {
 }
 
 /// Converts the argument into a `&str`
+///
+/// The trait method equivalent of this function is the [`StrLike::as_str`] method.
 ///
 /// # Example
 ///

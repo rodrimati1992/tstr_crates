@@ -1,7 +1,7 @@
 use crate::modules::utils::{assert_type, assert_typename};
 
 use tstr::TS;
-use tstr::strlike::as_strlike;
+use tstr::strlike::{StrLike, as_strlike};
 
 type One = TS!(1);
 
@@ -12,8 +12,14 @@ fn as_str_test() {
         let _: &'a str = tstr::strlike::as_str(ss);
     }
 
-    assert_eq!(tstr::strlike::as_str(&One::new()), "1");
-    assert_eq!(tstr::strlike::as_str("hello"), "hello");
+    #[track_caller]
+    fn case<'a, S: ?Sized + StrLike>(val: &'a S, expected: &'a str) {
+        assert_eq!(tstr::strlike::as_str(val), expected);
+        assert_eq!(val.as_str(), expected);
+    }
+
+    case(&One::new(), "1");
+    case("hello", "hello");
 }
 
 #[test]

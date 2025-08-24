@@ -1,10 +1,11 @@
 use crate::modules::utils::{assert_type, must_panic};
 
-use tstr::{IsTStr, TS, TStr};
+use tstr::{IsTStr, TS, TStr, TStrArg};
 
 use std::cmp::{Ord, Ordering, PartialOrd};
 
 type AString = TS!(1234);
+
 type BString = TS!(12345);
 
 #[test]
@@ -23,14 +24,57 @@ fn conversion_into_tstr_test() {
 #[test]
 fn conversion_from_generic_test() {
     fn foo<S: IsTStr>() {
-        let tstr = TStr::<S::Arg>::new();
+        assert_type::<S>(&const { TStr::<S::Arg>::new().to_gen::<S>() });
 
-        assert_type::<S>(&tstr.to_gen::<S>());
-
-        must_panic(|| assert_type::<BString>(&tstr.to_gen::<S>()));
+        must_panic(|| assert_type::<BString>(&const { TStr::<S::Arg>::new().to_gen::<S>() }));
     }
 
     foo::<AString>();
+}
+
+#[test]
+fn fmt_test() {
+    macro_rules! test_case {
+        ($s:literal) => {{
+            type Type = TS!($s);
+            const CONST: &str = $s;
+
+            assert_eq!(format!("{}", Type::new()), format!("{}", CONST));
+            assert_eq!(format!("{:?}", Type::new()), format!("{:?}", CONST));
+            assert_eq!(format!("{:#?}", Type::new()), format!("{:#?}", CONST));
+        }};
+    }
+
+    test_case! {"\nfoo\r\t\0"}
+}
+
+#[test]
+fn default_test() {
+    fn _blanket<L: TStrArg>() {
+        _ = <TStr<L> as Default>::default();
+    }
+}
+
+#[test]
+fn hash_test() {
+    use std::collections::HashMap;
+
+    fn case<L: IsTStr>() {
+        let val = TStr::<L::Arg>::new();
+        let mut map = HashMap::from([(val, 3)]);
+
+        assert_eq!(map.insert(val, 5), Some(3));
+        assert_eq!(map.len(), 1);
+
+        assert_eq!(map.insert(val, 8), Some(5));
+        assert_eq!(map.len(), 1);
+
+        assert_eq!(map.remove(&val), Some(8));
+        assert!(map.is_empty());
+    }
+
+    case::<AString>();
+    case::<BString>();
 }
 
 #[test]
