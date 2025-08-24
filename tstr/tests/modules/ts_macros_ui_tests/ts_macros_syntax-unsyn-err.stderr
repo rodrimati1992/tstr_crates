@@ -1,58 +1,117 @@
 error: expected expression, found `=`
- --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:8:28
-  |
-8 |     alias!{ pub _equals = (=); }
-  |                            ^ expected expression
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:12:14
+   |
+12 |     case!{ ((=)) ((=)) }
+   |              ^ expected expression
 
 error: Expected one of: string literal, integer literal, identifier
        Found: (=)
- --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:8:27
-  |
-8 |     alias!{ pub _equals = (=); }
-  |                           ^^^
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:12:13
+   |
+12 |     case!{ ((=)) ((=)) }
+   |             ^^^
+
+error: expected expression, found `=`
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:12:20
+   |
+12 |     case!{ ((=)) ((=)) }
+   |                    ^ expected expression
+
+error: Expected one of: string literal, integer literal, identifier
+       Found: (=)
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:12:19
+   |
+12 |     case!{ ((=)) ((=)) }
+   |                   ^^^
 
 error: Expected one of: string literal, integer literal, identifier
        Found: .
- --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:9:27
-  |
-9 |     alias!{ pub _dotdot = ..; }
-  |                           ^
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:13:13
+   |
+13 |     case!{ (..) (..) }
+   |             ^
+
+error: Expected one of: string literal, integer literal, identifier
+       Found: .
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:13:18
+   |
+13 |     case!{ (..) (..) }
+   |                  ^
 
 error: Expected one of: string literal, integer literal, identifier
        Found: {}
-  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:10:27
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:14:13
    |
-10 |     alias!{ pub _braces = {}; }
-   |                           ^^
+14 |     case!{ ({}) ({}) }
+   |             ^^
+
+error: Expected one of: string literal, integer literal, identifier
+       Found: {}
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:14:18
+   |
+14 |     case!{ ({}) ({}) }
+   |                  ^^
 
 error: Expected one of: string literal, integer literal, identifier
        Found: ()
-  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:11:32
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:15:13
    |
-11 |     alias!{ pub _parentheses = (); }
-   |                                ^^
+15 |     case!{ (()) (()) }
+   |             ^^
+
+error: Expected one of: string literal, integer literal, identifier
+       Found: ()
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:15:18
+   |
+15 |     case!{ (()) (()) }
+   |                  ^^
 
 error: Expected one of: string literal, integer literal, identifier
        Found: []
-  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:12:29
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:16:13
    |
-12 |     alias!{ pub _brackets = []; }
-   |                             ^^
+16 |     case!{ ([]) ([]) }
+   |             ^^
+
+error: Expected one of: string literal, integer literal, identifier
+       Found: []
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:16:18
+   |
+16 |     case!{ ([]) ([]) }
+   |                  ^^
 
 error: `compile_error` macro not supported in `tstr::TS`
-  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:13:33
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:17:13
    |
-13 |     alias!{ pub _compile_err1 = compile_error!{"foo"}; }
-   |                                 ^^^^^^^^^^^^^
+17 |     case!{ (compile_error!{"foo"}) (compile_error!{"foo"}) }
+   |             ^^^^^^^^^^^^^
+
+error: `compile_error` macro not supported in `tstr::TS`
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:17:37
+   |
+17 |     case!{ (compile_error!{"foo"}) (compile_error!{"foo"}) }
+   |                                     ^^^^^^^^^^^^^
 
 error: unexpected token after stringified argument
-  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:14:36
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:18:16
    |
-14 |     alias!{ pub _compile_err2 = foo::bar::compile_error!{"foo"}; }
-   |                                    ^
+18 |     case!{ (foo::bar::compile_error!{"foo"}) (foo::bar::compile_error!{"foo"}) }
+   |                ^
 
 error: unexpected token after stringified argument
-  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:15:38
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:18:50
    |
-15 |     alias!{ pub _compile_err3 = crate::bar::compile_error!{"foo"}; }
-   |                                      ^
+18 |     case!{ (foo::bar::compile_error!{"foo"}) (foo::bar::compile_error!{"foo"}) }
+   |                                                  ^
+
+error: unexpected token after stringified argument
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:19:18
+   |
+19 |     case!{ (crate::bar::compile_error!{"foo"}) (crate::bar::compile_error!{"foo"}) }
+   |                  ^
+
+error: unexpected token after stringified argument
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:19:54
+   |
+19 |     case!{ (crate::bar::compile_error!{"foo"}) (crate::bar::compile_error!{"foo"}) }
+   |                                                      ^

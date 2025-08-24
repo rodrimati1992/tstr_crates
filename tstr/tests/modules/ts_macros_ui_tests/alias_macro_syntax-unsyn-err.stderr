@@ -1,0 +1,58 @@
+error: expected expression, found `=`
+ --> tests/modules/ts_macros_ui_tests/alias_macro_syntax-unsyn-err.rs:8:28
+  |
+8 |     alias!{ pub _equals = (=); }
+  |                            ^ expected expression
+
+error: Expected one of: string literal, integer literal, identifier
+       Found: (=)
+ --> tests/modules/ts_macros_ui_tests/alias_macro_syntax-unsyn-err.rs:8:27
+  |
+8 |     alias!{ pub _equals = (=); }
+  |                           ^^^
+
+error: Expected one of: string literal, integer literal, identifier
+       Found: .
+ --> tests/modules/ts_macros_ui_tests/alias_macro_syntax-unsyn-err.rs:9:27
+  |
+9 |     alias!{ pub _dotdot = ..; }
+  |                           ^
+
+error: Expected one of: string literal, integer literal, identifier
+       Found: {}
+  --> tests/modules/ts_macros_ui_tests/alias_macro_syntax-unsyn-err.rs:10:27
+   |
+10 |     alias!{ pub _braces = {}; }
+   |                           ^^
+
+error: Expected one of: string literal, integer literal, identifier
+       Found: ()
+  --> tests/modules/ts_macros_ui_tests/alias_macro_syntax-unsyn-err.rs:11:32
+   |
+11 |     alias!{ pub _parentheses = (); }
+   |                                ^^
+
+error: Expected one of: string literal, integer literal, identifier
+       Found: []
+  --> tests/modules/ts_macros_ui_tests/alias_macro_syntax-unsyn-err.rs:12:29
+   |
+12 |     alias!{ pub _brackets = []; }
+   |                             ^^
+
+error: `compile_error` macro not supported in `tstr::TS`
+  --> tests/modules/ts_macros_ui_tests/alias_macro_syntax-unsyn-err.rs:13:33
+   |
+13 |     alias!{ pub _compile_err1 = compile_error!{"foo"}; }
+   |                                 ^^^^^^^^^^^^^
+
+error: unexpected token after stringified argument
+  --> tests/modules/ts_macros_ui_tests/alias_macro_syntax-unsyn-err.rs:14:36
+   |
+14 |     alias!{ pub _compile_err2 = foo::bar::compile_error!{"foo"}; }
+   |                                    ^
+
+error: unexpected token after stringified argument
+  --> tests/modules/ts_macros_ui_tests/alias_macro_syntax-unsyn-err.rs:15:38
+   |
+15 |     alias!{ pub _compile_err3 = crate::bar::compile_error!{"foo"}; }
+   |                                      ^

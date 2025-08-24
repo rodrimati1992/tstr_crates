@@ -1,3 +1,11 @@
+# 0.3
+
+### 0.3.0
+
+Fixed support for Rust keywords in `alias`/`ts`/`TS` macros when `"use_syn"` feature is enabled
+
+# 0.2
+
 ### 0.2.1
 
 Added `"cmp_traits"` feature to enable TStr comparison traits.
