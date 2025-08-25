@@ -22,6 +22,7 @@ fn ui() {
         #[cfg(not(feature = "str_generics"))]
         t.compile_fail(format!("tests/modules/{}/*-char-err.rs", dir));
 
+        // these don't showcase proc macro errors or errors that show the TStr type
         #[cfg(not(feature = "str_generics"))]
         t.compile_fail(format!("tests/modules/{}/*--err.rs", dir));
 
