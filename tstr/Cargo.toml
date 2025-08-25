@@ -1,6 +1,6 @@
 [package]
 name = "tstr"
-version = "0.2.4"
+version = "0.3.0"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 edition = "2024"
 rust-version = "1.88.0"

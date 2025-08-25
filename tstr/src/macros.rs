@@ -333,5 +333,6 @@ impl<A: ?Sized, B: ?Sized> __PickFirst<B> for A {
     type First = A;
 }
 
+// used by erroring macros to emit both a compile_error!() and a TStr type.
 #[doc(hidden)]
 pub type __IgnoreArgReturnEmpty<A> = <TS!("") as __PickFirst<A>>::First;
