@@ -1,5 +1,5 @@
 use core::{
-    cmp::Ordering,
+    cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd},
     fmt::{self, Debug},
     hash::{Hash, Hasher},
     marker::PhantomData,
@@ -11,7 +11,7 @@ use const_panic::{
     fmt::{FmtArg, PanicFmt},
 };
 
-use crate::{IsTStr, TStrArg};
+use crate::{IsTStr, TStrArg, strlike::StrLike};
 
 /// A type-level string type, emulates a `&'static str` const parameter.
 ///
@@ -217,31 +217,132 @@ where
     }
 }
 
-impl<S, S2> core::cmp::PartialEq<S2> for TStr<S>
+// TStr<_> == (str|TStr<_>)
+impl<S, S2> PartialEq<S2> for TStr<S>
 where
     S: TStrArg,
-    S2: IsTStr,
+    S2: ?Sized + StrLike,
 {
     #[inline(always)]
     fn eq(&self, other: &S2) -> bool {
-        self.tstr_eq(*other)
+        <str as PartialEq>::eq(self.as_str(), other.as_str())
     }
 }
 
-impl<S> core::cmp::Eq for TStr<S> where S: TStrArg {}
-
-impl<S, S2> core::cmp::PartialOrd<S2> for TStr<S>
+impl<S> PartialEq<&str> for TStr<S>
 where
     S: TStrArg,
-    S2: IsTStr,
+{
+    #[inline(always)]
+    fn eq(&self, other: &&str) -> bool {
+        <str as PartialEq>::eq(self.as_str(), other)
+    }
+}
+
+impl<S> PartialEq<&&str> for TStr<S>
+where
+    S: TStrArg,
+{
+    #[inline(always)]
+    fn eq(&self, other: &&&str) -> bool {
+        <str as PartialEq>::eq(self.as_str(), other)
+    }
+}
+
+impl<S2> PartialEq<TStr<S2>> for str
+where
+    S2: TStrArg,
+{
+    #[inline(always)]
+    fn eq(&self, other: &TStr<S2>) -> bool {
+        <str as PartialEq>::eq(self, other.as_str())
+    }
+}
+
+impl<S2> PartialEq<TStr<S2>> for &str
+where
+    S2: TStrArg,
+{
+    #[inline(always)]
+    fn eq(&self, other: &TStr<S2>) -> bool {
+        <str as PartialEq>::eq(self, other.as_str())
+    }
+}
+
+impl<S2> PartialEq<TStr<S2>> for &&str
+where
+    S2: TStrArg,
+{
+    #[inline(always)]
+    fn eq(&self, other: &TStr<S2>) -> bool {
+        <str as PartialEq>::eq(self, other.as_str())
+    }
+}
+
+impl<S> Eq for TStr<S> where S: TStrArg {}
+
+// comparing TStr<_> and (str|TStr<_>) for ordering
+impl<S, S2> PartialOrd<S2> for TStr<S>
+where
+    S: TStrArg,
+    S2: ?Sized + StrLike,
 {
     #[inline(always)]
     fn partial_cmp(&self, other: &S2) -> Option<Ordering> {
-        Some(self.tstr_cmp(*other))
+        <str as PartialOrd>::partial_cmp(self.as_str(), other.as_str())
     }
 }
 
-impl<S> core::cmp::Ord for TStr<S>
+impl<S> PartialOrd<&str> for TStr<S>
+where
+    S: TStrArg,
+{
+    #[inline(always)]
+    fn partial_cmp(&self, other: &&str) -> Option<Ordering> {
+        <str as PartialOrd>::partial_cmp(self.as_str(), other)
+    }
+}
+
+impl<S> PartialOrd<&&str> for TStr<S>
+where
+    S: TStrArg,
+{
+    #[inline(always)]
+    fn partial_cmp(&self, other: &&&str) -> Option<Ordering> {
+        <str as PartialOrd>::partial_cmp(self.as_str(), other)
+    }
+}
+
+impl<S2> PartialOrd<TStr<S2>> for str
+where
+    S2: TStrArg,
+{
+    #[inline(always)]
+    fn partial_cmp(&self, other: &TStr<S2>) -> Option<Ordering> {
+        <str as PartialOrd>::partial_cmp(self, other.as_str())
+    }
+}
+
+impl<S2> PartialOrd<TStr<S2>> for &str
+where
+    S2: TStrArg,
+{
+    #[inline(always)]
+    fn partial_cmp(&self, other: &TStr<S2>) -> Option<Ordering> {
+        <str as PartialOrd>::partial_cmp(self, other.as_str())
+    }
+}
+impl<S2> PartialOrd<TStr<S2>> for &&str
+where
+    S2: TStrArg,
+{
+    #[inline(always)]
+    fn partial_cmp(&self, other: &TStr<S2>) -> Option<Ordering> {
+        <str as PartialOrd>::partial_cmp(self, other.as_str())
+    }
+}
+
+impl<S> Ord for TStr<S>
 where
     S: TStrArg,
 {

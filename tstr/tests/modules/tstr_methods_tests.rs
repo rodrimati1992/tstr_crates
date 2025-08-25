@@ -87,10 +87,68 @@ fn cmp_test() {
         assert_eq!(
             PartialOrd::partial_cmp(&lhs, &rhs),
             Some(expected),
-            "partial_cmp"
+            "partial_cmp: {}",
+            line!()
         );
 
         assert_eq!(Ord::cmp(&lhs, &lhs), Ordering::Equal, "cmp");
+
+        // comparing TStr and str
+        assert_eq!(
+            PartialOrd::partial_cmp(lhs.to_str(), &rhs),
+            Some(expected),
+            "partial_cmp: {}",
+            line!()
+        );
+        assert_eq!(
+            PartialOrd::partial_cmp(&lhs.to_str(), &rhs),
+            Some(expected),
+            "partial_cmp: {}",
+            line!()
+        );
+        assert_eq!(
+            PartialOrd::partial_cmp(&lhs, rhs.to_str()),
+            Some(expected),
+            "partial_cmp: {}",
+            line!()
+        );
+        assert_eq!(
+            PartialOrd::partial_cmp(&lhs, &rhs.to_str()),
+            Some(expected),
+            "partial_cmp: {}",
+            line!()
+        );
+
+        assert_eq!(
+            PartialOrd::partial_cmp(lhs.to_str(), &lhs),
+            Some(Ordering::Equal),
+            "cmp"
+        );
+        assert_eq!(
+            PartialOrd::partial_cmp(&lhs.to_str(), &lhs),
+            Some(Ordering::Equal),
+            "cmp"
+        );
+        assert_eq!(
+            PartialOrd::partial_cmp(&&lhs.to_str(), &lhs),
+            Some(Ordering::Equal),
+            "cmp"
+        );
+        assert_eq!(
+            PartialOrd::partial_cmp(&lhs, lhs.to_str()),
+            Some(Ordering::Equal),
+            "cmp"
+        );
+        assert_eq!(
+            PartialOrd::partial_cmp(&lhs, &lhs.to_str()),
+            Some(Ordering::Equal),
+            "cmp"
+        );
+        assert_eq!(
+            PartialOrd::partial_cmp(&lhs, &&lhs.to_str()),
+            Some(Ordering::Equal),
+            "cmp"
+        );
     }
 
     case::<AString, AString>(Ordering::Equal);
@@ -101,7 +159,9 @@ fn cmp_test() {
 
 #[test]
 fn eq_ne_test() {
-    fn assert_is_eq<T: std::cmp::Eq>(_: T) {}
+    use std::cmp::{Eq, PartialEq};
+
+    fn assert_is_eq<'a, T: Eq + PartialEq<str> + PartialEq<&'a str>>(_: T) {}
 
     #[track_caller]
     fn case<L: IsTStr, R: IsTStr>(expected: bool) {
@@ -112,10 +172,35 @@ fn eq_ne_test() {
 
         assert_eq!(lhs == rhs, expected, "eq");
         assert_eq!(lhs != rhs, !expected, "ne");
+
+        // comparing str and TStr
+        assert_eq!(*lhs.to_str() == rhs, expected, "eq");
+        assert_eq!(lhs.to_str() == rhs, expected, "eq");
+        assert_eq!(&lhs.to_str() == rhs, expected, "eq");
+
+        assert_eq!(*lhs.to_str() != rhs, !expected, "ne");
+        assert_eq!(lhs.to_str() != rhs, !expected, "ne");
+        assert_eq!(&lhs.to_str() != rhs, !expected, "ne");
+
+        assert_eq!(lhs == *rhs.to_str(), expected, "eq");
+        assert_eq!(lhs == rhs.to_str(), expected, "eq");
+        assert_eq!(lhs == &rhs.to_str(), expected, "eq");
+
+        assert_eq!(lhs != *rhs.to_str(), !expected, "ne");
+        assert_eq!(lhs != rhs.to_str(), !expected, "ne");
+        assert_eq!(lhs != &rhs.to_str(), !expected, "ne");
     }
 
     case::<AString, AString>(true);
     case::<AString, BString>(false);
     case::<BString, AString>(false);
     case::<BString, BString>(true);
+}
+
+#[test]
+fn ensure_usable_in_std_asserts_test() {
+    std::assert_eq!(AString::VAL, "1234");
+    std::assert_ne!(AString::VAL, "12345");
+    must_panic(|| std::assert_ne!(AString::VAL, "1234"));
+    must_panic(|| std::assert_eq!(AString::VAL, "12345"));
 }

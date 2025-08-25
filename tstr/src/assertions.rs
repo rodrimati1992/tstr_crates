@@ -71,7 +71,7 @@ macro_rules! __cmp_assert_inner {
 ///
 #[doc = cmp_assert_str_docs!()]
 ///
-/// # Example
+/// # Examples
 ///
 /// ### Passing
 ///
@@ -138,7 +138,7 @@ macro_rules! assert_str_eq {
 ///
 #[doc = cmp_assert_str_docs!()]
 ///
-/// # Example
+/// # Examples
 ///
 /// ### Passing
 ///

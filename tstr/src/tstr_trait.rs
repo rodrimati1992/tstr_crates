@@ -22,7 +22,12 @@ pub trait IsTStr:
     + Eq
     + Ord
     + PartialEq
+    + PartialEq<str>
+    + for<'a> PartialEq<&'a str>
+    + for<'a, 'b> PartialEq<&'a &'b str>
     + PartialOrd
+    + PartialOrd<str>
+    + for<'a, 'b> PartialOrd<&'a &'b str>
     + Send
     + Sized
     + Sync

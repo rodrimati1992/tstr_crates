@@ -69,7 +69,9 @@ Added these impls for `TStr`:
 - `Display`: display formats the string returned by `to_str`
 - `Hash`
 
-Changed `PartialEq` and `PartialOrd` impls for `TStr` to take any `IsTStr` as the rhs argument.
+Changed `PartialEq` and `PartialOrd` impls for `TStr` to take any `StrLike` as the rhs argument.
+
+Added `PartialEq` and `PartialOrd` impls for comparing between `str` and `TStr`.
 
 Changed `Debug` impl for `TStr` to debug format the string returned by `to_str`.
 
