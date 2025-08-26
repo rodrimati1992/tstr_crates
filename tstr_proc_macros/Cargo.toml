@@ -21,9 +21,7 @@ proc-macro = true
 
 [features]
 default = []
-syn_ = ["syn", "proc_macro2_"]
-proc_macro2_ = ["proc-macro2"]
-
+use_syn = ["dep:syn", "dep:proc-macro2"]
 str_generics = []
 
 [dependencies]

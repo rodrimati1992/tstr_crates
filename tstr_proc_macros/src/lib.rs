@@ -3,10 +3,10 @@
 
 extern crate proc_macro;
 
-#[cfg(not(feature = "proc_macro2_"))]
+#[cfg(not(feature = "use_syn"))]
 use proc_macro as used_proc_macro;
 
-#[cfg(feature = "proc_macro2_")]
+#[cfg(feature = "use_syn")]
 use proc_macro2 as used_proc_macro;
 
 #[allow(unused_imports)]
@@ -14,10 +14,10 @@ use used_proc_macro::{
     Delimiter, Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree,
 };
 
-#[cfg(feature = "syn_")]
+#[cfg(feature = "use_syn")]
 mod use_syn;
 
-#[cfg(not(feature = "syn_"))]
+#[cfg(not(feature = "use_syn"))]
 mod non_syn_parsing;
 
 #[cfg(not(feature = "str_generics"))]
@@ -38,10 +38,10 @@ pub fn __ts_impl(input_tokens: proc_macro::TokenStream) -> proc_macro::TokenStre
 
     let mut crate_path = None;
 
-    #[cfg(feature = "syn_")]
+    #[cfg(feature = "use_syn")]
     let parsed = use_syn::parse_inputs(input_tokens, &mut crate_path);
 
-    #[cfg(not(feature = "syn_"))]
+    #[cfg(not(feature = "use_syn"))]
     let parsed = non_syn_parsing::parse_inputs(input_tokens, &mut crate_path);
 
     let crate_path: TokenStream = crate_path

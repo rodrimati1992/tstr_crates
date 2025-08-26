@@ -156,23 +156,23 @@
 //!
 //! # Cargo features
 //!
-//! - `"use_syn"`:
+//! - `"const_panic"`(enabled by default):
+//! Enables [`const_panic`] reexports, assertion macros,
+//! and `const_panic::fmt::PanicFmt` impl for `TStr`.
+//!
+//! - `"use_syn"`(disabled by default):
 //! Changes how literals passed to the macros of this crate are parsed to use the `syn` crate.
 //! Use this if there is some literal that could not be
 //! parsed but is a valid str/integer literal.
 //!
-//! - `"const_panic"`:
-//! Enables [`const_panic`] reexports, assertion macros,
-//! and `const_panic::fmt::PanicFmt` impl for `TStr`.
-//!
-//! - `"str_generics"`:
+//! - `"str_generics"`(disabled by default):
 //! Changes the representation of type-level strings to use a `&'static str` const parameter,
-//! making for better compiler errors, and a few more features.
+//! making for better compiler errors.
 //! As of 2025-08-18, this feature can't be enabled, because it
 //! requires `&'static str` to be stably usable as const parameters.
 //! Consider using `"nightly_str_generics"` if this feature can't be used.
 //!
-//! - `"nightly_str_generics"`: Equivalent to the `"str_generics"` feature,
+//! - `"nightly_str_generics"`(disabled by default): Equivalent to the `"str_generics"` feature,
 //! and enables the nightly compiler features to use `&'static str` const parameters.
 //!
 //! # No-std support

@@ -37,6 +37,11 @@ macro_rules! cmp_assert_str_docs {
             "they must implement the [`const_panic::fmt::PanicFmt`]",
             " trait as described in its docs.\n",
             "\n\n",
+            "# Features\n",
+            "\n",
+            "This macro requires the (default-enabled) `\"const_panic\"` crate feature",
+            " to be enabled.\n",
+            "\n\n",
             "[`TStr`]: crate::TStr",
             "\n",
         )

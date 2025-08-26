@@ -24,7 +24,7 @@ str_generics = ["tstr_proc_macros/str_generics", "typewit/adt_const_marker"]
 nightly_str_generics = ["str_generics"]
 const_panic = ["dep:const_panic"]
 
-use_syn = ["tstr_proc_macros/syn_"]
+use_syn = ["tstr_proc_macros/use_syn"]
 
 # private features
 docsrs = []
