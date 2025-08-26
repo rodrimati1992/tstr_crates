@@ -140,7 +140,9 @@ use crate::{IsTStr, TStrArg, strlike::StrLike};
 /// [`const fn from_str_radix`](u32::from_str_radix) functions,
 /// parsing them doesn't require direct support from `TStr` itself.
 ///
-/// ```rust
+/// (this example requires the `"const_panic"` feature because it uses `tstr::unwrap`)
+#[cfg_attr(not(feature = "const_panic"), doc = "```ignore")]
+#[cfg_attr(feature = "const_panic", doc = "```rust")]
 /// use tstr::ts;
 ///
 /// // parses the number at compile-time!

@@ -252,6 +252,7 @@ pub mod __p {
     pub use crate::__Empty;
     pub use crate::macros::__IgnoreArgReturnEmpty;
 
+    #[cfg(feature = "const_panic")]
     pub use const_panic::concat_panic;
 
     pub use core::array;

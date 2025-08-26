@@ -19,7 +19,7 @@ pub trait __StrLikeBase {
 /// Asserting that a `StrLike` value is in the set of valid strings.
 ///
 /// ```rust
-/// use tstr::{strlike::StrLike, assert_str_eq, ts};
+/// use tstr::{strlike::StrLike, ts};
 ///
 /// const VALS: [&str; 2] = [assert_valid("hello"), assert_valid(&ts!(world))];
 ///
