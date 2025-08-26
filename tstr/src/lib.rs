@@ -1,4 +1,13 @@
-//! This crate provides an encoding of type-level strings as types.
+//! An encoding of type-level strings, with the [`TStr`] type and related macros.
+//!
+//! This crate features all these on stable:
+//! - a relatively readable default representation of type-level strings
+//!   based on `char` const parameters.
+//! - items for converting type-level strings to `&'static str` and `&'static [u8]`
+//! - functions for comparing type-level strings to each other and `&str`
+//! - macros for asserting the (in)equality of type-level strings to each other and `&str`
+//!
+//! All of the above functionality can be used in const contexts.
 //!
 //! # Examples
 //!
@@ -7,7 +16,7 @@
 //! This example demonstrates how you can use type-level strings,
 //! and the [`Index`] trait, to access fields of generic types by name.
 //!
-//! ```
+//! ```rust
 //! use std::ops::Index;
 //!
 //! use tstr::{TS, ts};
@@ -97,6 +106,46 @@
 //!
 //! ```
 //!
+//! ### Type errors
+//!
+//! This example showcases what TStr looks like in simple type errors.
+//!
+//! ```rust,compile_fail
+//! let _: tstr::TS!("Hello, world!") = ();
+//! ```
+//!
+//! With no crate features enabled, the error message is this:
+//! ```text
+//! error[E0308]: mismatched types
+//!  --> tstr/src/lib.rs:114:37
+//!   |
+//! 5 | let _: tstr::TS!("Hello, world!") = ();
+//!   |        --------------------------   ^^ expected `TStr<___<..., 13>>`, found `()`
+//!   |        |
+//!   |        expected due to this
+//!   |
+//!   = note: expected struct `tstr::TStr<___<(tstr::__<'H', 'e', 'l', 'l', 'o', ',', ' ', 'w'>, tstr::__<'o', 'r', 'l', 'd', '!'>, (), (), (), (), (), ()), 13>>`
+//!           found unit type `()`
+//! ```
+//! As you can see, the string is represented as a collection of `char` const parameters.
+//!
+//! When the `"nightly_str_generics"` feature is enabled (which requires the nightly compiler),
+//! the error message is this:
+//! ```text
+//! error[E0308]: mismatched types
+//!  --> tstr/src/lib.rs:114:37
+//!   |
+//! 5 | let _: tstr::TS!("Hello, world!") = ();
+//!   |        --------------------------   ^^ expected `TStr<___<"Hello, world!">>`, found `()`
+//!   |        |
+//!   |        expected due to this
+//!   |
+//!   = note: expected struct `tstr::TStr<___<"Hello, world!">>`
+//!           found unit type `()`
+//! ```
+//!
+//!
+//!
 //! # Macro expansion
 //!
 //! This library reserves the right to change how it represent type-level strings internally
@@ -111,6 +160,10 @@
 //! Changes how literals passed to the macros of this crate are parsed to use the `syn` crate.
 //! Use this if there is some literal that could not be
 //! parsed but is a valid str/integer literal.
+//!
+//! - `"const_panic"`:
+//! Enables [`const_panic`] reexports, assertion macros,
+//! and `const_panic::fmt::PanicFmt` impl for `TStr`.
 //!
 //! - `"str_generics"`:
 //! Changes the representation of type-level strings to use a `&'static str` const parameter,
@@ -130,6 +183,8 @@
 //!
 //! This crate supports Rust versions back to Rust 1.88.0.
 //!
+//! [`TStr`]: crate::TStr
+//! [`const_panic`]: const_panic
 //! [`Index`]: core::ops::Index
 //! [`tstr::utils`]: crate::utils
 #![no_std]

@@ -12,7 +12,7 @@ jobs:
     strategy:
       max-parallel: 2
       matrix:
-        rust: [stable, beta, nightly, 1.40.0]
+        rust: [stable, beta, nightly, 1.88.0]
 
     steps:
     - uses: actions/checkout@v2
@@ -25,18 +25,11 @@ jobs:
         cargo test
 
         cd "${{github.workspace}}/tstr/"
-        cargo test --features "testing for_examples"
 
-    - uses: actions/checkout@v2
-    - name: ci-non-MSRV      
-      if: ${{ matrix.rust != '1.40.0' }}
-      run: |
-        rustup override set ${{ matrix.rust }}
-        cargo update
-          
-        cd "${{github.workspace}}/tstr/"
-        cargo test --features "testing for_examples use_syn"
-
+        cargo test --no-default-features --features ""
+        cargo test --no-default-features --features "const_panic"
+        cargo test --no-default-features --features "use_syn"
+        cargo test --no-default-features --features "const_panic use_syn"
 
     - uses: actions/checkout@v2
     - name: ci-nighly
@@ -44,10 +37,10 @@ jobs:
       run: |
         rustup override set ${{ matrix.rust }}
         cargo update
-          
-        cd "${{github.workspace}}/tstr/"
-        cargo test --features "testing for_examples min_const_generics"
-        cargo test --features "testing for_examples use_syn min_const_generics"
 
-        cargo test --features "testing for_examples nightly_const_generics"
-        cargo test --features "testing for_examples use_syn nightly_const_generics"
+        cd "${{github.workspace}}/tstr/"
+        cargo test --no-default-features --features "nightly_str_generics "
+        cargo test --no-default-features --features "nightly_str_generics const_panic"
+        cargo test --no-default-features --features "nightly_str_generics use_syn"
+        cargo test --no-default-features --features "nightly_str_generics const_panic use_syn"
+

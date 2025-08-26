@@ -5,11 +5,11 @@ authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 edition = "2024"
 rust-version = "1.88.0"
 license = "Zlib"
-description = "Type-level strings"
+description = "type-level strings on stable"
 readme="../readme.md"
 documentation = "https://docs.rs/tstr"
-keywords = []
-categories = ["no-std"]
+keywords = ["no-std", "string"]
+categories = ["no-std", "rust-patterns", "data-structures"]
 repository = "https://github.com/rodrimati1992/tstr_crates/"
 include = [
     "Cargo.toml", 
@@ -25,7 +25,6 @@ nightly_str_generics = ["str_generics"]
 const_panic = ["dep:const_panic"]
 
 use_syn = ["tstr_proc_macros/syn_"]
-for_examples = []
 
 # private features
 docsrs = []
@@ -57,7 +56,7 @@ version = "1.0"
 optional = true
 
 [package.metadata.docs.rs]
-features = ["docsrs", "nightly_str_generics"]
+features = ["docsrs", "const_panic", "nightly_str_generics"]
 
 
 
