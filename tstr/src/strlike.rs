@@ -10,19 +10,20 @@ pub trait __StrLikeBase {
     type __Kind;
 }
 
-/// Trait for "`str` or `TStr<_>`", used as a bound by a few `tstr` items.
+/// Trait for "`str` or `impl IsTStr`", used as a bound by a few `tstr` items.
 ///
 /// This trait is sealed and cannot be implemented outside of the `tstr` crate.
 ///
 /// # Example
 ///
+/// Asserting that a `StrLike` value is in the set of valid strings.
+///
 /// ```rust
 /// use tstr::{strlike::StrLike, assert_str_eq, ts};
 ///
-/// const {
-///     assert_str_eq!(assert_valid("hello"), "hello");
-///     assert_str_eq!(assert_valid(&ts!(world)), "world");
-/// }
+/// const VALS: [&str; 2] = [assert_valid("hello"), assert_valid(&ts!(world))];
+///
+/// assert_eq!(VALS, ["hello", "world"]);
 ///
 /// const fn assert_valid(s: &(impl StrLike + ?Sized)) -> &str {
 ///     let ret = tstr::strlike::as_str!(s);

@@ -12,15 +12,9 @@
 /// const BAZ: &str = "bar";
 ///
 ///
-/// const FOO_EQ_FOO: bool = str_eq(FOO, FOO);
-/// assert!( FOO_EQ_FOO );
-///
-/// const FOO_EQ_BAR: bool = str_eq(FOO, BAR);
-/// assert!( !FOO_EQ_BAR );
-///
-/// const FOO_EQ_BAZ: bool = str_eq(FOO, BAZ);
-/// assert!( !FOO_EQ_BAZ );
-///
+/// const { assert!( str_eq(FOO, FOO)); }
+/// const { assert!(!str_eq(FOO, BAR)); }
+/// const { assert!(!str_eq(FOO, BAZ)); }
 /// ```
 ///
 #[inline]
@@ -39,15 +33,9 @@ pub const fn str_eq(left: &str, right: &str) -> bool {
 /// const BAR: &[u8] = &[10, 20, 30, 40];
 /// const BAZ: &[u8] = &[3, 5, 8, 13];
 ///
-/// const FOO_EQ_FOO: bool = u8_slice_eq(FOO, FOO);
-/// assert!( FOO_EQ_FOO );
-///
-/// const FOO_EQ_BAR: bool = u8_slice_eq(FOO, BAR);
-/// assert!( !FOO_EQ_BAR );
-///
-/// const FOO_EQ_BAZ: bool = u8_slice_eq(FOO, BAZ);
-/// assert!( !FOO_EQ_BAZ );
-///
+/// const { assert!( u8_slice_eq(FOO, FOO)); }
+/// const { assert!(!u8_slice_eq(FOO, BAR)); }
+/// const { assert!(!u8_slice_eq(FOO, BAZ)); }
 ///
 /// ```
 ///
@@ -95,7 +83,7 @@ mod slice_cmp {
         }
     }
 
-    /// A const equivalent of `str::cmp`.
+    /// A const equivalent of `<str as std::cmp::Ord>::cmp`.
     ///
     /// # Example
     ///
@@ -109,14 +97,9 @@ mod slice_cmp {
     /// const BAZ: &str = "bar";
     ///
     ///
-    /// const FOO_CMP_FOO: Ordering = str_cmp(FOO, FOO);
-    /// assert_eq!(FOO_CMP_FOO, Ordering::Equal);
-    ///
-    /// const FOO_CMP_BAR: Ordering = str_cmp(FOO, BAR);
-    /// assert_eq!(FOO_CMP_BAR, Ordering::Less);
-    ///
-    /// const FOO_CMP_BAZ: Ordering = str_cmp(FOO, BAZ);
-    /// assert_eq!(FOO_CMP_BAZ, Ordering::Greater);
+    /// const { assert!(matches!(str_cmp(FOO, FOO), Ordering::Equal)); }
+    /// const { assert!(matches!(str_cmp(FOO, BAR), Ordering::Less)); }
+    /// const { assert!(matches!(str_cmp(FOO, BAZ), Ordering::Greater)); }
     ///
     /// ```
     ///
@@ -125,7 +108,7 @@ mod slice_cmp {
         u8_slice_cmp(left.as_bytes(), right.as_bytes())
     }
 
-    /// A const equivalent of `<[u8]>::cmp`.
+    /// A const equivalent of `<[u8] as std::cmp::Ord>::cmp`.
     ///
     /// # Example
     ///
@@ -138,14 +121,9 @@ mod slice_cmp {
     /// const BAR: &[u8] = &[10, 20, 30, 40];
     /// const BAZ: &[u8] = &[3, 5, 8];
     ///
-    /// const FOO_CMP_FOO: Ordering = u8_slice_cmp(FOO, FOO);
-    /// assert_eq!(FOO_CMP_FOO, Ordering::Equal);
-    ///
-    /// const FOO_CMP_BAR: Ordering = u8_slice_cmp(FOO, BAR);
-    /// assert_eq!(FOO_CMP_BAR, Ordering::Less);
-    ///
-    /// const FOO_CMP_BAZ: Ordering = u8_slice_cmp(FOO, BAZ);
-    /// assert_eq!(FOO_CMP_BAZ, Ordering::Greater);
+    /// const { assert!(matches!(u8_slice_cmp(FOO, FOO), Ordering::Equal)); }
+    /// const { assert!(matches!(u8_slice_cmp(FOO, BAR), Ordering::Less)); }
+    /// const { assert!(matches!(u8_slice_cmp(FOO, BAZ), Ordering::Greater)); }
     ///
     /// ```
     ///

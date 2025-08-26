@@ -1,10 +1,14 @@
 macro_rules! cmp_assert_str_docs {
-    () => {
+    ($assert_str:literal, $std_assert:literal) => {
         concat!(
             "[**examples below**](#examples)",
             "\n\n",
             "This macro is only evaluated at compile-time if used in a context that requires it ",
             "(eg: in the expression assigned to a `const _: () = `)",
+            "\n\n",
+            "If you only need to use this at runtime, consider using [`",
+            $std_assert,
+            "`] instead.\n",
             "\n\n",
             "# Arguments\n",
             "\n",
@@ -67,13 +71,13 @@ macro_rules! __cmp_assert_inner {
     )
 }
 
-/// For asserting that two `&str` and/or [`TStr`] are equal.
+/// Const-compatible macro for asserting that two `&str` and/or [`TStr`] are equal.
 ///
-#[doc = cmp_assert_str_docs!()]
+#[doc = cmp_assert_str_docs!("assert_str_eq", "assert_eq")]
 ///
 /// # Examples
 ///
-/// ### Passing
+/// ### Passing Assertions
 ///
 /// ```rust
 /// use tstr::ts;
@@ -89,9 +93,17 @@ macro_rules! __cmp_assert_inner {
 /// tstr::assert_str_eq!(ts!(foo), "foo");
 /// tstr::assert_str_eq!("foo", ts!("foo"));
 /// tstr::assert_str_eq!("foo", "foo");
+///
+/// // the above runtime asserts are equivalent to this,
+/// // consider using `assert_eq` if you don't need to assert in const.
+/// std::assert_eq!(ts!(foo), ts!("foo"));
+/// std::assert_eq!(ts!(foo), "foo");
+/// std::assert_eq!("foo", ts!("foo"));
+/// std::assert_eq!("foo", "foo");
+///
 /// ```
 ///
-/// ### Failing
+/// ### Failing Assertion
 ///
 /// ```rust,compile_fail
 /// use tstr::{IsTStr, TS};
@@ -101,7 +113,7 @@ macro_rules! __cmp_assert_inner {
 ///         let expected = "bar";
 ///         tstr::assert_str_eq!(
 ///             S::VAL, expected,
-///             "unfortunately you passed ", S::VAL, " when ", expected, " was expected"
+///             "unfortunately you passed ", S::STR, " when ", expected, " was expected"
 ///         )
 ///     };
 /// }
@@ -134,13 +146,13 @@ macro_rules! assert_str_eq {
     );
 }
 
-/// For asserting that two `&str` and/or [`TStr`] are unequal.
+/// Const-compatible macro for asserting that two `&str` and/or [`TStr`] are unequal.
 ///
-#[doc = cmp_assert_str_docs!()]
+#[doc = cmp_assert_str_docs!("assert_str_ne", "assert_ne")]
 ///
 /// # Examples
 ///
-/// ### Passing
+/// ### Passing Assertions
 ///
 /// ```rust
 /// use tstr::ts;
@@ -156,9 +168,17 @@ macro_rules! assert_str_eq {
 /// tstr::assert_str_ne!(ts!(foo), "qux");
 /// tstr::assert_str_ne!("foo", ts!("hello"));
 /// tstr::assert_str_ne!("foo", "world");
+///
+/// // the above runtime asserts are equivalent to this,
+/// // consider using `assert_ne` if you don't need to assert in const.
+/// std::assert_ne!(ts!(foo), ts!("bar"));
+/// std::assert_ne!(ts!(foo), "qux");
+/// std::assert_ne!("foo", ts!("hello"));
+/// std::assert_ne!("foo", "world");
+///
 /// ```
 ///
-/// ### Failing
+/// ### Failing Assertion
 ///
 /// ```rust,compile_fail
 /// use tstr::{IsTStr, TS};
@@ -167,7 +187,7 @@ macro_rules! assert_str_eq {
 ///     const {
 ///         tstr::assert_str_ne!(
 ///             S::VAL, "bar",
-///             "unfortunately you passed ", S::VAL, ", the only value that isn't allowed"
+///             "unfortunately you passed ", S::STR, ", the only value that isn't allowed"
 ///         )
 ///     };
 /// }
@@ -188,7 +208,7 @@ macro_rules! assert_str_eq {
 ///    |
 /// 8  | /         tstr::assert_str_ne!(
 /// 9  | |             S::VAL, "bar",
-/// 10 | |             "unfortunately you passed ", S::VAL, ", the only value that isn't allowed"
+/// 10 | |             "unfortunately you passed ", S::STR, ", the only value that isn't allowed"
 /// 11 | |         )
 ///    | |_________^ evaluation of `expects_not_bar::<tstr::TStr<tstr::___<tstr::__<'b', 'a', 'r'>, 3>>>::{constant#0}` failed here
 ///

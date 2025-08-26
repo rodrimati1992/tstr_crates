@@ -19,70 +19,118 @@ use crate::{IsTStr, TStrArg, strlike::StrLike};
 ///
 /// # Examples
 ///
-/// ### Accessing Fields
+/// ### Emulating named parameters
 ///
-/// This example demonstrates how you can use `TStr` to implement a generic accessor trait.
+/// This example demonstrates how you can use `TStr` to emulate
+/// functions with named parameters overloaded by the name of the parameters.
 ///
 /// ```rust
 /// use tstr::{IsTStr, TS, TStr, ts};
 ///
-/// fn main() {
-///     let mut tup = (3, 5, 8);
-///     
-///     assert_eq!(tup.get(ts!(0)), &3);
-///     assert_eq!(tup.get(ts!(1)), &5);
-///     assert_eq!(tup.get(ts!(2)), &8);
+/// use std::{collections::HashMap, hash::RandomState};
 ///
-///     let old_0 = replace(&mut tup, ts!(0), 333);
-///     let old_1 = replace(&mut tup, ts!(1), 555);
-///     let old_2 = replace(&mut tup, ts!(2), 888);
-///     
-///     assert_eq!(tup.get(ts!(0)), &333);
-///     assert_eq!(tup.get(ts!(1)), &555);
-///     assert_eq!(tup.get(ts!(2)), &888);
-///
-///     assert_eq!(old_0, 3);
-///     assert_eq!(old_1, 5);
-///     assert_eq!(old_2, 8);
-///     
-/// }
-///
-/// fn replace<T, N>(this: &mut T, name: N, replacement: T::Field) -> T::Field
-/// where
-///     N: IsTStr,
-///     T: Access<N, Field: Clone>,
 /// {
-///     let ret = this.get(name).clone();
-///     this.set(name, replacement);
-///     ret
+///     // equivalent to HashMap::new
+///     let mut map = HashMap::make(args!());
+///     assert!(map.capacity() == 0);
+///     map.insert(0, "");;
+/// }
+/// {
+///     // equivalent to HashMap::with_capacity
+///     let mut map = HashMap::make(args!(capacity: 10));
+///     assert!(map.capacity() >= 10);
+///     map.insert(0, "");;
+/// }
+/// {
+///     // equivalent to HashMap::with_hasher
+///     let mut map = HashMap::make(args!(hasher: RandomState::new()));
+///     assert!(map.capacity() == 0);
+///     map.insert(0, "");;
+/// }
+/// {
+///     // equivalent to HashMap::with_capacity_and_hasher
+///     let mut map = HashMap::make(args!(capacity: 10, hasher: RandomState::new()));
+///     assert!(map.capacity() >= 10);
+///     map.insert(0, "");;
 /// }
 ///
-///
-/// trait Access<N> {
-///     type Field;
-///
-///     fn get(&self, _field_name: N) -> &Self::Field;
-///     fn set(&mut self, _field_name: N, val: Self::Field);
+/// /// The struct that encodes a named parameter by taking two arguments:
+/// //  - a `TStr` that encodes the name at the type level
+/// /// - the type of the argument.
+/// ///
+/// /// The parameter list as a whole is a tuple of this struct.
+/// #[repr(transparent)]
+/// pub struct NamedParameter<N: IsTStr, T> {
+///     // since TStr is zero-sized, it can be put alongside the non-zero-sized
+///     // wrapped value in a `#[repr(transparent)]` type.
+///     name: TStr<N::Arg>,
+///     pub value: T,
 /// }
 ///
-/// impl_access_for_tuple3!{ 0: A }
-/// impl_access_for_tuple3!{ 1: B }
-/// impl_access_for_tuple3!{ 2: C }
-///
-/// macro_rules! impl_access_for_tuple3 {
-///     ($field:tt: $field_type:ty) => {
-///         impl<A, B, C> Access<TS!($field)> for (A, B, C) {
-///             type Field = $field_type;
-///     
-///             fn get(&self, _field_name: TS!($field)) -> &$field_type {
-///                 &self.$field
-///             }
-///             fn set(&mut self, _field_name: TS!($field), val: $field_type){
-///                 self.$field = val;
-///             }
+/// impl<N, T> NamedParameter<N, T>
+/// where
+///     N: IsTStr
+/// {
+///     pub const fn new(name: N, value: T) -> Self {
+///         Self {
+///             // `TStr::from_gen` is needed for constructing a `TStr` from a
+///             // generic `IsTStr` type
+///             name: TStr::from_gen(name),
+///             value,
 ///         }
-///     };
-/// } use impl_access_for_tuple3;
+///     }
+/// }
+///
+/// /// Custom trait for constructors.
+/// trait Make<Args>: Sized {
+///     fn make(args: Args) -> Self;
+/// }
+///
+/// // make constructor with no parameters
+/// impl<K, V> Make<args_ty!()> for HashMap<K, V> {
+///     fn make(args_pat!{}: args_ty!()) -> Self {
+///         HashMap::new()
+///     }
+/// }
+///
+/// // make constructor with a capacity parameter
+/// impl<K, V> Make<args_ty!(capacity: usize)> for HashMap<K, V> {
+///     fn make(args_pat!{capacity}: args_ty!(capacity: usize)) -> Self {
+///         HashMap::with_capacity(capacity)
+///     }
+/// }
+///
+/// // make constructor with a hasher parameter
+/// impl<K, V, S> Make<args_ty!(hasher: S)> for HashMap<K, V, S> {
+///     fn make(args_pat!{hasher}: args_ty!(hasher: S)) -> Self {
+///         HashMap::with_hasher(hasher)
+///     }
+/// }
+///
+/// // make constructor with capacity and hasher parameters
+/// impl<K, V, S> Make<args_ty!(capacity: usize, hasher: S)> for HashMap<K, V, S> {
+///     fn make(args_pat!{capacity, hasher}: args_ty!(capacity: usize, hasher: S)) -> Self {
+///         HashMap::with_capacity_and_hasher(capacity, hasher)
+///     }
+/// }
+///
+/// macro_rules! args {
+///     ($($name:ident: $val:expr),* $(,)?) => (
+///         ($(NamedParameter::new(ts!($name), $val),)*)
+///     )
+/// } use args;
+///
+/// macro_rules! args_ty {
+///     ($($name:ident: $field_ty:ty),* $(,)?) => (
+///         ($(NamedParameter<TS!($name), $field_ty>,)*)
+///     )
+/// } use args_ty;
+///
+/// macro_rules! args_pat {
+///     ($($name:ident),* $(,)?) => (
+///         ($( NamedParameter::<TS!($name), _> { value: $name, .. }, )*)
+///     )
+/// } use args_pat;
 ///
 /// ```
 ///
@@ -102,7 +150,7 @@ use crate::{IsTStr, TStrArg, strlike::StrLike};
 /// ```
 ///
 ///
-pub struct TStr<S>(pub(crate) PhantomData<fn() -> S>);
+pub struct TStr<S>(#[doc(hidden)] pub PhantomData<fn() -> S>);
 
 // const layout assertions
 const _: () = assert!(size_of::<crate::TS!("")>() == 0);
@@ -165,6 +213,8 @@ impl<S: TStrArg> TStr<S> {
     /// #[repr(transparent)]
     /// struct Foo<T, N: IsTStr> {
     ///     val: T,
+    ///     // since TStr is zero-sized, it can be put in `#[repr(transparent)]` types
+    ///     // next to the wrapped non-Zero-Sized-Type.
     ///     name: TStr<N::Arg>,
     /// }
     ///
@@ -379,7 +429,7 @@ where
 #[cfg(feature = "const_panic")]
 #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_panic")))]
 impl<S> TStr<S> {
-    /// Formats a TStr
+    /// [`const_panic`]-based-formatting of `TStr`
     pub const fn to_panicval(&self, fmtarg: FmtArg) -> PanicVal<'static>
     where
         S: TStrArg,
@@ -387,7 +437,7 @@ impl<S> TStr<S> {
         const_panic::StdWrapper(crate::to_str(*self)).to_panicval(fmtarg)
     }
 
-    /// Formats a TStr
+    /// [`const_panic`]-based-formatting of `TStr`
     pub const fn to_panicvals(&self, fmtarg: FmtArg) -> [PanicVal<'static>; 1]
     where
         S: TStrArg,

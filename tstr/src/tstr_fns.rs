@@ -3,9 +3,10 @@ use crate::{__TStrArgBinary, IsTStr};
 
 use typewit::Identity;
 
-/// Gets the length of the [`TStr`](crate::TStr) in utf8
+/// Gets the length of the [`IsTStr`] argument in utf8
 ///
-/// The trait method equivalent of this const function is [`IsTStr::len`]
+/// This is a non-associated function for `const` compatibility,
+/// the (non-`const`) trait method equivalent of this is [`IsTStr::len`]
 ///
 /// # Example
 ///
@@ -23,9 +24,10 @@ pub const fn len<S: IsTStr>(_: S) -> usize {
     S::LENGTH
 }
 
-/// Converts a [`TStr`](crate::TStr) to a `&'static str`
+/// Converts an [`IsTStr`] to a `&'static str`
 ///
-/// The trait method equivalent of this const function is [`IsTStr::to_str`]
+/// This is a non-associated function for `const` compatibility,
+/// the (non-`const`) trait method equivalent of this is [`IsTStr::to_str`]
 ///
 /// # Example
 ///
@@ -44,9 +46,10 @@ pub const fn to_str<S: IsTStr>(_: S) -> &'static str {
     S::STR
 }
 
-/// Converts a [`TStr`](crate::TStr) to a `&'static [u8]`
+/// Converts an  [`IsTStr`] to an utf8-encoded `&'static [u8]`
 ///
-/// The trait method equivalent of this const function is [`IsTStr::to_bytes`]
+/// This is a non-associated function for `const` compatibility,
+/// the (non-`const`) trait method equivalent of this is [`IsTStr::to_bytes`]
 ///
 /// # Example
 ///
@@ -65,9 +68,10 @@ pub const fn to_bytes<S: IsTStr>(_: S) -> &'static [u8] {
     S::BYTES
 }
 
-/// Compares two [`TStr`](crate::TStr)s for equality
+/// Compares two [`IsTStr`]s for equality
 ///
-/// The trait method equivalent of this const function is [`IsTStr::tstr_eq`]
+/// This is a non-associated function for `const` compatibility,
+/// the (non-`const`) trait method equivalent of this is [`IsTStr::tstr_eq`]
 ///
 /// # Examples
 ///
@@ -88,9 +92,10 @@ where
     __ToTStrArgBinary::<Lhs::Arg, Rhs::Arg>::__EQ
 }
 
-/// Compares two [`TStr`](crate::TStr)s for inequality
+/// Compares two [`IsTStr`]s for inequality
 ///
-/// The trait method equivalent of this const function is [`IsTStr::tstr_ne`]
+/// This is a non-associated function for `const` compatibility,
+/// the (non-`const`) trait method equivalent of this is [`IsTStr::tstr_ne`]
 ///
 /// # Examples
 ///
@@ -111,9 +116,10 @@ where
     !__ToTStrArgBinary::<Lhs::Arg, Rhs::Arg>::__EQ
 }
 
-/// Compares two [`TStr`](crate::TStr)s for ordering
+/// Compares two [`IsTStr`]s for ordering
 ///
-/// The trait method equivalent of this const function is [`IsTStr::tstr_cmp`]
+/// This is a non-associated function for `const` compatibility,
+/// the (non-`const`) trait method equivalent of this is [`IsTStr::tstr_cmp`]
 ///
 /// # Examples
 ///
@@ -137,41 +143,58 @@ where
     __ToTStrArgBinary::<Lhs::Arg, Rhs::Arg>::__CMP
 }
 
-/// Compares two [`TStr`](crate::TStr)s for equality,
-/// returning a proof of (in)equality of the arguments.
+/// Compares two [`IsTStr`]s for equality,
+/// returning a proof of the (in)equality of the arguments.
 ///
-/// The trait method equivalent of this const function is [`IsTStr::type_eq`]
+/// This is a non-associated function for `const` compatibility,
+/// the (non-`const`) trait method equivalent of this is [`IsTStr::type_eq`]
 ///
 /// # Example
 ///
 /// ```rust
-/// use tstr::{IsTStr, TS};
-/// use std::marker::PhantomData as PD;
+/// use tstr::{IsTStr, TStr, TS, ts};
+/// use tstr::typewit::TypeCmp;
 ///
 ///
-/// assert_eq!(typecast_arg(Guess::<TS!(bar)>(PD)), Err(Guess::<TS!(bar)>(PD)));
-/// assert_eq!(typecast_arg(Guess::<TS!(bar)>(PD)), Err(Guess::<TS!(bar)>(PD)));
+/// assert_eq!(is_right_guess(Guess(ts!(foo))), None);
+/// assert_eq!(is_right_guess(Guess(ts!(bar))), None);
+/// assert_eq!(is_right_guess(Guess(ts!(world))), None);
 ///
-/// assert_eq!(typecast_arg(Guess::<Answer>(PD)), Ok(Guess::<Answer>(PD)));
-///
+/// assert!(is_right_guess(Guess(ts!(hello))).is_some_and(|x| x.0 == "hello"));
 ///
 /// #[derive(Debug, PartialEq, Eq)]
-/// struct Guess<S>(PD<S>);
+/// struct Guess<S: IsTStr>(S);
 ///
-/// type Answer = TS!(hello);
-///
-/// const fn typecast_arg<S: IsTStr>(guess: Guess<S>) -> Result<Guess<Answer>, Guess<S>> {
-///     match tstr::type_eq(S::VAL, Answer::VAL).eq() {
-///         Some(te) => Ok(te.map(GuessFn).to_right(guess)),
-///         None => Err(guess),
+/// const fn is_right_guess<S: IsTStr>(guess: Guess<S>) -> Option<Guess<impl IsTStr>> {
+///     match typecast_guess(guess) {
+///         Ok(ret @ Guess::<TS!(hello)>{..}) => Some(ret),
+///         Err(_) => None,
 ///     }
 /// }
 ///
-/// tstr::typewit::type_fn!{
-///     // type-level function from any `S` to `Guess<S>`
-///     struct GuessFn;
-///     impl<S> S => Guess<S>
+/// /// Coerces `Guess<A>` to `Guess<B>` if `A == B`, returns `Err(guess)` if `A != B`.
+/// const fn typecast_guess<A, B>(guess: Guess<A>) -> Result<Guess<B>, Guess<A>>
+/// where
+///     A: IsTStr,
+///     B: IsTStr,
+/// {
+///     tstr::typewit::type_fn!{
+///         // type-level function from `S` to `Guess<S>`
+///         struct GuessFn;
+///         impl<S: IsTStr> S => Guess<S>
+///     }
+///     
+///     match tstr::type_eq(A::VAL, B::VAL) {
+///         TypeCmp::Eq(te) => Ok(
+///             // te is a `TypeEq<A, B>`, a value-level proof that both args are the same type.
+///             te               
+///             .map(GuessFn)    // : TypeEq<Guess<A>, Guess<B>>
+///             .to_right(guess) // : Guess<B>
+///         ),
+///         TypeCmp::Ne(_) => Err(guess),
+///     }
 /// }
+///
 ///
 /// ```
 ///

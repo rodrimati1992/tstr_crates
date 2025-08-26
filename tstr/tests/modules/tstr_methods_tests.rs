@@ -1,3 +1,5 @@
+#![deny(repr_transparent_external_private_fields)]
+
 use crate::modules::utils::{assert_type, must_panic};
 
 use tstr::{IsTStr, TS, TStr, TStrArg};
@@ -203,4 +205,13 @@ fn ensure_usable_in_std_asserts_test() {
     std::assert_ne!(AString::VAL, "12345");
     must_panic(|| std::assert_ne!(AString::VAL, "1234"));
     must_panic(|| std::assert_eq!(AString::VAL, "12345"));
+}
+
+#[allow(dead_code)]
+#[repr(transparent)]
+pub struct TStrInTransparentWrapper<N: IsTStr, T> {
+    // since TStr is zero-sized, it can be put alongside the non-zero-sized
+    // wrapped value in a `#[repr(transparent)]` type.
+    pub name: TStr<N::Arg>,
+    pub value: T,
 }

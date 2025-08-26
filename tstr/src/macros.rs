@@ -15,6 +15,8 @@
 /// accepting the same arguments as this macro.
 ///
 /// - `stringify!(...)`-like syntax: stringifies its arguments.
+/// Be careful using strings that stringify multiple tokens,
+/// because the spacing around tokens isn't guaranteed.
 ///
 /// # Examples
 ///
@@ -24,22 +26,18 @@
 /// `GetVariant` trait which gets the data in a variant if the enum is that variant.
 ///
 /// ```rust
-/// use tstr::TS;
+/// use tstr::{TS, ts};
 ///
 /// fn main(){
 ///     let foo = Enum::Foo(3, 5);
 ///     let bar = Enum::Bar("hello".to_string());
 ///     
-///     assert_eq!(foo.to_variant(Foo::new()), Some((3, 5)));
-///     assert_eq!(foo.to_variant(Bar::new()), None);
+///     assert_eq!(foo.to_variant(ts!(Foo)), Some((3, 5)));
+///     assert_eq!(foo.to_variant(ts!(Bar)), None);
 ///     
-///     assert_eq!(bar.to_variant(Foo::new()), None);
-///     assert_eq!(bar.to_variant(Bar::new()), Some("hello".to_string()));
+///     assert_eq!(bar.to_variant(ts!(Foo)), None);
+///     assert_eq!(bar.to_variant(ts!(Bar)), Some("hello".to_string()));
 /// }
-///
-/// type Foo = TS!(Foo);
-///
-/// type Bar = TS!(Bar);
 ///
 /// trait ToVariant<V> {
 ///     type Output;
@@ -109,18 +107,15 @@ macro_rules! TS {
     };
 }
 
-/// A type-level string [`TStr`] value.
+/// Constructs a type-level string ([`TStr`]) value.
 ///
 /// # Arguments
 ///
-/// You can use anything that the [`tstr::TS`] macro accepts
+/// This takes the same arguments as the [`tstr::TS`] macro.
 ///
 /// # Examples
 ///
 /// ### Indexing
-///
-/// This uses types from the `for_examples` module,
-/// which can be seen in the docs with the "for_examples" feature.
 ///
 /// ```rust
 /// use tstr::{TS, ts};
@@ -193,7 +188,7 @@ macro_rules! ts {
     };
 }
 
-/// Declares `const` and `type` aliases for type-level strings.
+/// Declares `const` and `type` aliases for [type-level strings (`TStr`)](crate::TStr).
 ///
 /// # String Arguments
 ///
@@ -202,27 +197,28 @@ macro_rules! ts {
 /// ```rust
 /// tstr::alias!{
 ///     // Aliases the "bar" type-level string as both a const and a type, named Bar.
-///     pub Bar = bar;
+///     // (both the const and type are private to this module)
+///     Bar = bar;
 ///
 ///     // Aliases the "0" type-level string.
-///     pub N0 = 0;
+///     // (both the const and type are private to this crate)
+///     pub(crate) N0 = 0;
 ///
 ///     // Aliases the "foo" type-level string,
+///     // (both the const and type are public)
 ///     pub Tup = "foo";
 /// }
 /// ```
+///
+/// Attributes on each alias (including documentation) are copied to
+/// the generated constand and type.
 ///
 /// # Examples
 ///
 /// ### Indexing
 ///
-/// This uses types from the `for_examples` module,
-/// which can be seen in the docs with the "for_examples" feature.
-///
 /// ```rust
 /// use std::ops::Index;
-///
-/// use tstr::TS;
 ///
 ///
 /// let this = Foo { bar: 3, baz: 'X', qux: "8" };
@@ -233,11 +229,14 @@ macro_rules! ts {
 ///
 ///
 /// tstr::alias!{
-///     // Declares both an NBar type alias and an NBar constant of that type.
+///     // Declares both an NBar type alias and an NBar constant of the `TStr` for "bar".
 ///     pub NBar = bar;
 ///
-///     // Declares both an NBaz type alias and an NBaz constant of that type.
+///     // Declares both an NBaz type alias and an NBaz constant of the `TStr` for "baz".
 ///     pub NBaz = "baz";
+///
+///     // Declares both an NQux type alias and an NQux constant of the `TStr` for "qux".
+///     pub NQux = "qux";
 /// }
 ///
 ///
@@ -258,9 +257,9 @@ macro_rules! ts {
 ///     qux: &'static str,
 /// }
 ///
-/// impl_field_index!{ Foo,bar: u32 }
-/// impl_field_index!{ Foo,baz: char }
-/// impl_field_index!{ Foo,qux: &'static str }
+/// impl_field_index!{ Foo,bar[NBar]: u32 }
+/// impl_field_index!{ Foo,baz[NBaz]: char }
+/// impl_field_index!{ Foo,qux[NQux]: &'static str }
 ///
 ///
 /// #[derive(Debug)]
@@ -270,22 +269,22 @@ macro_rules! ts {
 ///     qux: Option<char>,
 /// }
 ///
-/// impl_field_index!{ Bar,bar: u32 }
-/// impl_field_index!{ Bar,baz: bool }
-/// impl_field_index!{ Bar,qux: Option<char> }
+/// impl_field_index!{ Bar,bar[NBar]: u32 }
+/// impl_field_index!{ Bar,baz[NBaz]: bool }
+/// impl_field_index!{ Bar,qux[NQux]: Option<char> }
 ///
 /// macro_rules! impl_field_index {
-///     ($Self:ty, $field_name:ident: $field_type:ty) => {
-///         impl std::ops::Index<TS!($field_name)> for $Self {
+///     ($Self:ty, $field_name:ident [$field_tstr:ident]: $field_type:ty) => {
+///         impl std::ops::Index<$field_tstr> for $Self {
 ///             type Output = $field_type;
 ///
-///             fn index(&self, _: TS!($field_name)) -> &$field_type {
+///             fn index(&self, _: $field_tstr) -> &$field_type {
 ///                 &self.$field_name
 ///             }
 ///         }
 ///
-///         impl std::ops::IndexMut<TS!($field_name)> for $Self {
-///             fn index_mut(&mut self, _: TS!($field_name)) -> &mut $field_type {
+///         impl std::ops::IndexMut<$field_tstr> for $Self {
+///             fn index_mut(&mut self, _: $field_tstr) -> &mut $field_type {
 ///                 &mut self.$field_name
 ///             }
 ///         }
