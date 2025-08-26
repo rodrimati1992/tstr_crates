@@ -3,45 +3,43 @@ use std::iter::once;
 #[allow(unused_imports)]
 use proc_macro::{Delimiter, Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 
-use proc_macro::token_stream::IntoIter as TSIterator;
+type TSIterator = std::iter::Peekable<proc_macro::token_stream::IntoIter>;
 
 use super::{Inputs, TStr};
 
-pub(crate) fn parse_inputs(ts: TokenStream) -> Result<Inputs, Error> {
-    let iter = &mut ts.into_iter();
+pub(crate) fn parse_inputs(
+    ts: TokenStream,
+    crate_token: &mut Option<proc_macro::TokenStream>,
+) -> Result<Inputs, Error> {
+    let iter = &mut ts.into_iter().peekable();
 
     let crate_path = match iter.next() {
         Some(TokenTree::Group(group)) if group.delimiter() == Delimiter::Parenthesis => {
             group.stream()
         }
-        Some(x) => {
-            return Err(Error::new(
-                x.span(),
-                &format!("Expected parentheses: found {}", x),
-            ))
-        }
-        None => {
-            return Err(Error::new(
-                Span::call_site(),
-                "Expected parentheses, found nothing",
-            ))
+        _ => {
+            panic!("proc macros aren't invoked directly, so $crate is always passed")
         }
     };
 
-    let mut strings = Vec::<TStr>::with_capacity(1);
+    *crate_token = Some(crate_path.clone());
 
-    while let Some(x) = parse_tstr(iter)? {
-        strings.push(x);
+    let string = parse_tstr(iter)?
+        .ok_or_else(|| Error::new(Span::call_site(), &format!("{} Found nothing", IN_MSG)))?;
+
+    if let Some(token) = iter.next() {
+        return Err(Error::new(
+            token.span(),
+            &format!("unexpected token after argument"),
+        ));
     }
 
-    Ok(Inputs {
-        crate_path,
-        strings,
-    })
+    Ok(Inputs { string })
 }
 
+const IN_MSG: &str = "Expected one of: string literal, integer literal, identifier";
+
 fn parse_tstr(iter: &mut TSIterator) -> Result<Option<TStr>, Error> {
-    const IN_MSG: &str = "Expected one of: string literal, integer literal, identifier";
     match iter.next() {
         Some(TokenTree::Ident(ident)) => {
             let mut string = ident.to_string();
@@ -49,7 +47,7 @@ fn parse_tstr(iter: &mut TSIterator) -> Result<Option<TStr>, Error> {
                 let (span, ts) = parse_post_macro_name(iter)?;
 
                 let mut string = String::new();
-                let iter = &mut ts.into_iter();
+                let iter = &mut ts.into_iter().peekable();
 
                 while let Some(tstr) = parse_tstr(iter)? {
                     string.push_str(&tstr.string);
@@ -72,6 +70,23 @@ fn parse_tstr(iter: &mut TSIterator) -> Result<Option<TStr>, Error> {
                     string = trimmed.to_string();
                 }
 
+                match iter.peek() {
+                    Some(TokenTree::Punct(p)) if p.as_char() == ',' => {}
+                    Some(TokenTree::Punct(p)) if p.as_char() == '!' => {
+                        return Err(Error::new(
+                            ident.span(),
+                            &format!("`{string}` macro not supported in `tstr::TS`"),
+                        ));
+                    }
+                    Some(token) => {
+                        return Err(Error::new(
+                            token.span(),
+                            "unexpected token after stringified argument",
+                        ));
+                    }
+                    None => {}
+                }
+
                 Ok(Some(TStr {
                     string,
                     span: ident.span(),
@@ -79,7 +94,7 @@ fn parse_tstr(iter: &mut TSIterator) -> Result<Option<TStr>, Error> {
             }
         }
         Some(TokenTree::Group(group)) if group.delimiter() == Delimiter::None => {
-            parse_tstr(&mut group.stream().into_iter())
+            parse_tstr(&mut group.stream().into_iter().peekable())
         }
         Some(TokenTree::Literal(lit)) => parse_literal(lit).map(Some),
         Some(x) => Err(Error::new(x.span(), &format!("{}\nFound: {}", IN_MSG, x))),
@@ -268,7 +283,7 @@ fn parse_integer(input: &str, span: Span) -> Result<String, Error> {
                 return Err(Error::new(
                     span,
                     &format!("Unknown integer prefix: {}", &input[..2]),
-                ))
+                ));
             }
             None => return Ok(String::from("0")),
         };
@@ -303,6 +318,10 @@ impl Error {
         }
     }
 
+    pub(crate) fn span(&self) -> Span {
+        self.span
+    }
+
     pub(crate) fn to_compile_error(&self) -> TokenStream {
         let Error { ref message, span } = *self;
 
@@ -321,45 +340,5 @@ impl Error {
         out.extend(once(msg_paren));
 
         out
-    }
-}
-
-trait TokenTreeExt: Sized {
-    fn into_token_tree(self) -> TokenTree;
-
-    fn set_span_recursive(self, span: Span) -> TokenTree {
-        let mut tt = self.into_token_tree();
-
-        tt.set_span(span);
-        if let TokenTree::Group(group) = tt {
-            let delim = group.delimiter();
-            let stream = group.stream().set_span_recursive(span);
-            tt = TokenTree::Group(Group::new(delim, stream));
-        }
-        tt.set_span(span);
-        tt
-    }
-}
-
-impl TokenTreeExt for TokenTree {
-    fn into_token_tree(self) -> TokenTree {
-        self
-    }
-}
-
-pub trait TokenStreamExt: Sized {
-    fn into_token_stream(self) -> TokenStream;
-
-    fn set_span_recursive(self, span: Span) -> TokenStream {
-        self.into_token_stream()
-            .into_iter()
-            .map(|tt| tt.set_span_recursive(span))
-            .collect()
-    }
-}
-
-impl TokenStreamExt for TokenStream {
-    fn into_token_stream(self) -> TokenStream {
-        self
     }
 }

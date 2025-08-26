@@ -2,7 +2,16 @@
 [![crates-io](https://img.shields.io/crates/v/tstr.svg)](https://crates.io/crates/tstr)
 [![api-docs](https://docs.rs/tstr/badge.svg)](https://docs.rs/tstr/*)
 
-This crate provides an encoding of type-level strings as types.
+An encoding of type-level strings, with the [`TStr`] type and related macros.
+
+This crate features all these on stable:
+- a relatively readable default representation of type-level strings
+  based on `char` const parameters.
+- items for converting type-level strings to `&'static str` and `&'static [u8]` 
+- functions for comparing type-level strings to each other and `&str`
+- macros for asserting the (in)equality of type-level strings to each other and `&str`
+
+All of the above functionality can be used in const contexts.
 
 # Examples
 
@@ -101,6 +110,44 @@ mod other_person {
 
 ```
 
+### Type errors
+
+This example showcases what TStr looks like in simple type errors.
+
+```rust,compile_fail
+let _: tstr::TS!("Hello, world!") = ();
+```
+
+With no crate features enabled, the error message is this:
+```text
+error[E0308]: mismatched types
+ --> tstr/src/lib.rs:114:37
+  |
+5 | let _: tstr::TS!("Hello, world!") = ();
+  |        --------------------------   ^^ expected `TStr<___<..., 13>>`, found `()`
+  |        |
+  |        expected due to this
+  |
+  = note: expected struct `tstr::TStr<___<(tstr::__<'H', 'e', 'l', 'l', 'o', ',', ' ', 'w'>, tstr::__<'o', 'r', 'l', 'd', '!'>, (), (), (), (), (), ()), 13>>`
+          found unit type `()`
+```
+As you can see, the string is represented as a collection of `char` const parameters.
+
+When the `"nightly_str_generics"` feature is enabled (which requires the nightly compiler),
+the error message is this:
+```text
+error[E0308]: mismatched types
+ --> tstr/src/lib.rs:114:37
+  |
+5 | let _: tstr::TS!("Hello, world!") = ();
+  |        --------------------------   ^^ expected `TStr<___<"Hello, world!">>`, found `()`
+  |        |
+  |        expected due to this
+  |
+  = note: expected struct `tstr::TStr<___<"Hello, world!">>`
+          found unit type `()`
+```
+
 # Macro expansion
 
 This library reserves the right to change how it represent type-level strings internally
@@ -111,33 +158,24 @@ and then use that expanded code instead of going through the macros.
 
 # Cargo features
 
-- `"rust_1_46"`: 
-Enables const functions in [`tstr::utils`] for comparing `&str` and `&[u8]`.
+- `"const_panic"`(enabled by default):
+Enables [`const_panic`] reexports, assertion macros,
+and `const_panic::fmt::PanicFmt` impl for `TStr`.
 
-- `"cmp_traits"`: Enables the traits for comparing type-level strings.
-
-- `"use_syn"`:
+- `"use_syn"`(disabled by default):
 Changes how literals passed to the macros of this crate are parsed to use the `syn` crate.
-Use this if there is some literal that could not be 
+Use this if there is some literal that could not be
 parsed but is a valid str/integer literal.
 
-- `"min_const_generics"`: 
-changes the representation of type-level strings to use many `char` const parameter, 
-making for better compiler errors for non-alphanumeric-ascii strings.
-Requires Rust 1.51.0.
-
-- `"const_generics"`: 
+- `"str_generics"`(disabled by default):
 Changes the representation of type-level strings to use a `&'static str` const parameter,
-making for better compiler errors, and a few more features.
-As of 2023-03-17, this feature can't be enabled, because it
+making for better compiler errors.
+As of 2025-08-18, this feature can't be enabled, because it
 requires `&'static str` to be stably usable as const parameters.
-Consider using `"nightly_const_generics"` if this feature can't be used.
+Consider using `"nightly_str_generics"` if this feature can't be used.
 
-- `"nightly_const_generics"`: Equivalent to the `"const_generics"` feature,
+- `"nightly_str_generics"`(disabled by default): Equivalent to the `"str_generics"` feature,
 and enables the nightly compiler features to use `&'static str` const parameters.
-
-- `"for_examples"`: Enables the `for_examples` module, 
-with a few types used in documentation examples.
 
 # No-std support
 
@@ -145,7 +183,9 @@ This crate is unconditionally `#![no_std]`, and can be used anywhere that Rust c
 
 # Minimum Supported Rust Version
 
-This crate supports Rust versions back to Rust 1.40.0.
+This crate supports Rust versions back to Rust 1.88.0.
 
+[`TStr`]: https://docs.rs/tstr/*/tstr/struct.TStr.html
+[`const_panic`]: https://docs.rs/const_panic/0.2/const_panic/
 [`Index`]: https://doc.rust-lang.org/std/ops/trait.Index.html
 [`tstr::utils`]: https://docs.rs/tstr/*/tstr/utils/index.html

@@ -1,6 +1,3 @@
-#[macro_use]
-mod cmp_macros;
-
 /// The type of a type-level string, always a [`TStr`].
 ///
 /// # Arguments
@@ -14,13 +11,12 @@ mod cmp_macros;
 ///
 /// - Single identifiers (eg: `TS!(foo)`, `TS!(bar)`): stringifying the identifier.
 ///
-/// - A comma separated list of the other valid arguments to this macro
-/// (eg: `TS!(foo, "bar", 0)`), this evaluates to a tuple of `TStr`s.
-///
 /// - `concat!(...)`-like syntax: concatenates its arguments,
 /// accepting the same arguments as this macro.
 ///
 /// - `stringify!(...)`-like syntax: stringifies its arguments.
+/// Be careful using strings that stringify multiple tokens,
+/// because the spacing around tokens isn't guaranteed.
 ///
 /// # Examples
 ///
@@ -30,22 +26,18 @@ mod cmp_macros;
 /// `GetVariant` trait which gets the data in a variant if the enum is that variant.
 ///
 /// ```rust
-/// use tstr::TS;
+/// use tstr::{TS, ts};
 ///
 /// fn main(){
 ///     let foo = Enum::Foo(3, 5);
 ///     let bar = Enum::Bar("hello".to_string());
 ///     
-///     assert_eq!(foo.to_variant(Foo::NEW), Some((3, 5)));
-///     assert_eq!(foo.to_variant(Bar::NEW), None);
+///     assert_eq!(foo.to_variant(ts!(Foo)), Some((3, 5)));
+///     assert_eq!(foo.to_variant(ts!(Bar)), None);
 ///     
-///     assert_eq!(bar.to_variant(Foo::NEW), None);
-///     assert_eq!(bar.to_variant(Bar::NEW), Some("hello".to_string()));
+///     assert_eq!(bar.to_variant(ts!(Foo)), None);
+///     assert_eq!(bar.to_variant(ts!(Bar)), Some("hello".to_string()));
 /// }
-///
-/// type Foo = TS!(Foo);
-///
-/// type Bar = TS!(Bar);
 ///
 /// trait ToVariant<V> {
 ///     type Output;
@@ -98,8 +90,6 @@ mod cmp_macros;
 /// type HundredC = TS!(0x64);  // equivalent to `TS!("100")`
 /// type HundredD = TS!(0b1100100);  // equivalent to `TS!("100")`
 ///
-/// type Tup = TS!(foo, 1, "bar"); // equivalent to `(TS!(foo), TS!(1), TS!(bar))`
-///
 /// // Equivalent to TS!("foo4bar200")
 /// type Conc = TS!(concat!(foo, 0b100, "bar", 200));
 ///
@@ -108,37 +98,64 @@ mod cmp_macros;
 /// [`TStr`]: ./struct.TStr.html
 #[macro_export]
 macro_rules! TS {
-    ($($expr:expr),* $(,)* ) => {
-        $crate::__ts_impl!(($crate) $($expr)*)
+    ("") => { $crate::__p::__Empty };
+    (($expr:expr $(,)?)) => {
+        $crate::__ts_impl!(($crate) $expr)
+    };
+    ($expr:expr $(,)? ) => {
+        $crate::__ts_impl!(($crate) $expr)
     };
 }
 
-/// A type-level string [`TStr`] value.
+/// Constructs a type-level string ([`TStr`]) value.
 ///
 /// # Arguments
 ///
-/// You can use anything that the [`tstr::TS`] macro accepts
+/// This takes the same arguments as the [`tstr::TS`] macro.
 ///
 /// # Examples
 ///
 /// ### Indexing
 ///
-/// This uses types from the `for_examples` module,
-/// which can be seen in the docs with the "for_examples" feature.
-///
 /// ```rust
-/// use tstr::ts;
-/// use tstr::for_examples::{Foo, Bar};
+/// use tstr::{TS, ts};
 ///
-/// let this = Foo::new(3, 5, "8");
+/// # fn main() {
+/// let this = Foo { bar: 3, baz: 'X', qux: "8" };
+///
 /// assert_eq!(this[ts!(bar)], 3);
-/// assert_eq!(this[ts!(baz)], 5);
+/// assert_eq!(this[ts!(baz)], 'X');
 /// assert_eq!(this[ts!(qux)], "8");
+/// # }
 ///
-/// let other = Bar::new(13, false, Some('C'));
-/// assert_eq!(other[ts!(bar)], 13);
-/// assert_eq!(other[ts!(baz)], false);
-/// assert_eq!(other[ts!(boom)], Some('C'));
+/// #[derive(Debug)]
+/// pub struct Foo {
+///     bar: u32,
+///     baz: char,
+///     qux: &'static str,
+/// }
+///
+/// impl_field_index!{ bar: u32 }
+/// impl_field_index!{ baz: char }
+/// impl_field_index!{ qux: &'static str }
+///
+/// macro_rules! impl_field_index {
+///     ($field_name:ident: $field_type:ty) => {
+///         impl std::ops::Index<TS!($field_name)> for Foo {
+///             type Output = $field_type;
+///
+///             fn index(&self, _: TS!($field_name)) -> &$field_type {
+///                 &self.$field_name
+///             }
+///         }
+///
+///         impl std::ops::IndexMut<TS!($field_name)> for Foo {
+///             fn index_mut(&mut self, _: TS!($field_name)) -> &mut $field_type {
+///                 &mut self.$field_name
+///             }
+///         }
+///     }
+/// } use impl_field_index;
 ///
 /// ```
 /// ### Equivalences
@@ -156,8 +173,6 @@ macro_rules! TS {
 /// let hundredc = ts!(0x64);  // equivalent to `ts!("100")`
 /// let hundredd = ts!(0b1100100);  // equivalent to `ts!("100")`
 ///
-/// let tup = ts!(foo, 1, "bar"); // equivalent to `(ts!(foo), ts!(1), ts!(bar))`
-///
 /// // Equivalent to ts!("foo4bar200")
 /// let conc = ts!(concat!(foo, 0b100, "bar", 200));
 /// # const _: tstr::TS!("foo4bar200") = ts!(concat!(foo, 0b100, "bar", 200));
@@ -168,79 +183,113 @@ macro_rules! TS {
 /// [`tstr::TS`]: ./macro.TS.html#arguments
 #[macro_export]
 macro_rules! ts {
-    ($($expr:expr),* $(,)* ) => {{
-        let __look_at_the_notes__ =
-            <$crate::__ts_impl!(($crate) $($expr)*) as $crate::MakeTStr>::MAKE;
-        __look_at_the_notes__
-    }};
+    ($($expr:tt)*) => {
+        <$crate::TS!($($expr)*) as $crate::IsTStr>::VAL
+    };
 }
 
-/// Declares `const` and `type` aliases for type-level strings.
+/// Declares `const` and `type` aliases for [type-level strings (`TStr`)](crate::TStr).
 ///
 /// # String Arguments
 ///
-/// You can alias either one type-level string, or a tuple of type-level strings
+/// You can alias a type-level string in these ways:
 ///
 /// ```rust
 /// tstr::alias!{
 ///     // Aliases the "bar" type-level string as both a const and a type, named Bar.
-///     pub Bar = bar;
+///     // (both the const and type are private to this module)
+///     Bar = bar;
 ///
 ///     // Aliases the "0" type-level string.
-///     pub N0 = 0;
+///     // (both the const and type are private to this crate)
+///     pub(crate) N0 = 0;
 ///
-///     // Aliases the ("foo", "baz") tuple of type-level strings,
-///     // Equivalent to `TS!(foo, baz)` and `ts!("foo", "baz")`
-///     pub Tup = (foo, baz);
+///     // Aliases the "foo" type-level string,
+///     // (both the const and type are public)
+///     pub Tup = "foo";
 /// }
-///
-/// # const _: (tstr::TS!(foo), tstr::TS!(baz)) = Tup;
 /// ```
+///
+/// Attributes on each alias (including documentation) are copied to
+/// the generated constand and type.
 ///
 /// # Examples
 ///
 /// ### Indexing
 ///
-/// This uses types from the `for_examples` module,
-/// which can be seen in the docs with the "for_examples" feature.
-///
 /// ```rust
 /// use std::ops::Index;
 ///
-/// use tstr::for_examples::{Foo, Bar};
+///
+/// let this = Foo { bar: 3, baz: 'X', qux: "8" };
+/// assert_eq!(get_bar_baz(&this), (3, 'X'));
+///
+/// let other = Bar { bar: 13, baz: false, qux: Some('C') };
+/// assert_eq!(get_bar_baz(&other), (13, false));
+///
 ///
 /// tstr::alias!{
-///     // Declares both an NBar type alias and an NBar constant of that type.
+///     // Declares both an NBar type alias and an NBar constant of the `TStr` for "bar".
 ///     pub NBar = bar;
 ///
-///     // Declares both an NBaz type alias and an NBaz constant of that type.
+///     // Declares both an NBaz type alias and an NBaz constant of the `TStr` for "baz".
 ///     pub NBaz = "baz";
 ///
-///     // Declares both an NQux type alias and an NQux constant of that type.
+///     // Declares both an NQux type alias and an NQux constant of the `TStr` for "qux".
 ///     pub NQux = "qux";
-///
 /// }
-///
-/// // The macro can also be invoked like this
-/// tstr::alias!{ pub NBoom = boom }
-///
-/// let this = Foo::new(3, 5, "8");
-/// assert_eq!(get_bar_baz(&this), (3, 5));
-///
-/// let other = Bar::new(13, false, Some('C'));
-/// assert_eq!(get_bar_baz(&other), (13, false));
 ///
 ///
 /// type IndexOut<T, N> = <T as Index<N>>::Output;
 ///
 /// fn get_bar_baz<T>(this: &T) -> (IndexOut<T, NBar>, IndexOut<T, NBaz>)
 /// where
-///     T: Index<NBar> + Index<NBaz>,
-///     IndexOut<T, NBar>: Copy,
-///     IndexOut<T, NBaz>: Copy,
+///     T: Index<NBar, Output: Copy> + Index<NBaz, Output: Copy>,
 /// {
 ///     (this[NBar], this[NBaz])
 /// }
+///
+///
+/// #[derive(Debug)]
+/// pub struct Foo {
+///     bar: u32,
+///     baz: char,
+///     qux: &'static str,
+/// }
+///
+/// impl_field_index!{ Foo,bar[NBar]: u32 }
+/// impl_field_index!{ Foo,baz[NBaz]: char }
+/// impl_field_index!{ Foo,qux[NQux]: &'static str }
+///
+///
+/// #[derive(Debug)]
+/// pub struct Bar {
+///     bar: u32,
+///     baz: bool,
+///     qux: Option<char>,
+/// }
+///
+/// impl_field_index!{ Bar,bar[NBar]: u32 }
+/// impl_field_index!{ Bar,baz[NBaz]: bool }
+/// impl_field_index!{ Bar,qux[NQux]: Option<char> }
+///
+/// macro_rules! impl_field_index {
+///     ($Self:ty, $field_name:ident [$field_tstr:ident]: $field_type:ty) => {
+///         impl std::ops::Index<$field_tstr> for $Self {
+///             type Output = $field_type;
+///
+///             fn index(&self, _: $field_tstr) -> &$field_type {
+///                 &self.$field_name
+///             }
+///         }
+///
+///         impl std::ops::IndexMut<$field_tstr> for $Self {
+///             fn index_mut(&mut self, _: $field_tstr) -> &mut $field_type {
+///                 &mut self.$field_name
+///             }
+///         }
+///     }
+/// } use impl_field_index;
 ///
 /// ```
 ///
@@ -249,73 +298,40 @@ macro_rules! alias {
     (
         $(
             $(#[$attr:meta])*
-            $vis:vis $name:ident = $expr:tt
+            $vis:vis $name:ident = $expr:expr
         );*
         $(;)?
     ) => (
         $(
-            $crate::__priv_alias!{
-                @decide-docs
-                (
-                    $(#[$attr])*
-                    $vis,
-                    $name,
-                )
-                [$expr]
-            }
+            $(#[$attr])*
+            #[allow(broken_intra_doc_links)]
+            #[allow(non_camel_case_types)]
+            #[doc = $crate::__p::concat!(
+                "An alias for `", $crate::__p::stringify!($expr), "` as a type level string.\n\n",
+                "Generated by the [`::tstr::alias`] macro."
+            )]
+            $vis type $name = $crate::TS!($expr);
+
+            $(#[$attr])*
+            #[allow(non_upper_case_globals, broken_intra_doc_links)]
+            #[doc = $crate::__p::concat!(
+                "An alias for `", $crate::__p::stringify!($expr), "` as a type level string.\n\n",
+                "Generated by the [`::tstr::alias`] macro."
+            )]
+            $vis const $name: $name = <$name as $crate::IsTStr>::VAL;
         )*
     );
 }
 
 #[doc(hidden)]
-#[macro_export]
-macro_rules! __priv_alias {
-    (@decide-docs
-        $other:tt
-        [($($expr:expr),* $(,)*)]
-    )=>{
-        $crate::__priv_alias!{
-            @inner
-            $other
-            [$($expr),*]
-            concat!(
-                "An alias for `(",
-                $(stringify!($expr), ", ",)*
-                ")` as a tuple of type level strings.\n\n",
-                "Generated by the [`::tstr::alias`] macro."
-            )
-        }
-    };
-    (@decide-docs
-        $other:tt
-        [$expr:expr]
-    )=>{
-        $crate::__priv_alias!{
-            @inner
-            $other
-            [$expr]
-            concat!(
-                "An alias for `", stringify!($expr), "` as a type level string.\n\n",
-                "Generated by the [`::tstr::alias`] macro."
-            )
-        }
-    };
-    (@inner
-        (
-            $(#[$attr:meta])*
-            $vis:vis, $name:ident,
-        )
-        [$($expr:expr),*]
-        $autodoc:expr
-    )=>{
-        $(#[$attr])*
-        #[allow(broken_intra_doc_links)]
-        #[doc = $autodoc]
-        $vis type $name = $crate::TS!($($expr),*);
-
-        $(#[$attr])*
-        #[allow(non_upper_case_globals, broken_intra_doc_links)]
-        #[doc = $autodoc]
-        $vis const $name: $name = <$name as $crate::MakeTStr>::MAKE;
-    };
+pub trait __PickFirst<B: ?Sized> {
+    type First: ?Sized;
 }
+
+impl<A: ?Sized, B: ?Sized> __PickFirst<B> for A {
+    type First = A;
+}
+
+// used by erroring macros to emit both a compile_error!() and a TStr type.
+#[doc(hidden)]
+pub type __IgnoreArgReturnEmpty<A> = <TS!("") as __PickFirst<A>>::First;

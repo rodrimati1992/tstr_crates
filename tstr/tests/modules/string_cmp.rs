@@ -1,30 +1,39 @@
-use tstr::{TStrEq, TS};
+use tstr::{IsTStr, TS};
 
-#[cfg(feature = "const_generics")]
 use std::cmp::{Ord, Ordering};
-
-#[cfg(feature = "const_generics")]
-use tstr::{StrValue, TStrOrd};
 
 macro_rules! assert_str_eq {
     ($left:ty, $right:ty) => {
-        assert!(<$left as TStrEq<$right>>::EQ);
+        assert!(<$left>::VAL.type_eq(<$right>::VAL).is_eq());
+        assert!(<$left>::VAL.tstr_eq(<$right>::VAL));
+        assert!(tstr::eq(<$left>::VAL, <$right>::VAL));
 
-        #[cfg(feature = "const_generics")]
-        assert_eq!(<$left as TStrOrd<$right>>::CMP, Ordering::Equal);
+        assert!(!<$left>::VAL.tstr_ne(<$right>::VAL));
+        assert!(!tstr::ne(<$left>::VAL, <$right>::VAL));
+        assert!(!<$left>::VAL.type_eq(<$right>::VAL).is_ne());
+
+        assert_eq!(<$left>::VAL.tstr_cmp(<$right>::VAL), Ordering::Equal);
+        assert_eq!(tstr::cmp(<$left>::VAL, <$right>::VAL), Ordering::Equal);
     };
 }
 
 macro_rules! assert_str_ne {
     ($left:ty, [$($right:ty),* $(,)*]) => {
-        $(assert!(<$left as TStrEq<$right>>::NE);)*
+        $(
+            assert!(<$left>::VAL.tstr_ne(<$right>::VAL));
+            assert!(tstr::ne(<$left>::VAL, <$right>::VAL));
+            assert!(<$left>::VAL.type_eq(<$right>::VAL).is_ne());
+        )*
 
-        #[cfg(feature = "const_generics")]
         {
             $(
                 assert_eq!(
-                    <$left as TStrOrd<$right>>::CMP,
-                    <$left as StrValue>::STR.cmp(<$right as StrValue>::STR)
+                    <$left>::VAL.tstr_cmp(<$right>::VAL),
+                    <$left>::VAL.to_str().cmp(<$right>::VAL.to_str())
+                );
+                assert_eq!(
+                    tstr::cmp(<$left>::VAL, <$right>::VAL),
+                    <$left>::VAL.to_str().cmp(<$right>::VAL.to_str())
                 );
             )*
         }
@@ -74,6 +83,22 @@ type Len64B = TS!("-aaaaaaa-aaaaaaa-aaaaaaa-aaaaaaa-aaaaaaa-aaaaaaa-aaaaaaa-aaaa
 
 type Len65A = TS!("-aaaaaaa-aaaaaaa-aaaaaaa-aaaaaaa-aaaaaaa-aaaaaaa-aaaaaaa-aaaaaaa-");
 type Len65B = TS!("-aaaaaaa-aaaaaaa-aaaaaaa-_______-aaaaaaa-aaaaaaa-aaaaaaa-aaaaaaa-");
+
+#[test]
+fn comparing_shorter_to_longer() {
+    type ABAAA = TS!(ABAAA);
+    type AABA = TS!(AABA);
+    type ABAA = TS!(ABAA);
+    type BAAA = TS!(BAAA);
+
+    assert_eq!(BAAA::VAL.tstr_cmp(ABAAA::VAL), Ordering::Greater);
+    assert_eq!(ABAA::VAL.tstr_cmp(ABAAA::VAL), Ordering::Less);
+    assert_eq!(AABA::VAL.tstr_cmp(ABAAA::VAL), Ordering::Less);
+
+    assert_eq!(tstr::cmp(BAAA::VAL, ABAAA::VAL), Ordering::Greater);
+    assert_eq!(tstr::cmp(ABAA::VAL, ABAAA::VAL), Ordering::Less);
+    assert_eq!(tstr::cmp(AABA::VAL, ABAAA::VAL), Ordering::Less);
+}
 
 #[test]
 fn equal_strs() {
@@ -167,6 +192,14 @@ fn short_strs() {
         Len6A,
         [
             Len0, Len1A, Len2A, Len3A, Len4A, Len5A, Len6B, Len7A, Len8A, Len9A, Len17A, Len25A,
+            Len63A, Len64A, Len65A,
+        ]
+    );
+
+    assert_str_ne!(
+        Len6B,
+        [
+            Len0, Len1A, Len2A, Len3A, Len4A, Len5A, Len6A, Len7A, Len8A, Len9A, Len17A, Len25A,
             Len63A, Len64A, Len65A,
         ]
     );

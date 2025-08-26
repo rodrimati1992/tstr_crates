@@ -25,7 +25,13 @@ where
         let tt = paren(span, |out| {
             let lower_power = find_smaller_power(input.len());
 
-            for chunk in input.chunks(lower_power) {
+            let chunks = input.chunks(lower_power).collect::<Vec<_>>();
+            let chunk_count = chunks.len();
+
+            for chunk in chunks
+                .into_iter()
+                .chain(std::iter::repeat_n(&[][..], CHUNK_SIZE - chunk_count))
+            {
                 out.extend(compute(chunk, span, func));
                 out.extend(punct_token(',', span));
             }

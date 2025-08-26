@@ -1,4 +1,13 @@
-//! This crate provides an encoding of type-level strings as types.
+//! An encoding of type-level strings, with the [`TStr`] type and related macros.
+//!
+//! This crate features all these on stable:
+//! - a relatively readable default representation of type-level strings
+//!   based on `char` const parameters.
+//! - items for converting type-level strings to `&'static str` and `&'static [u8]`
+//! - functions for comparing type-level strings to each other and `&str`
+//! - macros for asserting the (in)equality of type-level strings to each other and `&str`
+//!
+//! All of the above functionality can be used in const contexts.
 //!
 //! # Examples
 //!
@@ -7,7 +16,7 @@
 //! This example demonstrates how you can use type-level strings,
 //! and the [`Index`] trait, to access fields of generic types by name.
 //!
-//! ```
+//! ```rust
 //! use std::ops::Index;
 //!
 //! use tstr::{TS, ts};
@@ -97,6 +106,46 @@
 //!
 //! ```
 //!
+//! ### Type errors
+//!
+//! This example showcases what TStr looks like in simple type errors.
+//!
+//! ```rust,compile_fail
+//! let _: tstr::TS!("Hello, world!") = ();
+//! ```
+//!
+//! With no crate features enabled, the error message is this:
+//! ```text
+//! error[E0308]: mismatched types
+//!  --> tstr/src/lib.rs:114:37
+//!   |
+//! 5 | let _: tstr::TS!("Hello, world!") = ();
+//!   |        --------------------------   ^^ expected `TStr<___<..., 13>>`, found `()`
+//!   |        |
+//!   |        expected due to this
+//!   |
+//!   = note: expected struct `tstr::TStr<___<(tstr::__<'H', 'e', 'l', 'l', 'o', ',', ' ', 'w'>, tstr::__<'o', 'r', 'l', 'd', '!'>, (), (), (), (), (), ()), 13>>`
+//!           found unit type `()`
+//! ```
+//! As you can see, the string is represented as a collection of `char` const parameters.
+//!
+//! When the `"nightly_str_generics"` feature is enabled (which requires the nightly compiler),
+//! the error message is this:
+//! ```text
+//! error[E0308]: mismatched types
+//!  --> tstr/src/lib.rs:114:37
+//!   |
+//! 5 | let _: tstr::TS!("Hello, world!") = ();
+//!   |        --------------------------   ^^ expected `TStr<___<"Hello, world!">>`, found `()`
+//!   |        |
+//!   |        expected due to this
+//!   |
+//!   = note: expected struct `tstr::TStr<___<"Hello, world!">>`
+//!           found unit type `()`
+//! ```
+//!
+//!
+//!
 //! # Macro expansion
 //!
 //! This library reserves the right to change how it represent type-level strings internally
@@ -107,33 +156,24 @@
 //!
 //! # Cargo features
 //!
-//! - `"rust_1_46"`:
-//! Enables const functions in [`tstr::utils`] for comparing `&str` and `&[u8]`.
+//! - `"const_panic"`(enabled by default):
+//! Enables [`const_panic`] reexports, assertion macros,
+//! and `const_panic::fmt::PanicFmt` impl for `TStr`.
 //!
-//! - `"cmp_traits"`: Enables the traits for comparing type-level strings.
-//!
-//! - `"use_syn"`:
+//! - `"use_syn"`(disabled by default):
 //! Changes how literals passed to the macros of this crate are parsed to use the `syn` crate.
 //! Use this if there is some literal that could not be
 //! parsed but is a valid str/integer literal.
 //!
-//! - `"min_const_generics"`:
-//! changes the representation of type-level strings to use many `char` const parameter,
-//! making for better compiler errors for non-alphanumeric-ascii strings.
-//! Requires Rust 1.51.0.
-//!
-//! - `"const_generics"`:
+//! - `"str_generics"`(disabled by default):
 //! Changes the representation of type-level strings to use a `&'static str` const parameter,
-//! making for better compiler errors, and a few more features.
-//! As of 2023-03-17, this feature can't be enabled, because it
+//! making for better compiler errors.
+//! As of 2025-08-18, this feature can't be enabled, because it
 //! requires `&'static str` to be stably usable as const parameters.
-//! Consider using `"nightly_const_generics"` if this feature can't be used.
+//! Consider using `"nightly_str_generics"` if this feature can't be used.
 //!
-//! - `"nightly_const_generics"`: Equivalent to the `"const_generics"` feature,
-//! and enables the nightly compiler features to use `&'static str` const parameters.//!
-//!
-//! - `"for_examples"`: Enables the `for_examples` module,
-//! with a few types used in documentation examples.
+//! - `"nightly_str_generics"`(disabled by default): Equivalent to the `"str_generics"` feature,
+//! and enables the nightly compiler features to use `&'static str` const parameters.
 //!
 //! # No-std support
 //!
@@ -141,33 +181,46 @@
 //!
 //! # Minimum Supported Rust Version
 //!
-//! This crate supports Rust versions back to Rust 1.40.0.
+//! This crate supports Rust versions back to Rust 1.88.0.
 //!
-//! [`Index`]: https://doc.rust-lang.org/std/ops/trait.Index.html
-//! [`tstr::utils`]: ./utils/index.html
+//! [`TStr`]: crate::TStr
+//! [`const_panic`]: const_panic
+//! [`Index`]: core::ops::Index
+//! [`tstr::utils`]: crate::utils
 #![no_std]
-#![cfg_attr(feature = "nightly_const_generics", feature(adt_const_params))]
+#![cfg_attr(feature = "nightly_str_generics", feature(adt_const_params))]
+#![cfg_attr(feature = "nightly_str_generics", feature(unsized_const_params))]
 #![cfg_attr(feature = "docsrs", feature(doc_cfg, doc_auto_cfg))]
+#![cfg_attr(feature = "nightly_str_generics", allow(incomplete_features))]
+//////////
+// lints
+//////////
 #![allow(non_camel_case_types)]
-#![cfg_attr(feature = "nightly_const_generics", allow(incomplete_features))]
+#![forbid(unsafe_code)]
 
-#[cfg(feature = "for_examples")]
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "for_examples")))]
-pub mod for_examples;
+#[cfg(feature = "const_panic")]
+mod assertions;
 
-#[cfg(not(feature = "const_generics"))]
-#[cfg(feature = "cmp_traits")]
-mod for_tupled_reprs;
-
-pub mod asserts;
+pub mod strlike;
 
 mod macros;
-mod make_tstr;
-mod to_uint;
+mod private_macros;
+
+mod tstr_fns;
+mod tstr_trait;
 mod tstr_type;
 
-#[cfg(feature = "cmp_traits")]
-mod tstr_cmp;
+#[cfg(not(feature = "str_generics"))]
+mod tstr_impl_with_chars;
+
+#[cfg(not(feature = "str_generics"))]
+pub(crate) use tstr_impl_with_chars::__TStrRepr;
+
+#[cfg(feature = "str_generics")]
+mod tstr_impl_with_str;
+
+#[cfg(feature = "str_generics")]
+pub(crate) use tstr_impl_with_str::__TStrRepr;
 
 pub mod utils;
 
@@ -177,16 +230,31 @@ extern crate self as tstr;
 #[doc(hidden)]
 pub use tstr_proc_macros::__ts_impl;
 
-pub use crate::{asserts::Assert, make_tstr::MakeTStr, to_uint::ToUint, tstr_type::TStr};
+use crate::tstr_trait::__TStrArgBinary;
 
-#[cfg(feature = "cmp_traits")]
-pub use tstr_cmp::TStrEq;
+pub use crate::{
+    tstr_fns::*,
+    tstr_trait::{IsTStr, TStrArg},
+    tstr_type::TStr,
+};
 
-#[cfg(all(feature = "cmp_traits", feature = "const_generics"))]
-pub use tstr_cmp::TStrOrd;
+pub use typewit;
 
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
-#[cfg(feature = "const_generics")]
-pub use crate::tstr_type::StrValue;
+#[doc(no_inline)]
+#[cfg(feature = "const_panic")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_panic")))]
+pub use const_panic::{self, unwrap_ok as unwrap};
 
 include! {"./p.rs"}
+
+#[doc(hidden)]
+pub mod __p {
+    pub use crate::__Empty;
+    pub use crate::macros::__IgnoreArgReturnEmpty;
+
+    #[cfg(feature = "const_panic")]
+    pub use const_panic::concat_panic;
+
+    pub use core::array;
+    pub use core::{concat, stringify};
+}

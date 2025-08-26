@@ -12,19 +12,11 @@
 /// const BAZ: &str = "bar";
 ///
 ///
-/// const FOO_EQ_FOO: bool = str_eq(FOO, FOO);
-/// assert!( FOO_EQ_FOO );
-///
-/// const FOO_EQ_BAR: bool = str_eq(FOO, BAR);
-/// assert!( !FOO_EQ_BAR );
-///
-/// const FOO_EQ_BAZ: bool = str_eq(FOO, BAZ);
-/// assert!( !FOO_EQ_BAZ );
-///
+/// const { assert!( str_eq(FOO, FOO)); }
+/// const { assert!(!str_eq(FOO, BAR)); }
+/// const { assert!(!str_eq(FOO, BAZ)); }
 /// ```
 ///
-#[cfg(feature = "rust_1_46")]
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "rust_1_46")))]
 #[inline]
 pub const fn str_eq(left: &str, right: &str) -> bool {
     u8_slice_eq(left.as_bytes(), right.as_bytes())
@@ -41,20 +33,12 @@ pub const fn str_eq(left: &str, right: &str) -> bool {
 /// const BAR: &[u8] = &[10, 20, 30, 40];
 /// const BAZ: &[u8] = &[3, 5, 8, 13];
 ///
-/// const FOO_EQ_FOO: bool = u8_slice_eq(FOO, FOO);
-/// assert!( FOO_EQ_FOO );
-///
-/// const FOO_EQ_BAR: bool = u8_slice_eq(FOO, BAR);
-/// assert!( !FOO_EQ_BAR );
-///
-/// const FOO_EQ_BAZ: bool = u8_slice_eq(FOO, BAZ);
-/// assert!( !FOO_EQ_BAZ );
-///
+/// const { assert!( u8_slice_eq(FOO, FOO)); }
+/// const { assert!(!u8_slice_eq(FOO, BAR)); }
+/// const { assert!(!u8_slice_eq(FOO, BAZ)); }
 ///
 /// ```
 ///
-#[cfg(feature = "rust_1_46")]
-#[cfg_attr(feature = "docsrs", doc(cfg(feature = "rust_1_46")))]
 #[inline]
 pub const fn u8_slice_eq(left: &[u8], right: &[u8]) -> bool {
     if left.len() != right.len() {
@@ -72,10 +56,8 @@ pub const fn u8_slice_eq(left: &[u8], right: &[u8]) -> bool {
     true
 }
 
-#[cfg(feature = "rust_1_46")]
 pub use slice_cmp::{str_cmp, u8_slice_cmp};
 
-#[cfg(feature = "rust_1_46")]
 mod slice_cmp {
     use core::cmp::Ordering;
 
@@ -101,7 +83,7 @@ mod slice_cmp {
         }
     }
 
-    /// A const equivalent of `str::cmp`.
+    /// A const equivalent of `<str as std::cmp::Ord>::cmp`.
     ///
     /// # Example
     ///
@@ -115,21 +97,39 @@ mod slice_cmp {
     /// const BAZ: &str = "bar";
     ///
     ///
-    /// const FOO_CMP_FOO: Ordering = str_cmp(FOO, FOO);
-    /// assert_eq!(FOO_CMP_FOO, Ordering::Equal);
-    ///
-    /// const FOO_CMP_BAR: Ordering = str_cmp(FOO, BAR);
-    /// assert_eq!(FOO_CMP_BAR, Ordering::Less);
-    ///
-    /// const FOO_CMP_BAZ: Ordering = str_cmp(FOO, BAZ);
-    /// assert_eq!(FOO_CMP_BAZ, Ordering::Greater);
+    /// const { assert!(matches!(str_cmp(FOO, FOO), Ordering::Equal)); }
+    /// const { assert!(matches!(str_cmp(FOO, BAR), Ordering::Less)); }
+    /// const { assert!(matches!(str_cmp(FOO, BAZ), Ordering::Greater)); }
     ///
     /// ```
     ///
-    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "rust_1_46")))]
     #[inline]
     pub const fn str_cmp(left: &str, right: &str) -> Ordering {
-        const fn str_cmp_inner(left: &[u8], right: &[u8]) -> u8 {
+        u8_slice_cmp(left.as_bytes(), right.as_bytes())
+    }
+
+    /// A const equivalent of `<[u8] as std::cmp::Ord>::cmp`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use tstr::utils::u8_slice_cmp;
+    ///
+    /// use std::cmp::Ordering;
+    ///
+    /// const FOO: &[u8] = &[10, 20];
+    /// const BAR: &[u8] = &[10, 20, 30, 40];
+    /// const BAZ: &[u8] = &[3, 5, 8];
+    ///
+    /// const { assert!(matches!(u8_slice_cmp(FOO, FOO), Ordering::Equal)); }
+    /// const { assert!(matches!(u8_slice_cmp(FOO, BAR), Ordering::Less)); }
+    /// const { assert!(matches!(u8_slice_cmp(FOO, BAZ), Ordering::Greater)); }
+    ///
+    /// ```
+    ///
+    #[inline]
+    pub const fn u8_slice_cmp(left: &[u8], right: &[u8]) -> Ordering {
+        const fn u8_slice_cmp_inner(left: &[u8], right: &[u8]) -> u8 {
             let left_len = left.len();
             let right_len = right.len();
             let (min_len, on_ne) = if left_len < right_len {
@@ -144,55 +144,7 @@ mod slice_cmp {
                 i += 1;
             }
 
-            if left_len == right_len {
-                EQUAL
-            } else {
-                on_ne
-            }
-        }
-
-        to_ordering(str_cmp_inner(left.as_bytes(), right.as_bytes()))
-    }
-
-    /// A const equivalent of `<[u8]>::cmp`.
-    ///
-    /// # Example
-    ///
-    /// ```rust
-    /// use tstr::utils::u8_slice_cmp;
-    ///
-    /// use std::cmp::Ordering;
-    ///
-    /// const FOO: &[u8] = &[10, 20];
-    /// const BAR: &[u8] = &[10, 20, 30, 40];
-    /// const BAZ: &[u8] = &[3, 5];
-    ///
-    /// const FOO_CMP_FOO: Ordering = u8_slice_cmp(FOO, FOO);
-    /// assert_eq!(FOO_CMP_FOO, Ordering::Equal);
-    ///
-    /// const FOO_CMP_BAR: Ordering = u8_slice_cmp(FOO, BAR);
-    /// assert_eq!(FOO_CMP_BAR, Ordering::Less);
-    ///
-    /// const FOO_CMP_BAZ: Ordering = u8_slice_cmp(FOO, BAZ);
-    /// assert_eq!(FOO_CMP_BAZ, Ordering::Greater);
-    ///
-    /// ```
-    ///
-    #[cfg_attr(feature = "docsrs", doc(cfg(feature = "rust_1_46")))]
-    #[inline]
-    pub const fn u8_slice_cmp(left: &[u8], right: &[u8]) -> Ordering {
-        const fn u8_slice_cmp_inner(left: &[u8], right: &[u8]) -> u8 {
-            let left_len = left.len();
-
-            ret_if_ne! {left_len, right.len()}
-
-            let mut i = 0;
-            while i < left_len {
-                ret_if_ne! {left[i], right[i]}
-                i += 1;
-            }
-
-            EQUAL
+            if left_len == right_len { EQUAL } else { on_ne }
         }
 
         to_ordering(u8_slice_cmp_inner(left, right))
@@ -204,7 +156,6 @@ mod tests {
     use super::*;
 
     #[test]
-    #[cfg(feature = "rust_1_46")]
     fn slice_eq_test() {
         assert!(u8_slice_eq(&[], &[]));
         assert!(!u8_slice_eq(&[], &[0]));
@@ -219,7 +170,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "rust_1_46")]
     fn str_eq_test() {
         assert!(str_eq("", ""));
         assert!(!str_eq("", "0"));
@@ -235,7 +185,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "rust_1_46")]
     fn slice_cmp_test() {
         use core::cmp::{
             Ord,
@@ -263,7 +212,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(feature = "rust_1_46")]
     fn str_cmp_test() {
         use core::cmp::{
             Ord,

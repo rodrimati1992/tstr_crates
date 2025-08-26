@@ -1,0 +1,31 @@
+error[E0277]: `StrLike` is not implemented for `T`
+ --> tests/modules/strlike_ui_tests/as_str_macro-char-err.rs:4:5
+  |
+4 |     tstr::strlike::as_str!(x)
+  |     ^^^^^^^^^^^^^^^^^^^^^^^^^ `tstr::strlike::StrLike` is not implemented for `T`
+  |
+  = help: the trait `__use_StrLike_instead_of_this_trait<(), __StrKind, T>` is not implemented for `()`
+  = note: help:
+          consider adding a `T: ?Sized + tstr::strlike::StrLike` bound
+
+  = note: this error originates in the macro `tstr::strlike::as_str` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider introducing a `where` clause, but there might be an alternative better way to express this requirement
+  |
+3 | const fn unsized_type_param<T: ?Sized>(x: &T) -> &str where (): __use_StrLike_instead_of_this_trait<(), __StrKind, T> {
+  |                                                       +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+error[E0277]: `StrLike` is not implemented for `U`
+ --> tests/modules/strlike_ui_tests/as_str_macro-char-err.rs:8:13
+  |
+8 |     let _ = tstr::strlike::as_str!(x);
+  |             ^^^^^^^^^^^^^^^^^^^^^^^^^ `tstr::strlike::StrLike` is not implemented for `U`
+  |
+  = help: the trait `__use_StrLike_instead_of_this_trait<(), __StrKind, U>` is not implemented for `()`
+  = note: help:
+          consider adding a `U: ?Sized + tstr::strlike::StrLike` bound
+
+  = note: this error originates in the macro `tstr::strlike::as_str` (in Nightly builds, run with -Z macro-backtrace for more info)
+help: consider introducing a `where` clause, but there might be an alternative better way to express this requirement
+  |
+7 | const fn sized_type_param<U>(x: &U) -> &str where (): __use_StrLike_instead_of_this_trait<(), __StrKind, U> {
+  |                                             +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

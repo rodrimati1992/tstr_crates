@@ -1,3 +1,101 @@
+# 0.3
+
+### 0.3.0
+
+Removed these items:
+- `asserts` module: replaced by the `assert_str_*` macros and `tstr::type_eq` function.
+- `for_examples` module
+- `StrValue` trait: replaced by the `IsTStr` trait
+- `ToUint` trait: integers have const fns for parsing from a `&str`. The `TStr` docs show how this can be used to parse an integer.
+- `tstr_cmp` macro: replaced by the `tstr::cmp` function
+- `tstr_eq` macro: replaced by the `tstr::eq` function
+- `tstr_ne` macro: replaced by the `tstr::ne` function
+- `TStrEq` trait: replaced by the `tstr::eq` function
+- `TStrOrd` trait: replaced by the `tstr::cmp` function
+- `MakeTStr` trait: replaced by the `IsTStr` trait
+
+Removed these features:
+- `"rust_1_46"`: because the Minimum Supported Rust Version is now higher than 1.46
+- `"cmp_traits"`: because comparison functions are enabled by default
+- `"for_examples"`: because there's no `for_examples` module anymore
+- `"min_const_generics"`: because the const-`char`-parameter-based representation is now the default.
+
+Renamed these features:
+- `"const_generics"` to `"str_generics"`
+- `"nightly_const_generics"` to `"nightly_str_generics"`
+
+Changed Minimum Supported Rust Version to 1.88.0
+
+Fixed `tstr::utils::u8_slice_cmp`: it used to consider all shorter slices less than all longer slices. Now it behaves the same as in std, where `short_slice.cmp(&long_slice)` can also return `Greater` depending on their elements.
+
+Fixed support for Rust keywords in `alias`/`ts`/`TS` macros when `"use_syn"` feature is enabled
+
+Fixed `&'static str`-repr support (needed fixing because nightly changed how `&'static str` const parameters are enabled)
+
+Removed the units-struct-based representation for strings, making the `char` const-parameter-based representation the default.
+
+Added `const_panic` feature and dependency (enabled by the feature, the feature is enabled by default)
+
+Added `typewit` 1.13 dependency, with only the `"rust_1_61"` feature enabled by default.
+
+Added re-exports of `typewit` crate at `tstr::typewit`.
+
+Changed `"str_generics"` feature enable `"typewit/adt_const_marker"` feature, to use its `Str` const marker.
+
+Added these `const fn`s at the root module (they all take `IsTStr` generically, and have an equivalent  `IsTStr` method):
+- `tstr::cmp`: compares two `IsTStr`s for ordering
+- `tstr::eq`: compares two `IsTStr`s for equality
+- `tstr::len`: gets the utf-8 length of an `IsTStr`
+- `tstr::ne`: compares two `IsTStr`s for inequality
+- `tstr::to_bytes`: converts an `IsTStr` to a `&'static str` 
+- `tstr::to_str`: converts an `IsTStr` to a `&'static str` 
+- `tstr::type_eq`: compares two `IsTStr`s and returns a proof of their equality/inequality
+(these functions are always enabled and work on stable)
+
+Added `IsTStr` trait, implemented for `TStr` with:
+- methods equivalents of the root module functions
+- methods equivalents of `TStr` associated functions for converting to/from an `IsTStr` type parameter
+- supertraits of all the traits that `TStr` impls (those that can be expressed, some are too generic t o write as a supertrait)
+- `VAL` constant for constructing an `impl IsTStr` value
+- constants for length, the `&[u8]` and `&str` values of the `TStr`
+
+Added `TStrArg` trait, for bounding `TStr`'s type parameter.
+
+Added `TStr::{from_gen, to_gen}` associated functions
+
+Changed `TStr` impls, now it bounds its type parameter with `TStrArg` for every impl except for `Copy`, `Clone`, and `Default`.
+
+Added these impls for `TStr`:
+- `Display`: display formats the string returned by `to_str`
+- `Hash`
+
+Changed `PartialEq` and `PartialOrd` impls for `TStr` to take any `StrLike` as the rhs argument.
+
+Added `PartialEq` and `PartialOrd` impls for comparing between `str` and `TStr`.
+
+Changed `Debug` impl for `TStr` to debug format the string returned by `to_str`.
+
+Added these conditional on the `"const_panic"` feature:
+- `const_panic::PanicFmt` impl for `TStr`
+- reexport of `const_panic` itself: at `tstr::const_panic`
+- reexport of `const_panic::unwrap_ok`: at `tstr::unwrap`
+
+Added these macros conditional on `"const_panic"` feature:
+- `tstr::assert_str_eq`: asserts that two `&str`/`impl ÌsTStr`s are equal, with formatted assertion error message.
+- `tstr::assert_str_ne`: asserts that two `&str`/`impl ÌsTStr`s are unequal, with formatted assertion error message.
+
+Changed `tstr::{TS, ts}` macros to accept additional parentheses around their arguments,
+
+Changed `tstr::{alias, TS, ts}` macros to not produce a tuple of `TStr`s when multiple strings are passed in, those arguments are simply disallowed.
+
+Improved error reporting for `tstr::{alias, TS, ts}` macros.
+
+Added `tstr::strlike` module with these items:
+- `StrLike` trait: for coercing `&str`/`impl ÌsTStr` to a `&str`
+- `as_str` macro: coerces its `StrLike` argument to a `&str`
+
+# 0.2
+
 ### 0.2.1
 
 Added `"cmp_traits"` feature to enable TStr comparison traits.

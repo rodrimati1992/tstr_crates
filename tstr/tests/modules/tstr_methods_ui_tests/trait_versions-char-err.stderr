@@ -1,0 +1,136 @@
+error[E0599]: no method named `to_tstr` found for type parameter `T` in the current scope
+ --> tests/modules/tstr_methods_ui_tests/trait_versions-char-err.rs:5:12
+  |
+4 | const fn unary<T: Copy>(ts: T) {
+  |                - method `to_tstr` not found for this type parameter
+5 |     _ = ts.to_tstr();
+  |            ^^^^^^^ method not found in `T`
+  |
+  = help: items from traits can only be used if the type parameter is bounded by the trait
+help: the following trait defines an item `to_tstr`, perhaps you need to restrict type parameter `T` with it:
+  |
+4 | const fn unary<T: Copy + IsTStr>(ts: T) {
+  |                        ++++++++
+
+error[E0599]: no function or associated item named `from_tstr` found for type parameter `T` in the current scope
+ --> tests/modules/tstr_methods_ui_tests/trait_versions-char-err.rs:6:19
+  |
+4 | const fn unary<T: Copy>(ts: T) {
+  |                - function or associated item `from_tstr` not found for this type parameter
+5 |     _ = ts.to_tstr();
+6 |     let _: T = T::from_tstr(TStr::new());
+  |                   ^^^^^^^^^ function or associated item not found in `T`
+  |
+  = help: items from traits can only be used if the type parameter is bounded by the trait
+help: the following trait defines an item `from_tstr`, perhaps you need to restrict type parameter `T` with it:
+  |
+4 | const fn unary<T: Copy + IsTStr>(ts: T) {
+  |                        ++++++++
+
+error[E0599]: no method named `len` found for type parameter `T` in the current scope
+ --> tests/modules/tstr_methods_ui_tests/trait_versions-char-err.rs:7:12
+  |
+4 | const fn unary<T: Copy>(ts: T) {
+  |                - method `len` not found for this type parameter
+...
+7 |     _ = ts.len();
+  |            ^^^ method not found in `T`
+  |
+  = help: items from traits can only be used if the type parameter is bounded by the trait
+help: the following traits define an item `len`, perhaps you need to restrict type parameter `T` with one of them:
+  |
+4 | const fn unary<T: Copy + ExactSizeIterator>(ts: T) {
+  |                        +++++++++++++++++++
+4 | const fn unary<T: Copy + IsTStr>(ts: T) {
+  |                        ++++++++
+
+error[E0599]: no method named `to_bytes` found for type parameter `T` in the current scope
+ --> tests/modules/tstr_methods_ui_tests/trait_versions-char-err.rs:8:12
+  |
+4 | const fn unary<T: Copy>(ts: T) {
+  |                - method `to_bytes` not found for this type parameter
+...
+8 |     _ = ts.to_bytes();
+  |            ^^^^^^^^ method not found in `T`
+  |
+  = help: items from traits can only be used if the type parameter is bounded by the trait
+help: the following trait defines an item `to_bytes`, perhaps you need to restrict type parameter `T` with it:
+  |
+4 | const fn unary<T: Copy + IsTStr>(ts: T) {
+  |                        ++++++++
+
+error[E0599]: no method named `to_str` found for type parameter `T` in the current scope
+ --> tests/modules/tstr_methods_ui_tests/trait_versions-char-err.rs:9:12
+  |
+4 | const fn unary<T: Copy>(ts: T) {
+  |                - method `to_str` not found for this type parameter
+...
+9 |     _ = ts.to_str();
+  |            ^^^^^^ method not found in `T`
+  |
+  = help: items from traits can only be used if the type parameter is bounded by the trait
+help: the following trait defines an item `to_str`, perhaps you need to restrict type parameter `T` with it:
+  |
+4 | const fn unary<T: Copy + IsTStr>(ts: T) {
+  |                        ++++++++
+
+error[E0599]: no method named `tstr_cmp` found for type parameter `L` in the current scope
+  --> tests/modules/tstr_methods_ui_tests/trait_versions-char-err.rs:13:11
+   |
+12 | const fn binary<L: Copy, R: Copy>(l: L, r: R) {
+   |                 - method `tstr_cmp` not found for this type parameter
+13 |     _ = l.tstr_cmp(r);
+   |           ^^^^^^^^ method not found in `L`
+   |
+   = help: items from traits can only be used if the type parameter is bounded by the trait
+help: the following trait defines an item `tstr_cmp`, perhaps you need to restrict type parameter `L` with it:
+   |
+12 | const fn binary<L: Copy + IsTStr, R: Copy>(l: L, r: R) {
+   |                         ++++++++
+
+error[E0599]: no method named `tstr_ne` found for type parameter `L` in the current scope
+  --> tests/modules/tstr_methods_ui_tests/trait_versions-char-err.rs:14:11
+   |
+12 | const fn binary<L: Copy, R: Copy>(l: L, r: R) {
+   |                 - method `tstr_ne` not found for this type parameter
+13 |     _ = l.tstr_cmp(r);
+14 |     _ = l.tstr_ne(r);
+   |           ^^^^^^^ method not found in `L`
+   |
+   = help: items from traits can only be used if the type parameter is bounded by the trait
+help: the following trait defines an item `tstr_ne`, perhaps you need to restrict type parameter `L` with it:
+   |
+12 | const fn binary<L: Copy + IsTStr, R: Copy>(l: L, r: R) {
+   |                         ++++++++
+
+error[E0599]: no method named `tstr_eq` found for type parameter `L` in the current scope
+  --> tests/modules/tstr_methods_ui_tests/trait_versions-char-err.rs:15:11
+   |
+12 | const fn binary<L: Copy, R: Copy>(l: L, r: R) {
+   |                 - method `tstr_eq` not found for this type parameter
+...
+15 |     _ = l.tstr_eq(r);
+   |           ^^^^^^^ method not found in `L`
+   |
+   = help: items from traits can only be used if the type parameter is bounded by the trait
+help: the following trait defines an item `tstr_eq`, perhaps you need to restrict type parameter `L` with it:
+   |
+12 | const fn binary<L: Copy + IsTStr, R: Copy>(l: L, r: R) {
+   |                         ++++++++
+
+error[E0599]: no method named `type_eq` found for type parameter `L` in the current scope
+  --> tests/modules/tstr_methods_ui_tests/trait_versions-char-err.rs:16:11
+   |
+12 | const fn binary<L: Copy, R: Copy>(l: L, r: R) {
+   |                 - method `type_eq` not found for this type parameter
+...
+16 |     _ = l.type_eq(r);
+   |           ^^^^^^^
+   |
+   = help: items from traits can only be used if the type parameter is bounded by the trait
+help: there is a method `type_id` with a similar name, but with different arguments
+  --> $RUST/core/src/any.rs
+help: the following trait defines an item `type_eq`, perhaps you need to restrict type parameter `L` with it:
+   |
+12 | const fn binary<L: Copy + IsTStr, R: Copy>(l: L, r: R) {
+   |                         ++++++++

@@ -2,18 +2,26 @@ mod modules {
     #[macro_use]
     mod utils;
 
-    mod alias_and_tuples;
+    mod aliases;
 
     mod concat_args;
+
+    #[cfg(feature = "const_panic")]
+    mod const_panic_tests;
 
     mod long_strings;
 
     mod string_args;
 
-    #[cfg(feature = "cmp_traits")]
     mod string_cmp;
+
+    mod strlike_tests;
 
     mod other_args;
 
-    mod to_uint;
+    mod trait_fn_equiv_tests;
+
+    mod tstr_methods_tests;
+
+    mod ui_tests;
 }

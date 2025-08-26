@@ -1,0 +1,81 @@
+error[E0603]: constant `SS_B_PRIV` is private
+  --> tests/modules/ts_macros_ui_tests/alias_macro_visibilities--err.rs:21:49
+   |
+21 |         assert!(matches!(tstr::to_bytes(subsub::SS_B_PRIV), b"B"));
+   |                                                 ^^^^^^^^^ private constant
+   |
+note: the constant `SS_B_PRIV` is defined here
+  --> tests/modules/ts_macros_ui_tests/alias_macro_visibilities--err.rs:14:9
+   |
+14 |         tstr::alias!{ SS_B_PRIV = B; }
+   |         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   = note: this error originates in the macro `tstr::alias` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0603]: constant `S_B_PRIV` is private
+  --> tests/modules/ts_macros_ui_tests/alias_macro_visibilities--err.rs:29:42
+   |
+29 |     assert!(matches!(tstr::to_bytes(sub::S_B_PRIV), b"B"));
+   |                                          ^^^^^^^^ private constant
+   |
+note: the constant `S_B_PRIV` is defined here
+  --> tests/modules/ts_macros_ui_tests/alias_macro_visibilities--err.rs:8:5
+   |
+8  |     tstr::alias!{ S_B_PRIV = B; }
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+   = note: this error originates in the macro `tstr::alias` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0603]: module `subsub` is private
+  --> tests/modules/ts_macros_ui_tests/alias_macro_visibilities--err.rs:34:42
+   |
+34 |     assert!(matches!(tstr::to_bytes(sub::subsub::SS_B_PRIV), b"B"));
+   |                                          ^^^^^^  --------- constant `SS_B_PRIV` is not publicly re-exported
+   |                                          |
+   |                                          private module
+   |
+note: the module `subsub` is defined here
+  --> tests/modules/ts_macros_ui_tests/alias_macro_visibilities--err.rs:13:5
+   |
+13 |     mod subsub {
+   |     ^^^^^^^^^^
+
+error[E0603]: module `subsub` is private
+  --> tests/modules/ts_macros_ui_tests/alias_macro_visibilities--err.rs:35:42
+   |
+35 |     assert!(matches!(tstr::to_bytes(sub::subsub::SS_C), b"C"));
+   |                                          ^^^^^^  ---- constant `SS_C` is not publicly re-exported
+   |                                          |
+   |                                          private module
+   |
+note: the module `subsub` is defined here
+  --> tests/modules/ts_macros_ui_tests/alias_macro_visibilities--err.rs:13:5
+   |
+13 |     mod subsub {
+   |     ^^^^^^^^^^
+
+error[E0603]: module `subsub` is private
+  --> tests/modules/ts_macros_ui_tests/alias_macro_visibilities--err.rs:36:42
+   |
+36 |     assert!(matches!(tstr::to_bytes(sub::subsub::SS_D), b"D"));
+   |                                          ^^^^^^  ---- constant `SS_D` is not publicly re-exported
+   |                                          |
+   |                                          private module
+   |
+note: the module `subsub` is defined here
+  --> tests/modules/ts_macros_ui_tests/alias_macro_visibilities--err.rs:13:5
+   |
+13 |     mod subsub {
+   |     ^^^^^^^^^^
+
+error[E0603]: module `subsub` is private
+  --> tests/modules/ts_macros_ui_tests/alias_macro_visibilities--err.rs:37:42
+   |
+37 |     assert!(matches!(tstr::to_bytes(sub::subsub::SS_E), b"E"));
+   |                                          ^^^^^^  ---- constant `SS_E` is not publicly re-exported
+   |                                          |
+   |                                          private module
+   |
+note: the module `subsub` is defined here
+  --> tests/modules/ts_macros_ui_tests/alias_macro_visibilities--err.rs:13:5
+   |
+13 |     mod subsub {
+   |     ^^^^^^^^^^

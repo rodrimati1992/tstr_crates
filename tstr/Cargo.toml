@@ -1,14 +1,15 @@
 [package]
 name = "tstr"
-version = "0.2.4"
+version = "0.3.0"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
-edition = "2018"
+edition = "2024"
+rust-version = "1.88.0"
 license = "Zlib"
-description = "Type-level strings"
+description = "type-level strings on stable"
 readme="../readme.md"
-documentation = "https://docs.rs/tstr_proc_macros/"
-keywords = []
-categories = ["no-std"]
+documentation = "https://docs.rs/tstr"
+keywords = ["no-std", "string"]
+categories = ["no-std", "rust-patterns", "data-structures"]
 repository = "https://github.com/rodrimati1992/tstr_crates/"
 include = [
     "Cargo.toml", 
@@ -18,28 +19,44 @@ include = [
 ]
 
 [features]
-cmp_traits = [] 
-rust_1_46 = []
+default = ["const_panic"]
+str_generics = ["tstr_proc_macros/str_generics", "typewit/adt_const_marker"]
+nightly_str_generics = ["str_generics"]
+const_panic = ["dep:const_panic"]
 
-min_const_generics = ["tstr_proc_macros/min_const_generics", "rust_1_46"]
-
-const_generics = ["tstr_proc_macros/const_generics", "min_const_generics"]
-nightly_const_generics = ["const_generics"]
-
-use_syn = ["tstr_proc_macros/syn_"]
-for_examples = []
-
-testing = ["for_examples"]
+use_syn = ["tstr_proc_macros/use_syn"]
 
 # private features
-docsrs = ["for_examples"]
+docsrs = []
+__ui_tests = ["trybuild"]
+
+[dependencies.const_panic]
+version = "0.2.14"
+features = ["rust_1_82"]
+default-features = false
+optional = true
+
+[dev-dependencies.const_panic]
+version = "0.2.14"
+features = ["non_basic", "rust_1_82"]
+default-features = false
+
+[dependencies.typewit]
+version = "1.13"
+features = ["rust_1_61"]
+default-features = false
 
 [dependencies.tstr_proc_macros]
-version = "0.2.2"
+version = "0.3.0"
 path = "../tstr_proc_macros"
 
+# no such thing as optional dev-dependencies, aaaaaaah
+[dependencies.trybuild]
+version = "1.0"
+optional = true
+
 [package.metadata.docs.rs]
-features = ["docsrs", "nightly_const_generics", "cmp_traits"]
+features = ["docsrs", "const_panic", "nightly_str_generics"]
 
 
 

@@ -1,0 +1,117 @@
+error: expected expression, found `=`
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:12:14
+   |
+12 |     case!{ ((=)) ((=)) }
+   |              ^ expected expression
+
+error: Expected one of: string literal, integer literal, identifier
+       Found: (=)
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:12:13
+   |
+12 |     case!{ ((=)) ((=)) }
+   |             ^^^
+
+error: expected expression, found `=`
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:12:20
+   |
+12 |     case!{ ((=)) ((=)) }
+   |                    ^ expected expression
+
+error: Expected one of: string literal, integer literal, identifier
+       Found: (=)
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:12:19
+   |
+12 |     case!{ ((=)) ((=)) }
+   |                   ^^^
+
+error: Expected one of: string literal, integer literal, identifier
+       Found: .
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:13:13
+   |
+13 |     case!{ (..) (..) }
+   |             ^
+
+error: Expected one of: string literal, integer literal, identifier
+       Found: .
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:13:18
+   |
+13 |     case!{ (..) (..) }
+   |                  ^
+
+error: Expected one of: string literal, integer literal, identifier
+       Found: {}
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:14:13
+   |
+14 |     case!{ ({}) ({}) }
+   |             ^^
+
+error: Expected one of: string literal, integer literal, identifier
+       Found: {}
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:14:18
+   |
+14 |     case!{ ({}) ({}) }
+   |                  ^^
+
+error: Expected one of: string literal, integer literal, identifier
+       Found: ()
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:15:13
+   |
+15 |     case!{ (()) (()) }
+   |             ^^
+
+error: Expected one of: string literal, integer literal, identifier
+       Found: ()
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:15:18
+   |
+15 |     case!{ (()) (()) }
+   |                  ^^
+
+error: Expected one of: string literal, integer literal, identifier
+       Found: []
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:16:13
+   |
+16 |     case!{ ([]) ([]) }
+   |             ^^
+
+error: Expected one of: string literal, integer literal, identifier
+       Found: []
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:16:18
+   |
+16 |     case!{ ([]) ([]) }
+   |                  ^^
+
+error: `compile_error` macro not supported in `tstr::TS`
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:17:13
+   |
+17 |     case!{ (compile_error!{"foo"}) (compile_error!{"foo"}) }
+   |             ^^^^^^^^^^^^^
+
+error: `compile_error` macro not supported in `tstr::TS`
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:17:37
+   |
+17 |     case!{ (compile_error!{"foo"}) (compile_error!{"foo"}) }
+   |                                     ^^^^^^^^^^^^^
+
+error: unexpected token after stringified argument
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:18:16
+   |
+18 |     case!{ (foo::bar::compile_error!{"foo"}) (foo::bar::compile_error!{"foo"}) }
+   |                ^
+
+error: unexpected token after stringified argument
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:18:50
+   |
+18 |     case!{ (foo::bar::compile_error!{"foo"}) (foo::bar::compile_error!{"foo"}) }
+   |                                                  ^
+
+error: unexpected token after stringified argument
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:19:18
+   |
+19 |     case!{ (crate::bar::compile_error!{"foo"}) (crate::bar::compile_error!{"foo"}) }
+   |                  ^
+
+error: unexpected token after stringified argument
+  --> tests/modules/ts_macros_ui_tests/ts_macros_syntax-unsyn-err.rs:19:54
+   |
+19 |     case!{ (crate::bar::compile_error!{"foo"}) (crate::bar::compile_error!{"foo"}) }
+   |                                                      ^

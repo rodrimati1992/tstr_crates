@@ -1,0 +1,33 @@
+error[E0080]: evaluation panicked:
+              assertion failed: LEFT == RIGHT
+               left: `"no"`
+              right: `"what"`
+              : hello"how are you"
+  --> tests/modules/assert_ui_tests/assert_failures-char-err.rs:11:15
+   |
+11 | const _: () = eq_fail::<TS!(no)>();
+   |               ^^^^^^^^^^^^^^^^^^^^ evaluation of `_` failed inside this call
+   |
+note: inside `eq_fail::<tstr::TStr<___<tstr::__<'n', 'o'>, 2>>>`
+  --> tests/modules/assert_ui_tests/assert_failures-char-err.rs:5:5
+   |
+5  |     tstr::assert_str_eq!(S::VAL, "what", "hello", {?}: "how are you");
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the failure occurred here
+   = note: this error originates in the macro `$crate::__p::concat_panic` which comes from the expansion of the macro `tstr::assert_str_eq` (in Nightly builds, run with -Z macro-backtrace for more info)
+
+error[E0080]: evaluation panicked:
+              assertion failed: LEFT != RIGHT
+               left: `"no"`
+              right: `"no"`
+              : 10 0x14
+  --> tests/modules/assert_ui_tests/assert_failures-char-err.rs:12:15
+   |
+12 | const _: () = ne_fail::<TS!(no)>();
+   |               ^^^^^^^^^^^^^^^^^^^^ evaluation of `_` failed inside this call
+   |
+note: inside `ne_fail::<tstr::TStr<___<tstr::__<'n', 'o'>, 2>>>`
+  --> tests/modules/assert_ui_tests/assert_failures-char-err.rs:8:5
+   |
+8  |     tstr::assert_str_ne!("no", S::VAL, 10u8, " ", {#X}: 20u16);
+   |     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ the failure occurred here
+   = note: this error originates in the macro `$crate::__p::concat_panic` which comes from the expansion of the macro `tstr::assert_str_ne` (in Nightly builds, run with -Z macro-backtrace for more info)

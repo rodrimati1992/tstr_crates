@@ -1,230 +1,449 @@
 use core::{
+    cmp::{Eq, Ord, Ordering, PartialEq, PartialOrd},
     fmt::{self, Debug},
+    hash::{Hash, Hasher},
     marker::PhantomData,
 };
 
-/// A type-level string type, similar to a `&'static str` const parameter.
+#[cfg(feature = "const_panic")]
+use const_panic::{
+    PanicVal,
+    fmt::{FmtArg, PanicFmt},
+};
+
+use crate::{IsTStr, TStrArg, strlike::StrLike};
+
+/// A type-level string type, emulates a `&'static str` const parameter.
+///
+/// This type is zero-sized and has an alignment of 1.
 ///
 /// # Examples
 ///
-/// ### Accessing Fields
+/// ### Emulating named parameters
 ///
-/// This example demonstrates how you can use `TStr` to implement a generic accessor trait.
+/// This example demonstrates how you can use `TStr` to emulate
+/// functions with named parameters overloaded by the name of the parameters.
 ///
 /// ```rust
-/// use tstr::TStr;
-/// use tstr::{TS, ts};
+/// use tstr::{IsTStr, TS, TStr, ts};
 ///
-/// fn main() {
-///     let mut tup = (3, 5, 8);
-///     
-///     assert_eq!(tup.get(ts!(0)), &3);
-///     assert_eq!(tup.get(ts!(1)), &5);
-///     assert_eq!(tup.get(ts!(2)), &8);
+/// use std::{collections::HashMap, hash::RandomState};
 ///
-///     let old_0 = replace(&mut tup, ts!(0), 333);
-///     let old_1 = replace(&mut tup, ts!(1), 555);
-///     let old_2 = replace(&mut tup, ts!(2), 888);
-///     
-///     assert_eq!(tup.get(ts!(0)), &333);
-///     assert_eq!(tup.get(ts!(1)), &555);
-///     assert_eq!(tup.get(ts!(2)), &888);
-///
-///     assert_eq!(old_0, 3);
-///     assert_eq!(old_1, 5);
-///     assert_eq!(old_2, 8);
-///     
-/// }
-///
-/// fn replace<T, N>(this: &mut T, name: TStr<N>, replacement: T::Field) -> T::Field
-/// where
-///     T: Access<TStr<N>>,
-///     T::Field: Clone,
 /// {
-///     let ret = this.get(name).clone();
-///     this.set(name, replacement);
-///     ret
+///     // equivalent to HashMap::new
+///     let mut map = HashMap::make(args!());
+///     assert!(map.capacity() == 0);
+///     map.insert(0, "");;
+/// }
+/// {
+///     // equivalent to HashMap::with_capacity
+///     let mut map = HashMap::make(args!(capacity: 10));
+///     assert!(map.capacity() >= 10);
+///     map.insert(0, "");;
+/// }
+/// {
+///     // equivalent to HashMap::with_hasher
+///     let mut map = HashMap::make(args!(hasher: RandomState::new()));
+///     assert!(map.capacity() == 0);
+///     map.insert(0, "");;
+/// }
+/// {
+///     // equivalent to HashMap::with_capacity_and_hasher
+///     let mut map = HashMap::make(args!(capacity: 10, hasher: RandomState::new()));
+///     assert!(map.capacity() >= 10);
+///     map.insert(0, "");;
 /// }
 ///
-///
-/// trait Access<N> {
-///     type Field;
-///
-///     fn get(&self, _field_name: N) -> &Self::Field;
-///     fn set(&mut self, _field_name: N, val: Self::Field);
+/// /// The struct that encodes a named parameter by taking two arguments:
+/// //  - a `TStr` that encodes the name at the type level
+/// /// - the type of the argument.
+/// ///
+/// /// The parameter list as a whole is a tuple of this struct.
+/// #[repr(transparent)]
+/// pub struct NamedParameter<N: IsTStr, T> {
+///     // since TStr is zero-sized, it can be put alongside the non-zero-sized
+///     // wrapped value in a `#[repr(transparent)]` type.
+///     name: TStr<N::Arg>,
+///     pub value: T,
 /// }
 ///
-/// impl<A, B, C> Access<TS!(0)> for (A, B, C) {
-///     type Field = A;
-///
-///     fn get(&self, _field_name: TS!(0)) -> &A {
-///         &self.0
-///     }
-///     fn set(&mut self, _field_name: TS!(0), val: A){
-///         self.0 = val;
-///     }
-/// }
-///
-/// impl<A, B, C> Access<TS!(1)> for (A, B, C) {
-///     type Field = B;
-///
-///     fn get(&self, _field_name: TS!(1)) -> &B {
-///         &self.1
-///     }
-///     fn set(&mut self, _field_name: TS!(1), val: B){
-///         self.1 = val;
+/// impl<N, T> NamedParameter<N, T>
+/// where
+///     N: IsTStr
+/// {
+///     pub const fn new(name: N, value: T) -> Self {
+///         Self {
+///             // `TStr::from_gen` is needed for constructing a `TStr` from a
+///             // generic `IsTStr` type
+///             name: TStr::from_gen(name),
+///             value,
+///         }
 ///     }
 /// }
 ///
-/// impl<A, B, C> Access<TS!(2)> for (A, B, C) {
-///     type Field = C;
+/// /// Custom trait for constructors.
+/// trait Make<Args>: Sized {
+///     fn make(args: Args) -> Self;
+/// }
 ///
-///     fn get(&self, _field_name: TS!(2)) -> &C {
-///         &self.2
-///     }
-///     fn set(&mut self, _field_name: TS!(2), val: C){
-///         self.2 = val;
+/// // make constructor with no parameters
+/// impl<K, V> Make<args_ty!()> for HashMap<K, V> {
+///     fn make(args_pat!{}: args_ty!()) -> Self {
+///         HashMap::new()
 ///     }
 /// }
+///
+/// // make constructor with a capacity parameter
+/// impl<K, V> Make<args_ty!(capacity: usize)> for HashMap<K, V> {
+///     fn make(args_pat!{capacity}: args_ty!(capacity: usize)) -> Self {
+///         HashMap::with_capacity(capacity)
+///     }
+/// }
+///
+/// // make constructor with a hasher parameter
+/// impl<K, V, S> Make<args_ty!(hasher: S)> for HashMap<K, V, S> {
+///     fn make(args_pat!{hasher}: args_ty!(hasher: S)) -> Self {
+///         HashMap::with_hasher(hasher)
+///     }
+/// }
+///
+/// // make constructor with capacity and hasher parameters
+/// impl<K, V, S> Make<args_ty!(capacity: usize, hasher: S)> for HashMap<K, V, S> {
+///     fn make(args_pat!{capacity, hasher}: args_ty!(capacity: usize, hasher: S)) -> Self {
+///         HashMap::with_capacity_and_hasher(capacity, hasher)
+///     }
+/// }
+///
+/// macro_rules! args {
+///     ($($name:ident: $val:expr),* $(,)?) => (
+///         ($(NamedParameter::new(ts!($name), $val),)*)
+///     )
+/// } use args;
+///
+/// macro_rules! args_ty {
+///     ($($name:ident: $field_ty:ty),* $(,)?) => (
+///         ($(NamedParameter<TS!($name), $field_ty>,)*)
+///     )
+/// } use args_ty;
+///
+/// macro_rules! args_pat {
+///     ($($name:ident),* $(,)?) => (
+///         ($( NamedParameter::<TS!($name), _> { value: $name, .. }, )*)
+///     )
+/// } use args_pat;
 ///
 /// ```
 ///
-pub struct TStr<T>(pub(crate) PhantomData<fn() -> T>);
+/// ### Parsing integers
+///
+/// Parsing integers from `TStr`s, since the primitive integers all have
+/// [`const fn from_str_radix`](u32::from_str_radix) functions,
+/// parsing them doesn't require direct support from `TStr` itself.
+///
+/// (this example requires the `"const_panic"` feature because it uses `tstr::unwrap`)
+#[cfg_attr(not(feature = "const_panic"), doc = "```ignore")]
+#[cfg_attr(feature = "const_panic", doc = "```rust")]
+/// use tstr::ts;
+///
+/// // parses the number at compile-time!
+/// const NUMBER: u32 = tstr::unwrap!(u32::from_str_radix(tstr::to_str(ts!(1234)), 10));
+///
+/// assert_eq!(NUMBER, 1234u32);
+/// ```
+///
+///
+pub struct TStr<S>(#[doc(hidden)] pub PhantomData<fn() -> S>);
 
-impl<T> TStr<T> {
+// const layout assertions
+const _: () = assert!(size_of::<crate::TS!("")>() == 0);
+const _: () = assert!(align_of::<crate::TS!("")>() == 1);
+
+impl<S> TStr<S> {
     /// Constructs the TStr.
+    pub const fn new() -> Self {
+        TStr(PhantomData)
+    }
+}
+
+impl<S: TStrArg> TStr<S> {
+    /// Coerces an `impl IsTStr` into a `TStr`, only necessary in generic contexts
+    ///
+    /// The trait method equivalent of this const function is
+    /// [`IsTStr::to_tstr`](crate::IsTStr::to_tstr).
+    ///
+    /// While it's always possible to construct a `TStr` through its
+    /// [`new`](crate::TStr::new) constructor,
+    /// this method ensures that it's the same string as the argument.
     ///
     /// # Example
     ///
     /// ```rust
-    /// use tstr::{TS, TStr};
+    /// use tstr::{IsTStr, TStr};
     ///
-    /// type FOO = TS!(foo);
+    /// #[repr(transparent)]
+    /// struct Foo<T, N: IsTStr> {
+    ///     val: T,
+    ///     // since TStr is zero-sized, it can be put in `#[repr(transparent)]` types
+    ///     // next to the wrapped non-Zero-Sized-Type.
+    ///     name: TStr<N::Arg>,
+    /// }
     ///
-    /// let foo_1: FOO = TStr::NEW;
-    /// let foo_2 = FOO::NEW; // The same as the previous statement
-    ///
+    /// impl<T, N: IsTStr> Foo<T, N> {
+    ///     pub fn new(val: T, tstr: N) -> Self {
+    ///         Self{ val, name: TStr::from_gen(tstr) }
+    ///     }
+    /// }
     /// ```
-    pub const NEW: Self = TStr(PhantomData);
+    ///
+    pub const fn from_gen<G>(tstr: G) -> Self
+    where
+        G: IsTStr<Arg = S>,
+    {
+        <G as typewit::Identity>::TYPE_EQ.to_right(tstr)
+    }
+    /// Coerces a `TStr` into an `impl IsTStr`, only necessary in generic contexts
+    ///
+    /// While it's always possible to construct an `IsTStr` through its
+    /// [`VAL`](crate::IsTStr::VAL) associated constant,
+    /// this method ensures that it's the same string as `Self`.
+    ///
+    /// # Example
+    ///
+    /// ```rust
+    /// use tstr::{IsTStr, TStr};
+    ///
+    /// #[repr(transparent)]
+    /// struct Foo<T, N: IsTStr> {
+    ///     val: T,
+    ///     // since TStr is zero-sized, it can be put in `#[repr(transparent)]` types
+    ///     // next to the wrapped non-Zero-Sized-Type.
+    ///     name: TStr<N::Arg>,
+    /// }
+    ///
+    /// impl<T, N: IsTStr> Foo<T, N> {
+    ///     const fn name(&self) -> N {
+    ///         self.name.to_gen()
+    ///     }
+    /// }
+    /// ```
+    ///
+    pub const fn to_gen<G>(self) -> G
+    where
+        G: IsTStr<Arg = S>,
+    {
+        <G as typewit::Identity>::TYPE_EQ.to_left(self)
+    }
 }
 
-#[cfg(feature = "const_generics")]
-macro_rules! const_generics_using {
-    () => {
-        /// For getting the `&'static str` value of this [`TStr`].
-        ///
-        /// You can use this as the bound for a generic [`TStr`] parameter.
-        ///
-        /// # Example
-        ///
-        /// ```rust
-        /// use tstr::{StrValue, ts};
-        ///
-        /// asserts(ts!(foo), ts!(bar), ts!(baz));
-        ///
-        /// fn asserts<A, B, C>(foo: A, bar: B, baz: C)
-        /// where
-        ///     A: StrValue,
-        ///     B: StrValue,
-        ///     C: StrValue,
-        /// {
-        ///     assert_eq!(A::STR, "foo");
-        ///     assert_eq!(foo.to_str(), "foo");
-        ///
-        ///     assert_eq!(B::STR, "bar");
-        ///     assert_eq!(bar.to_str(), "bar");
-        ///
-        ///     assert_eq!(C::STR, "baz");
-        ///     assert_eq!(baz.to_str(), "baz");
-        ///
-        /// }
-        ///
-        /// ```
-        ///
-        /// [`TStr`]: ./struct.TStr.html
-        #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
-        pub trait StrValue: Debug + Copy + Default + 'static {
-            /// The `&'static str` value of this `TStr`.
-            const STR: &'static str;
+impl<S> Copy for TStr<S> {}
 
-            /// Gets the `&'static str` value of this `TStr`.
-            fn to_str(self) -> &'static str {
-                Self::STR
-            }
-        }
-
-        #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
-        impl<const S: &'static str> StrValue for TStr<crate::___<S>> {
-            const STR: &'static str = S;
-        }
-
-        #[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_generics")))]
-        impl<T> TStr<T>
-        where
-            Self: StrValue,
-        {
-            /// The `&'static str` value of this `TStr`.
-            ///
-            /// # Example
-            ///
-            /// ```rust
-            /// use tstr::TS;
-            ///
-            /// type FOO = TS!(foo);
-            /// type BAR = TS!(bar);
-            ///
-            /// assert_eq!(FOO::STR, "foo");
-            /// assert_eq!(BAR::STR, "bar");
-            ///
-            /// ```
-            pub const STR: &'static str = <Self as StrValue>::STR;
-        }
-    };
-}
-#[cfg(feature = "const_generics")]
-const_generics_using! {}
-
-impl<T> Copy for TStr<T> {}
-
-impl<T> Clone for TStr<T> {
+impl<S> Clone for TStr<S> {
     #[inline(always)]
     fn clone(&self) -> Self {
         *self
     }
 }
 
-impl<T> Default for TStr<T> {
+impl<S> Default for TStr<S> {
     #[inline(always)]
     fn default() -> Self {
-        Self::NEW
+        Self::new()
     }
 }
 
-impl<T> Debug for TStr<T> {
+impl<S> Debug for TStr<S>
+where
+    S: TStrArg,
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("TStr").finish()
+        Debug::fmt(self.to_str(), f)
     }
 }
 
-impl<T> core::cmp::PartialEq for TStr<T> {
-    #[inline(always)]
-    fn eq(&self, _other: &Self) -> bool {
-        true
+impl<S> fmt::Display for TStr<S>
+where
+    S: TStrArg,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Display::fmt(self.to_str(), f)
     }
 }
 
-impl<T> core::cmp::Eq for TStr<T> {}
-
-impl<T> core::cmp::PartialOrd for TStr<T> {
+// TStr<_> == (str|TStr<_>)
+impl<S, S2> PartialEq<S2> for TStr<S>
+where
+    S: TStrArg,
+    S2: ?Sized + StrLike,
+{
     #[inline(always)]
-    fn partial_cmp(&self, _other: &Self) -> Option<core::cmp::Ordering> {
-        Some(core::cmp::Ordering::Equal)
+    fn eq(&self, other: &S2) -> bool {
+        <str as PartialEq>::eq(self.as_str(), other.as_str())
     }
 }
 
-impl<T> core::cmp::Ord for TStr<T> {
+impl<S> PartialEq<&str> for TStr<S>
+where
+    S: TStrArg,
+{
     #[inline(always)]
-    fn cmp(&self, _other: &Self) -> core::cmp::Ordering {
-        core::cmp::Ordering::Equal
+    fn eq(&self, other: &&str) -> bool {
+        <str as PartialEq>::eq(self.as_str(), other)
+    }
+}
+
+impl<S> PartialEq<&&str> for TStr<S>
+where
+    S: TStrArg,
+{
+    #[inline(always)]
+    fn eq(&self, other: &&&str) -> bool {
+        <str as PartialEq>::eq(self.as_str(), other)
+    }
+}
+
+impl<S2> PartialEq<TStr<S2>> for str
+where
+    S2: TStrArg,
+{
+    #[inline(always)]
+    fn eq(&self, other: &TStr<S2>) -> bool {
+        <str as PartialEq>::eq(self, other.as_str())
+    }
+}
+
+impl<S2> PartialEq<TStr<S2>> for &str
+where
+    S2: TStrArg,
+{
+    #[inline(always)]
+    fn eq(&self, other: &TStr<S2>) -> bool {
+        <str as PartialEq>::eq(self, other.as_str())
+    }
+}
+
+impl<S2> PartialEq<TStr<S2>> for &&str
+where
+    S2: TStrArg,
+{
+    #[inline(always)]
+    fn eq(&self, other: &TStr<S2>) -> bool {
+        <str as PartialEq>::eq(self, other.as_str())
+    }
+}
+
+impl<S> Eq for TStr<S> where S: TStrArg {}
+
+// comparing TStr<_> and (str|TStr<_>) for ordering
+impl<S, S2> PartialOrd<S2> for TStr<S>
+where
+    S: TStrArg,
+    S2: ?Sized + StrLike,
+{
+    #[inline(always)]
+    fn partial_cmp(&self, other: &S2) -> Option<Ordering> {
+        <str as PartialOrd>::partial_cmp(self.as_str(), other.as_str())
+    }
+}
+
+impl<S> PartialOrd<&str> for TStr<S>
+where
+    S: TStrArg,
+{
+    #[inline(always)]
+    fn partial_cmp(&self, other: &&str) -> Option<Ordering> {
+        <str as PartialOrd>::partial_cmp(self.as_str(), other)
+    }
+}
+
+impl<S> PartialOrd<&&str> for TStr<S>
+where
+    S: TStrArg,
+{
+    #[inline(always)]
+    fn partial_cmp(&self, other: &&&str) -> Option<Ordering> {
+        <str as PartialOrd>::partial_cmp(self.as_str(), other)
+    }
+}
+
+impl<S2> PartialOrd<TStr<S2>> for str
+where
+    S2: TStrArg,
+{
+    #[inline(always)]
+    fn partial_cmp(&self, other: &TStr<S2>) -> Option<Ordering> {
+        <str as PartialOrd>::partial_cmp(self, other.as_str())
+    }
+}
+
+impl<S2> PartialOrd<TStr<S2>> for &str
+where
+    S2: TStrArg,
+{
+    #[inline(always)]
+    fn partial_cmp(&self, other: &TStr<S2>) -> Option<Ordering> {
+        <str as PartialOrd>::partial_cmp(self, other.as_str())
+    }
+}
+impl<S2> PartialOrd<TStr<S2>> for &&str
+where
+    S2: TStrArg,
+{
+    #[inline(always)]
+    fn partial_cmp(&self, other: &TStr<S2>) -> Option<Ordering> {
+        <str as PartialOrd>::partial_cmp(self, other.as_str())
+    }
+}
+
+impl<S> Ord for TStr<S>
+where
+    S: TStrArg,
+{
+    #[inline(always)]
+    fn cmp(&self, _other: &Self) -> Ordering {
+        Ordering::Equal
+    }
+}
+
+// rustc expands #[derive(Hash)] on unit structs into this
+impl<S> Hash for TStr<S>
+where
+    S: TStrArg,
+{
+    fn hash<H>(&self, _state: &mut H)
+    where
+        H: Hasher,
+    {
+    }
+}
+
+#[cfg(feature = "const_panic")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_panic")))]
+impl<S> PanicFmt for TStr<S>
+where
+    S: TStrArg,
+{
+    type This = Self;
+    type Kind = const_panic::IsCustomType;
+
+    const PV_COUNT: usize = 1;
+}
+
+#[cfg(feature = "const_panic")]
+#[cfg_attr(feature = "docsrs", doc(cfg(feature = "const_panic")))]
+impl<S> TStr<S> {
+    /// [`const_panic`]-based-formatting of `TStr`
+    pub const fn to_panicval(&self, fmtarg: FmtArg) -> PanicVal<'static>
+    where
+        S: TStrArg,
+    {
+        const_panic::StdWrapper(crate::to_str(*self)).to_panicval(fmtarg)
+    }
+
+    /// [`const_panic`]-based-formatting of `TStr`
+    pub const fn to_panicvals(&self, fmtarg: FmtArg) -> [PanicVal<'static>; 1]
+    where
+        S: TStrArg,
+    {
+        [self.to_panicval(fmtarg)]
     }
 }

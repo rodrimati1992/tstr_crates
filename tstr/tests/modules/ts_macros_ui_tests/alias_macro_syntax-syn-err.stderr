@@ -1,0 +1,107 @@
+error: expected expression, found `=`
+ --> tests/modules/ts_macros_ui_tests/./ts_macros_syntax-unsyn-err.rs
+  |
+  |     case!{ ((=)) ((=)) }
+  |              ^ expected expression
+
+error: expected one of: `concat`, `stringify`, identifier, string literal, integer literal
+ --> tests/modules/ts_macros_ui_tests/./ts_macros_syntax-unsyn-err.rs
+  |
+  |     case!{ ((=)) ((=)) }
+  |             ^
+
+error: expected expression, found `=`
+ --> tests/modules/ts_macros_ui_tests/./ts_macros_syntax-unsyn-err.rs
+  |
+  |     case!{ ((=)) ((=)) }
+  |                    ^ expected expression
+
+error: expected one of: `concat`, `stringify`, identifier, string literal, integer literal
+ --> tests/modules/ts_macros_ui_tests/./ts_macros_syntax-unsyn-err.rs
+  |
+  |     case!{ ((=)) ((=)) }
+  |                   ^
+
+error: expected one of: `concat`, `stringify`, identifier, string literal, integer literal
+ --> tests/modules/ts_macros_ui_tests/./ts_macros_syntax-unsyn-err.rs
+  |
+  |     case!{ (..) (..) }
+  |             ^
+
+error: expected one of: `concat`, `stringify`, identifier, string literal, integer literal
+ --> tests/modules/ts_macros_ui_tests/./ts_macros_syntax-unsyn-err.rs
+  |
+  |     case!{ (..) (..) }
+  |                  ^
+
+error: expected one of: `concat`, `stringify`, identifier, string literal, integer literal
+ --> tests/modules/ts_macros_ui_tests/./ts_macros_syntax-unsyn-err.rs
+  |
+  |     case!{ ({}) ({}) }
+  |             ^
+
+error: expected one of: `concat`, `stringify`, identifier, string literal, integer literal
+ --> tests/modules/ts_macros_ui_tests/./ts_macros_syntax-unsyn-err.rs
+  |
+  |     case!{ ({}) ({}) }
+  |                  ^
+
+error: expected one of: `concat`, `stringify`, identifier, string literal, integer literal
+ --> tests/modules/ts_macros_ui_tests/./ts_macros_syntax-unsyn-err.rs
+  |
+  |     case!{ (()) (()) }
+  |             ^
+
+error: expected one of: `concat`, `stringify`, identifier, string literal, integer literal
+ --> tests/modules/ts_macros_ui_tests/./ts_macros_syntax-unsyn-err.rs
+  |
+  |     case!{ (()) (()) }
+  |                  ^
+
+error: expected one of: `concat`, `stringify`, identifier, string literal, integer literal
+ --> tests/modules/ts_macros_ui_tests/./ts_macros_syntax-unsyn-err.rs
+  |
+  |     case!{ ([]) ([]) }
+  |             ^
+
+error: expected one of: `concat`, `stringify`, identifier, string literal, integer literal
+ --> tests/modules/ts_macros_ui_tests/./ts_macros_syntax-unsyn-err.rs
+  |
+  |     case!{ ([]) ([]) }
+  |                  ^
+
+error: unexpected token after the argument
+ --> tests/modules/ts_macros_ui_tests/./ts_macros_syntax-unsyn-err.rs
+  |
+  |     case!{ (compile_error!{"foo"}) (compile_error!{"foo"}) }
+  |                          ^
+
+error: unexpected token after the argument
+ --> tests/modules/ts_macros_ui_tests/./ts_macros_syntax-unsyn-err.rs
+  |
+  |     case!{ (compile_error!{"foo"}) (compile_error!{"foo"}) }
+  |                                                  ^
+
+error: unexpected token after the argument
+ --> tests/modules/ts_macros_ui_tests/./ts_macros_syntax-unsyn-err.rs
+  |
+  |     case!{ (foo::bar::compile_error!{"foo"}) (foo::bar::compile_error!{"foo"}) }
+  |                ^
+
+error: unexpected token after the argument
+ --> tests/modules/ts_macros_ui_tests/./ts_macros_syntax-unsyn-err.rs
+  |
+  |     case!{ (foo::bar::compile_error!{"foo"}) (foo::bar::compile_error!{"foo"}) }
+  |                                                  ^
+
+error: unexpected token after the argument
+ --> tests/modules/ts_macros_ui_tests/./ts_macros_syntax-unsyn-err.rs
+  |
+  |     case!{ (crate::bar::compile_error!{"foo"}) (crate::bar::compile_error!{"foo"}) }
+  |                  ^
+
+error: unexpected token after the argument
+ --> tests/modules/ts_macros_ui_tests/./ts_macros_syntax-unsyn-err.rs
+  |
+  |     case!{ (crate::bar::compile_error!{"foo"}) (crate::bar::compile_error!{"foo"}) }
+  |                                                      ^
