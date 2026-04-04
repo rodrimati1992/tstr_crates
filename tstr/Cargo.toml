@@ -1,6 +1,6 @@
 [package]
 name = "tstr"
-version = "0.3.0"
+version = "0.3.1"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 edition = "2024"
 rust-version = "1.88.0"
@@ -20,6 +20,7 @@ include = [
 
 [features]
 default = ["const_panic"]
+serde = ["dep:serde"]
 str_generics = ["tstr_proc_macros/str_generics", "typewit/adt_const_marker"]
 nightly_str_generics = ["str_generics"]
 const_panic = ["dep:const_panic"]
@@ -29,6 +30,11 @@ use_syn = ["tstr_proc_macros/use_syn"]
 # private features
 docsrs = []
 __ui_tests = ["trybuild"]
+
+[dependencies.serde]
+version = "1.0"
+default-features = false
+optional = true
 
 [dependencies.const_panic]
 version = "0.2.14"

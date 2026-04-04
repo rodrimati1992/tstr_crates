@@ -190,7 +190,7 @@
 #![no_std]
 #![cfg_attr(feature = "nightly_str_generics", feature(adt_const_params))]
 #![cfg_attr(feature = "nightly_str_generics", feature(unsized_const_params))]
-#![cfg_attr(feature = "docsrs", feature(doc_cfg, doc_auto_cfg))]
+#![cfg_attr(feature = "docsrs", feature(doc_cfg))]
 #![cfg_attr(feature = "nightly_str_generics", allow(incomplete_features))]
 //////////
 // lints
@@ -209,6 +209,9 @@ mod private_macros;
 mod tstr_fns;
 mod tstr_trait;
 mod tstr_type;
+
+#[cfg(feature = "serde")]
+mod tstr_serde_impls;
 
 #[cfg(not(feature = "str_generics"))]
 mod tstr_impl_with_chars;
