@@ -8,10 +8,18 @@ use core::{
 
 use typewit::Identity;
 
+macro_rules! serde_support {($($serde_bounds:tt)*) => (
+
 /// Many associated items of the [`TStr`] type-level string,
 /// as well as supertraits for traits implemented by it.
 ///
 /// This trait is sealed and cannot be implemented outside of the `tstr` crate.
+///
+/// # Serde
+///
+/// This trait has `serde::{Serialize, Deserialize}` as supertraits when
+/// the `"serde"` feature is enabled.
+///
 pub trait IsTStr:
     Identity<Type = TStr<<Self as IsTStr>::Arg>>
     + 'static
@@ -35,6 +43,7 @@ pub trait IsTStr:
     + Sized
     + Sync
     + core::marker::Unpin
+    $($serde_bounds)*
 {
     /// The type parameter of `TStr`
     type Arg: TStrArg;
@@ -290,11 +299,11 @@ pub trait IsTStr:
     ///         struct GuessFn;
     ///         impl<S: IsTStr> S => Guess<S>
     ///     }
-    ///     
+    ///
     ///     match A::VAL.type_eq(B::VAL) {
     ///         TypeCmp::Eq(te) => Ok(
     ///             // te is a `TypeEq<A, B>`, a value-level proof that both args are the same type.
-    ///             te               
+    ///             te
     ///             .map(GuessFn)    // : TypeEq<Guess<A>, Guess<B>>
     ///             .to_right(guess) // : Guess<B>
     ///         ),
@@ -309,6 +318,14 @@ pub trait IsTStr:
         crate::type_eq(self, rhs)
     }
 }
+
+)}
+
+#[cfg(feature = "serde")]
+serde_support! {+ serde::Serialize + serde::de::DeserializeOwned}
+
+#[cfg(not(feature = "serde"))]
+serde_support! {}
 
 impl<S> IsTStr for TStr<S>
 where

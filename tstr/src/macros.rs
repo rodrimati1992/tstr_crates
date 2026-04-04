@@ -211,7 +211,7 @@ macro_rules! ts {
 /// ```
 ///
 /// Attributes on each alias (including documentation) are copied to
-/// the generated constand and type.
+/// the generated constant and type.
 ///
 /// # Examples
 ///

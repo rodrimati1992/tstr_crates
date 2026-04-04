@@ -151,6 +151,10 @@ use crate::{IsTStr, TStrArg, strlike::StrLike};
 /// assert_eq!(NUMBER, 1234u32);
 /// ```
 ///
+/// # Serde
+///
+/// `TStr` implements `serde::{Serialize, Deserialize}` when  the `"serde"` feature is enabled.
+///
 ///
 pub struct TStr<S>(#[doc(hidden)] pub PhantomData<fn() -> S>);
 

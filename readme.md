@@ -167,6 +167,9 @@ Changes how literals passed to the macros of this crate are parsed to use the `s
 Use this if there is some literal that could not be
 parsed but is a valid str/integer literal.
 
+- `"serde"`(disabled by default):
+Enables serde dependency and implements `serde::{Serialize, Deserialize}` for `TStr`
+
 - `"str_generics"`(disabled by default):
 Changes the representation of type-level strings to use a `&'static str` const parameter,
 making for better compiler errors.
