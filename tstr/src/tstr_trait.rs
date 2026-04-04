@@ -14,6 +14,12 @@ macro_rules! serde_support {($($serde_bounds:tt)*) => (
 /// as well as supertraits for traits implemented by it.
 ///
 /// This trait is sealed and cannot be implemented outside of the `tstr` crate.
+///
+/// # Serde
+///
+/// This trait has `serde::{Serialize, Deserialize}` as supertraits when
+/// the `"serde"` feature is enabled.
+///
 pub trait IsTStr:
     Identity<Type = TStr<<Self as IsTStr>::Arg>>
     + 'static

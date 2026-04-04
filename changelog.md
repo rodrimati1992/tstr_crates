@@ -1,5 +1,14 @@
 # 0.3
 
+### 0.3.1
+
+Added optional `serde` dependency and `"serde"` feature to enable it
+
+Added impls of `serde::{Serialize, Deserialize}` for `TStr` (conditional on `"serde"` feature)
+
+Added `serde::{Serialize, Deserialize}` supertraits to `IsTStr` (conditional on `"serde"` feature)
+
+
 ### 0.3.0
 
 Removed these items:
