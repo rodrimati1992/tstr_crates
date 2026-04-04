@@ -23,5 +23,8 @@ mod modules {
 
     mod tstr_methods_tests;
 
+    #[cfg(feature = "serde")]
+    mod tstr_serde_tests;
+
     mod ui_tests;
 }
