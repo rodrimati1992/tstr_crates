@@ -1,6 +1,6 @@
 [package]
 name = "tstr"
-version = "0.3.1"
+version = "0.3.2"
 authors = ["rodrimati1992 <rodrimatt1985@gmail.com>"]
 edition = "2024"
 rust-version = "1.88.0"
@@ -65,7 +65,7 @@ version = "1.0"
 optional = true
 
 [package.metadata.docs.rs]
-features = ["docsrs", "const_panic", "nightly_str_generics"]
+features = ["docsrs", "const_panic", "serde", "nightly_str_generics"]
 
 
 
