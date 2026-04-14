@@ -155,6 +155,24 @@ use crate::{IsTStr, TStrArg, strlike::StrLike};
 ///
 /// `TStr` implements `serde::{Serialize, Deserialize}` when  the `"serde"` feature is enabled.
 ///
+#[cfg_attr(not(feature = "serde"), doc = "```ignore")]
+#[cfg_attr(feature = "serde", doc = "```rust")]
+/// use tstr::{TS, ts};
+///
+/// assert_eq!(serde_json::from_str::<TS!(foo)>(r#""foo""#).unwrap(), ts!(foo));
+///
+/// // trying to deserialize a `TS!(foo)` from any value other than `"foo"` produces an error
+/// assert!(serde_json::from_str::<TS!(foo)>(r#""bar""#).is_err());
+///
+///
+/// assert_eq!(serde_json::to_string(&ts!(wtf)).unwrap(), r#""wtf""#);
+///
+/// assert_eq!(serde_json::to_string(&ts!("hello")).unwrap(), r#""hello""#);
+///
+/// assert_eq!(serde_json::to_string(&ts!(12345)).unwrap(), r#""12345""#);
+///
+/// ```
+///
 ///
 pub struct TStr<S>(#[doc(hidden)] pub PhantomData<fn() -> S>);
 

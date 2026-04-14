@@ -1,5 +1,9 @@
 # 0.3
 
+### 0.3.2
+
+Fixed inclusion of `serde::{Deserialize, Serialize}` impls in docs.rs docs
+
 ### 0.3.1
 
 Added optional `serde` dependency and `"serde"` feature to enable it
